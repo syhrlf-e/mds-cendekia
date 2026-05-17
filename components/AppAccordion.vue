@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Lock, CheckCircle2, ChevronDown } from 'lucide-vue-next'
 
 const props = withDefaults(defineProps<{
@@ -21,6 +21,17 @@ const handleToggle = () => {
   }
 }
 
+const isTransitioning = ref(false)
+let timeoutId: number | null = null
+
+watch(() => props.isOpen, () => {
+  isTransitioning.value = true
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = window.setTimeout(() => {
+    isTransitioning.value = false
+  }, 300)
+})
+
 const statusIcon = computed(() => {
   if (props.isLocked) return Lock
   if (props.isCompleted) return CheckCircle2
@@ -35,17 +46,20 @@ const iconClass = computed(() => {
 
 const headerClass = computed(() => {
   return [
-    'flex items-center justify-between w-full p-4 md:p-6 text-left transition-colors select-none',
-    props.isLocked ? 'cursor-not-allowed bg-bg-base opacity-75' : 'cursor-pointer hover:bg-bg-base/50',
-    props.isOpen ? 'border-b border-border' : ''
+    'flex items-center justify-between w-full p-4 md:p-6 text-left transition-colors select-none relative z-10 bg-bg-surface',
+    props.isLocked ? 'cursor-not-allowed opacity-75' : 'cursor-pointer hover:bg-bg-base/50 rounded-t-2xl',
+    props.isOpen ? 'border-b border-border rounded-t-2xl' : 'rounded-2xl'
   ]
 })
 </script>
 
 <template>
-  <div 
-    class="w-full bg-bg-surface border border-border rounded-2xl overflow-hidden transition-all duration-300"
-    :class="{ 'ring-1 ring-border shadow-sm': isOpen && !isLocked }"
+  <div
+    class="w-full bg-bg-surface border border-border rounded-2xl transition-all duration-300 relative"
+    :class="[
+      isOpen && !isLocked ? 'ring-1 ring-border shadow-sm z-20' : 'z-10',
+      isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''
+    ]"
   >
     <button
       type="button"
@@ -61,10 +75,18 @@ const headerClass = computed(() => {
     </button>
 
     <div
-      v-show="isOpen && !isLocked"
-      class="p-4 md:p-6"
+      class="grid transition-all duration-300 ease-in-out relative"
+      :style="{
+        gridTemplateRows: (isOpen && !isLocked) ? '1fr' : '0fr',
+        opacity: (isOpen && !isLocked) ? '1' : '0',
+        visibility: (isOpen && !isLocked) ? 'visible' : 'hidden'
+      }"
     >
-      <slot></slot>
+      <div :class="isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''">
+        <div class="p-4 md:p-6">
+          <slot></slot>
+        </div>
+      </div>
     </div>
   </div>
 </template>

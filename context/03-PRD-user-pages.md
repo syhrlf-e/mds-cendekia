@@ -95,26 +95,22 @@
 
 | Field | Tipe Input | Keterangan |
 |---|---|---|
-| Nama Lengkap | Text | Required |
-| Nama Panggilan | Text | Required |
+| Nama | Text | Required |
 | NIK | Text | Required, 16 digit, cek duplikat ke API |
+| Email | Text | Required, format email valid, cek duplikat ke API |
+| No Telepon | Text | Required, format Indonesia (08xx/+628xx) |
+| Tanggal Lahir | Date picker | Required, format RFC 3339: 2017-07-21T17:32:28Z |
 | Tempat Lahir | Text | Required |
-| Tanggal Lahir | Date picker | Required, tidak boleh future date |
 | Jenis Kelamin | Radio | Required: Laki-laki / Perempuan |
 | Agama | Dropdown | Required |
-| Kewarganegaraan | Text | Required |
-| Anak ke | Number | Required, min 1 |
-| Jumlah Saudara | Number | Required, min 0 |
-| Golongan Darah | Dropdown | Optional (termasuk "Tidak Tahu") |
-| Alamat Lengkap | Textarea | Required, min 10 karakter |
-| RT / RW | Text | Required, format 000/000 |
+| Alamat | Textarea | Required, min 10 karakter |
+| RT | Text | Required |
+| RW | Text | Required |
+| Kelurahan | Dropdown | Required, cascade dari kecamatan |
+| Kecamatan | Dropdown | Required, cascade dari kabupaten_kota |
+| Kabupaten/Kota | Dropdown | Required, cascade dari provinsi |
 | Provinsi | Dropdown | Required, data dari API Wilayah |
-| Kota/Kabupaten | Dropdown | Required, cascade dari Provinsi |
-| Kecamatan | Dropdown | Required, cascade dari Kota |
-| Kelurahan | Dropdown | Required, cascade dari Kecamatan |
 | Kode Pos | Text | Required, 5 digit angka (input manual) |
-| No. HP Siswa | Text | Required, format Indonesia (08xx/+628xx) |
-| Email | Text | Required, format email valid, cek duplikat ke API |
 
 **Cascade Dropdown Wilayah:**
 - Dropdown di bawah selalu **reset dan disabled** sampai dropdown di atasnya dipilih
@@ -127,10 +123,10 @@
 | Field | Tipe Input | Keterangan |
 |---|---|---|
 | Nama Sekolah Asal | Text | Required, min 5 karakter |
-| NPSN | Text | Required, 8 digit angka |
 | Alamat Sekolah Asal | Textarea | Required, min 10 karakter |
+| NPSN Sekolah Asal | Text | Required, 8 digit angka |
 | Tahun Lulus | Number | Required, 4 digit, tidak boleh future year |
-| No. Ijazah / SKHUN | Text | Optional |
+| No Ijazah | Text | Required |
 
 ---
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   modelValue?: string | number
@@ -20,44 +20,94 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
 const selectId = computed(() => props.id || `select-${Math.random().toString(36).substring(2, 9)}`)
+const selectedValue = computed(() => props.modelValue === null || props.modelValue === undefined ? '' : String(props.modelValue))
+const selectedOption = computed(() => props.options.find(option => String(option.value) === selectedValue.value))
+const isOpen = ref(false)
+const selectRoot = ref<HTMLElement | null>(null)
+
+const closeSelect = () => {
+  if (isOpen.value) {
+    isOpen.value = false
+    emit('blur')
+  }
+}
+
+const toggleSelect = () => {
+  if (props.disabled) return
+  isOpen.value = !isOpen.value
+  if (isOpen.value) emit('focus')
+}
+
+const chooseOption = (value: string | number) => {
+  emit('update:modelValue', value)
+  closeSelect()
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (!selectRoot.value?.contains(event.target as Node)) {
+    closeSelect()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5 w-full">
+  <div ref="selectRoot" class="relative flex flex-col gap-1.5 w-full" :class="{ 'z-50': isOpen }">
     <label v-if="label" :for="selectId" class="text-sm font-medium text-text-primary">
-      {{ label }} <span v-if="required" class="text-error">*</span>
+      {{ label }}
+      <span v-if="!required" class="font-normal text-text-secondary">(Opsional)</span>
     </label>
-    <select
+
+    <button
       :id="selectId"
-      :value="modelValue"
+      type="button"
       :disabled="disabled"
+      role="combobox"
+      :aria-expanded="isOpen"
+      :aria-controls="`${selectId}-listbox`"
       :class="[
-        'h-12 w-full rounded-xl border bg-bg-surface px-4 text-text-primary outline-none transition-colors appearance-none cursor-pointer',
+        'flex h-12 w-full items-center justify-between rounded-xl border bg-bg-surface px-4 text-left outline-none transition-colors',
         error 
           ? 'border-error focus:border-error focus:ring-1 focus:ring-error' 
           : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
-        disabled ? 'cursor-not-allowed opacity-60 bg-bg-base' : '',
-        !modelValue ? 'text-text-secondary' : ''
+        disabled ? 'cursor-not-allowed opacity-60 bg-bg-base' : 'cursor-pointer',
+        selectedOption ? 'text-text-primary' : 'text-text-secondary'
       ]"
-      @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
-      @blur="emit('blur', $event)"
-      @focus="emit('focus', $event)"
+      @click.stop="toggleSelect"
     >
-      <option value="" disabled hidden>{{ placeholder }}</option>
-      <option v-for="opt in options" :key="opt.value" :value="opt.value" class="text-text-primary">
+      <span class="truncate">{{ selectedOption?.label || placeholder }}</span>
+      <span class="pointer-events-none text-text-secondary">⌄</span>
+    </button>
+
+    <div
+      v-if="isOpen && !disabled"
+      :id="`${selectId}-listbox`"
+      role="listbox"
+      class="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-border bg-bg-surface py-1 shadow-lg"
+    >
+      <button
+        v-for="opt in options"
+        :key="opt.value"
+        type="button"
+        role="option"
+        :aria-selected="String(opt.value) === selectedValue"
+        :class="[
+          'w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-bg-base',
+          String(opt.value) === selectedValue ? 'font-medium text-brand bg-bg-base' : 'text-text-primary'
+        ]"
+        @click.stop="chooseOption(opt.value)"
+      >
         {{ opt.label }}
-      </option>
-    </select>
+      </button>
+    </div>
+
     <span v-if="error" class="text-sm text-error">{{ error }}</span>
   </div>
 </template>
-
-<style scoped>
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9' /%3E%3C/svg%3E");
-  background-position: right 1rem center;
-  background-repeat: no-repeat;
-  background-size: 1.2em 1.2em;
-  padding-right: 2.5rem;
-}
-</style>

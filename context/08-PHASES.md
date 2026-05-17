@@ -87,7 +87,7 @@
   - Card 3: Informasi Penting (kontak, catatan sekolah)
 
 ---
-
+/
 ## HALAMAN USER — FORMULIR PENDAFTARAN
 
 - [x] **Phase 16 — Accordion Data Diri + Validasi**

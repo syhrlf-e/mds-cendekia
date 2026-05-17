@@ -1,4 +1,4 @@
-import { useRuntimeConfig, useCookie } from '#app'
+import { useRuntimeConfig, useCookie, useRequestHeaders } from '#app'
 import { useToast } from './useToast'
 
 export const useApi = () => {
@@ -11,7 +11,11 @@ export const useApi = () => {
   const customFetch = async <T>(endpoint: string, options: any = {}) => {
     const adminToken = useCookie('admin_token')
     
+    // Grab headers from incoming request (useful for SSR)
+    const reqHeaders = import.meta.server ? useRequestHeaders(['cookie', 'authorization']) : {}
+    
     const headers = {
+      ...reqHeaders,
       ...options.headers,
       ...(adminToken.value ? { Authorization: `Bearer ${adminToken.value}` } : {})
     }
@@ -22,15 +26,17 @@ export const useApi = () => {
         ...options,
         headers,
         onResponseError({ response }) {
-          // Handle global error responses
-          const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
-          
-          if (response.status === 401) {
-            addToast('Sesi telah habis. Silakan login kembali.', 'error')
-            adminToken.value = null
-            // Optional: redirect to login
-          } else {
-            addToast(errorMsg, 'error')
+          // Prevent showing toast on server-side to avoid hydration mismatch/errors
+          if (import.meta.client) {
+            const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
+            
+            if (response.status === 401) {
+              addToast('Sesi telah habis. Silakan login kembali.', 'error')
+              adminToken.value = null
+              // Optional: navigateTo('/admin/login')
+            } else {
+              addToast(errorMsg, 'error')
+            }
           }
         }
       })

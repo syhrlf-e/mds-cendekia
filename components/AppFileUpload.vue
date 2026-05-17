@@ -55,7 +55,7 @@ const formatSize = (bytes: number) => {
 
 <template>
   <div class="flex flex-col gap-1.5 w-full">
-    <label class="text-sm font-medium text-text-primary">{{ label }} <span class="text-error">*</span></label>
+    <label class="text-sm font-medium text-text-primary">{{ label }}</label>
     
     <div v-if="!modelValue" class="relative">
       <input 

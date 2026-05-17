@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { Calendar, FileText, Wallet, Download } from 'lucide-vue-next'
 
 useHead({
-  title: 'PPDB MDS Cendekia'
+  title: 'PPDB | MDS Cendekia',
+  meta: [
+    { name: 'description', content: 'Pendaftaran Peserta Didik Baru MDS Cendekia. Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.' }
+  ]
 })
 
-// Mock state for MVP, will be integrated with API later
-const periodStatus = ref<'open' | 'closed' | 'upcoming'>('open') 
+const periodStatus = ref<'open' | 'closed' | 'upcoming'>('open')
 const openDate = ref('1 Juli 2026')
 const academicYear = ref('2026/2027')
 
@@ -17,159 +20,212 @@ const daftarLabel = computed(() => {
 })
 
 const isDaftarDisabled = computed(() => periodStatus.value !== 'open')
+
+const landingInfo = ref({
+  biaya_formulir: 250000,
+  spp_bulanan: 850000,
+  persyaratan: [
+    'Foto siswa 3x4 berwarna',
+    'Buku Rapor SMP asli & fotocopy',
+    'Surat Keterangan Nilai Rapor Semester I–V',
+    'Ijazah / SKL asli & fotocopy',
+    'Akta Kelahiran asli & fotocopy',
+    'Kartu Keluarga asli & fotocopy'
+  ],
+  waves: [
+    { id: 1, name: 'Gelombang 1', start_date: '2026-07-01', end_date: '2026-07-15' },
+    { id: 2, name: 'Gelombang 2', start_date: '2026-07-16', end_date: '2026-07-31' }
+  ],
+  jadwal_tambahan: [
+    { label: 'Pengumuman Hasil Seleksi', value: '5 Agustus 2026' },
+    { label: 'Daftar Ulang', value: '6 - 10 Agustus 2026' }
+  ],
+  active_wave: { name: 'Gelombang 1', fee: 5000000 }
+})
+
+const documents = ref([
+  { id: 1, title: 'Brosur PPDB MDS Cendekia 2026' },
+  { id: 2, title: 'Panduan Pendaftaran Online' }
+])
+
+const formatCurrency = (amount: number) => {
+  if (!amount) return 'Rp 0'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
+}
+
+const formatDateRange = (startDate: string, endDate: string) => {
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+  return `${formatDate(startDate)} - ${formatDate(endDate)}`
+}
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col lg:flex-row bg-bg-base">
-    <!-- Left Column: Branding / Illustration (60%) -->
-    <div class="hidden lg:flex lg:w-[60%] bg-brand p-12 flex-col justify-center items-center text-white relative overflow-hidden">
-      <!-- Decorative background elements -->
-      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
-      
-      <div class="z-10 text-center max-w-2xl">
-        <!-- Logo Placeholder for Desktop -->
-        <div class="w-24 h-24 bg-white/20 rounded-2xl mx-auto mb-8 flex items-center justify-center backdrop-blur-sm">
-          <span class="text-3xl font-heading font-bold text-white">MDS</span>
-        </div>
-        <h1 class="text-4xl lg:text-5xl font-heading font-bold mb-6 leading-tight">
-          Selamat Datang di<br>MDS Cendekia
-        </h1>
-        <p class="text-white/80 text-lg lg:text-xl">
-          Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.
-        </p>
-      </div>
-    </div>
+  <div class="min-h-screen bg-bg-base font-sans">
 
-    <!-- Right Column: Interactive Content (40%) -->
-    <div class="w-full lg:w-[40%] flex flex-col p-4 sm:p-8 lg:p-12 h-screen overflow-y-auto bg-bg-surface">
-      <div class="flex-grow flex flex-col justify-center max-w-md mx-auto w-full py-12">
-        <!-- Logo Placeholder for Mobile -->
-        <div class="mb-8 lg:hidden flex items-center gap-3">
-          <div class="w-12 h-12 bg-brand rounded-xl flex items-center justify-center">
-            <span class="text-lg font-heading font-bold text-white">MDS</span>
-          </div>
-          <span class="text-xl font-heading font-bold text-text-primary">MDS Cendekia</span>
-        </div>
-        
-        <!-- Hero Content -->
-        <div class="mb-12">
-          <h1 class="text-3xl sm:text-4xl font-heading font-bold text-text-primary mb-3 leading-tight">
-            Penerimaan Peserta Didik Baru
+    <section class="relative min-h-[60vh] overflow-hidden pt-20 pb-16 flex items-center">
+      <!-- Background Gradient -->
+      <div class="absolute inset-0 bg-brand opacity-5"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--color-cta)_0%,_transparent_40%)] opacity-20"></div>
+
+      <!-- Hero Content -->
+      <div class="relative z-10 w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
+        <div class="max-w-2xl">
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold text-text-primary mb-6 leading-tight">
+            Penerimaan Peserta Didik Baru <br/>
+            <span class="text-brand">{{ academicYear }}</span>
           </h1>
-          <p class="text-text-secondary text-lg font-medium">
-            Tahun Ajaran {{ academicYear }}
-          </p>
-        </div>
 
-        <!-- CTA Buttons -->
-        <div class="flex flex-col gap-4 mb-12">
-          <AppButton 
-            variant="primary" 
-            :disabled="isDaftarDisabled"
-            @click="$router.push('/ppdb/daftar')"
-            class="w-full text-lg shadow-lg shadow-cta/20"
-          >
-            {{ daftarLabel }}
-          </AppButton>
-          
-          <AppButton 
-            variant="secondary"
-            @click="$router.push('/ppdb/cek-status')"
-            class="w-full text-lg"
-          >
-            Cek Status Pendaftaran
-          </AppButton>
-        </div>
-        
-        <!-- Timeline -->
-        <div class="mb-10">
-          <h2 class="text-xl font-heading font-semibold text-text-primary mb-2">Alur Proses</h2>
-          <AppTimeline />
-        </div>
-        
-        <!-- Info Cards -->
-        <div class="flex flex-col gap-3 pb-8">
-          <AppInfoCard 
-            v-for="card in cards" 
-            :key="card.id"
-            :title="card.title"
-            :description="card.description"
-            @click="activeCardId = card.id"
-          />
+          <p class="text-lg md:text-xl text-text-secondary mb-10 leading-relaxed font-medium">
+            Selamat Datang di PPDB MDS Cendekia.<br />
+            Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.
+          </p>
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 w-full">
+            <AppButton
+              variant="primary"
+              :disabled="isDaftarDisabled"
+              @click="$router.push('/ppdb/daftar')"
+              class="flex-1 text-base py-4 shadow-xl shadow-brand/20 font-bold"
+            >
+              {{ daftarLabel }}
+            </AppButton>
+
+            <AppButton
+              variant="secondary"
+              @click="$router.push('/ppdb/cek-status')"
+              class="flex-1 text-base py-4 border-2 font-bold bg-bg-surface hover:bg-bg-base hover:text-brand transition-colors"
+            >
+              Cek Status Pendaftaran
+            </AppButton>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Modals & Bottom Sheets Content -->
-    <template v-if="activeCardContent">
-      <AppModal 
-        v-model="isModalOpen" 
-        :title="activeCardContent.title"
-      >
-        <div v-if="activeCardId === 'alur'" class="space-y-4">
-          <ol class="list-decimal pl-5 text-text-primary space-y-2">
-            <li>Isi formulir data diri & orang tua</li>
-            <li>Upload berkas persyaratan</li>
-            <li>Dapatkan nomor pendaftaran</li>
-            <li>Tunggu hasil seleksi</li>
-          </ol>
-        </div>
-        
-        <div v-else-if="activeCardId === 'syarat'" class="space-y-4">
-          <ul class="list-disc pl-5 text-text-primary space-y-2">
-            <li>Foto siswa 3x4 berwarna</li>
-            <li>Buku Rapor SMP asli & fotocopy</li>
-            <li>Surat Keterangan Nilai Rapor Semester I–V</li>
-            <li>Ijazah / SKL asli & fotocopy</li>
-            <li>Akta Kelahiran asli & fotocopy</li>
-            <li>Kartu Keluarga asli & fotocopy</li>
-          </ul>
-        </div>
-        
-        <div v-else-if="activeCardId === 'info'" class="space-y-4">
-          <ul class="list-disc pl-5 text-text-primary space-y-2">
-            <li>Informasi kuota (jika tersedia)</li>
-            <li>Kontak sekolah</li>
-            <li>Catatan penting dari pihak sekolah</li>
-          </ul>
-        </div>
-      </AppModal>
+    </section>
 
-      <AppBottomSheet 
-        v-model="isBottomSheetOpen"
-      >
-        <div class="mb-4">
-          <h3 class="text-xl font-heading font-semibold text-text-primary">{{ activeCardContent.title }}</h3>
+    <!-- Info Cards Section -->
+    <section class="py-16 bg-bg-surface border-y border-border">
+      <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          <!-- Jadwal Pendaftaran -->
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <Calendar class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Jadwal Pendaftaran</h3>
+            </div>
+            <ul class="space-y-4 text-sm md:text-base text-text-secondary">
+              <li v-for="wave in landingInfo.waves" :key="wave.id" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 flex-shrink-0"></span>
+                <span>{{ wave.name }}: <br/><strong class="text-text-primary">{{ formatDateRange(wave.start_date, wave.end_date) }}</strong></span>
+              </li>
+              <li v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-border mt-2 flex-shrink-0"></span>
+                <span>{{ jadwal.label }}: <br/><strong class="text-text-primary">{{ jadwal.value }}</strong></span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Persyaratan -->
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <FileText class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Persyaratan</h3>
+            </div>
+            <ul class="space-y-4 text-sm md:text-base text-text-secondary">
+              <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 flex-shrink-0"></span>
+                <span>{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Biaya Pendaftaran -->
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <Wallet class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Biaya Pendaftaran</h3>
+            </div>
+            <div class="space-y-4 text-sm md:text-base text-text-secondary">
+              <div class="flex justify-between items-center border-b border-border pb-3">
+                <span>Biaya Formulir</span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
+              </div>
+              <div v-if="landingInfo.active_wave" class="flex justify-between items-center border-b border-border pb-3">
+                <span>Uang Pangkal <br/><span class="text-xs">({{ landingInfo.active_wave.name }})</span></span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-1">
+                <span>SPP Bulanan</span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
+              </div>
+            </div>
+          </div>
+
         </div>
-        
-        <div v-if="activeCardId === 'alur'" class="space-y-4">
-          <ol class="list-decimal pl-5 text-text-primary space-y-2">
-            <li>Isi formulir data diri & orang tua</li>
-            <li>Upload berkas persyaratan</li>
-            <li>Dapatkan nomor pendaftaran</li>
-            <li>Tunggu hasil seleksi</li>
-          </ol>
+      </div>
+    </section>
+
+    <!-- Download Center Section -->
+    <section class="py-16 bg-bg-base">
+      <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-3xl">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+            <Download class="w-6 h-6 text-brand" />
+          </div>
+          <div>
+            <h3 class="text-xl font-heading font-bold text-text-primary">
+              Dokumen & Unduhan
+            </h3>
+            <p class="text-text-secondary text-sm">Download brosur dan berkas panduan pendaftaran.</p>
+          </div>
         </div>
-        
-        <div v-else-if="activeCardId === 'syarat'" class="space-y-4">
-          <ul class="list-disc pl-5 text-text-primary space-y-2">
-            <li>Foto siswa 3x4 berwarna</li>
-            <li>Buku Rapor SMP asli & fotocopy</li>
-            <li>Surat Keterangan Nilai Rapor Semester I–V</li>
-            <li>Ijazah / SKL asli & fotocopy</li>
-            <li>Akta Kelahiran asli & fotocopy</li>
-            <li>Kartu Keluarga asli & fotocopy</li>
-          </ul>
+
+        <!-- Document List -->
+        <div v-if="documents && documents.length > 0" class="bg-bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
+          <div class="divide-y divide-border">
+            <div
+              v-for="doc in documents"
+              :key="doc.id"
+              class="flex items-center justify-between px-6 py-4 hover:bg-bg-base transition-colors group cursor-pointer"
+            >
+              <span class="text-base font-medium text-text-primary group-hover:text-brand transition-colors">{{ doc.title }}</span>
+              <button
+                class="p-2.5 bg-brand text-white hover:bg-brand-hover rounded-xl transition-colors shrink-0 shadow-sm"
+                title="Download"
+              >
+                <Download class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <div v-else-if="activeCardId === 'info'" class="space-y-4">
-          <ul class="list-disc pl-5 text-text-primary space-y-2">
-            <li>Informasi kuota (jika tersedia)</li>
-            <li>Kontak sekolah</li>
-            <li>Catatan penting dari pihak sekolah</li>
-          </ul>
+
+        <!-- Empty State -->
+        <div v-else class="text-center py-12 bg-bg-surface rounded-2xl border-2 border-dashed border-border">
+          <FileText class="w-12 h-12 text-border mx-auto mb-3" />
+          <p class="text-text-secondary font-medium">Belum ada dokumen yang tersedia.</p>
         </div>
-      </AppBottomSheet>
-    </template>
+      </div>
+    </section>
+
   </div>
 </template>

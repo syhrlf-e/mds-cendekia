@@ -25,7 +25,7 @@
   --color-secondary-900: #773810;
   --color-secondary-950: #441c04;
 
-  --color-bg-base: #fef3f2;
+  --color-bg-base: #f9fafb;
   --color-bg-surface: #ffffff;
   
   --color-brand: #a7221b;
@@ -38,7 +38,7 @@
   --color-text-primary: #1a1a1a;
   --color-text-secondary: #6b7280;
   
-  --color-border: #fee3e2;
+  --color-border: #e5e7eb;
   
   --color-success: #16a34a;
   --color-error: #dc2626;
@@ -54,6 +54,10 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+  
   body {
     @apply bg-bg-base text-text-primary font-body antialiased;
   }

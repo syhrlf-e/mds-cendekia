@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
+import { Copy, Check } from 'lucide-vue-next'
 
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
@@ -20,6 +21,34 @@ const isConfirmModalOpen = ref(false)
 const isSubmitting = ref(false)
 const isSuccessSheetOpen = ref(false)
 const nomorPendaftaran = ref('')
+
+const isMobile = ref(true)
+const isCopied = ref(false)
+
+const updateDeviceType = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  updateDeviceType()
+  window.addEventListener('resize', updateDeviceType)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateDeviceType)
+})
+
+const copyNomor = async () => {
+  try {
+    await navigator.clipboard.writeText(nomorPendaftaran.value)
+    isCopied.value = true
+    setTimeout(() => {
+      isCopied.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy', err)
+  }
+}
 
 const proceedSubmit = () => {
   isConfirmModalOpen.value = true
@@ -87,28 +116,87 @@ const submitForm = async () => {
     </template>
   </AppModal>
 
-  <!-- Bottom Sheet Hasil Submit -->
-  <AppBottomSheet v-model="isSuccessSheetOpen" @close="$router.push('/ppdb/cek-status')">
-    <div class="flex flex-col items-center text-center pt-6">
-      <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      
-      <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
-      <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
-      
-      <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8">
-        <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
-        <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ nomorPendaftaran }}</p>
-      </div>
+  <!-- Hasil Submit (Responsive: Modal untuk Desktop, Bottom Sheet untuk Mobile) -->
+  <template v-if="isSuccessSheetOpen">
+    <!-- Desktop Modal -->
+    <AppModal v-if="!isMobile" v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
+      <template #header><div></div></template>
+      <div class="flex flex-col items-center text-center pt-2">
+        <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        
+        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
+        <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
+        
+        <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
+          <div class="text-left">
+            <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
+            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ nomorPendaftaran }}</p>
+          </div>
+          <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
+            <Check v-if="isCopied" class="w-5 h-5 text-success" />
+            <Copy v-else class="w-5 h-5" />
+          </button>
+        </div>
 
-      <AppButton 
-        variant="primary" 
-        class="w-full"
-        @click="$router.push('/ppdb/cek-status')"
-      >
-        Cek Status Pendaftaran
-      </AppButton>
-    </div>
-  </AppBottomSheet>
+        <div class="w-full flex flex-col gap-3">
+          <AppButton 
+            variant="primary" 
+            class="w-full"
+            @click="$router.push('/ppdb/cek-status')"
+          >
+            Cek Status Pendaftaran
+          </AppButton>
+          <AppButton 
+            variant="secondary" 
+            class="w-full"
+            @click="$router.push('/ppdb')"
+          >
+            Selesai
+          </AppButton>
+        </div>
+      </div>
+    </AppModal>
+
+    <!-- Mobile Bottom Sheet -->
+    <AppBottomSheet v-else v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
+      <div class="flex flex-col items-center text-center pt-6">
+        <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        
+        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
+        <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
+        
+        <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
+          <div class="text-left">
+            <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
+            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ nomorPendaftaran }}</p>
+          </div>
+          <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
+            <Check v-if="isCopied" class="w-5 h-5 text-success" />
+            <Copy v-else class="w-5 h-5" />
+          </button>
+        </div>
+
+        <div class="w-full flex flex-col gap-3 pb-4">
+          <AppButton 
+            variant="primary" 
+            class="w-full"
+            @click="$router.push('/ppdb/cek-status')"
+          >
+            Cek Status Pendaftaran
+          </AppButton>
+          <AppButton 
+            variant="secondary" 
+            class="w-full"
+            @click="$router.push('/ppdb')"
+          >
+            Selesai
+          </AppButton>
+        </div>
+      </div>
+    </AppBottomSheet>
+  </template>
 </template>

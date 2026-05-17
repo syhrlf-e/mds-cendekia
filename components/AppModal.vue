@@ -6,9 +6,11 @@ const props = withDefaults(defineProps<{
   modelValue: boolean
   title?: string
   width?: string
+  zIndex?: string | number
 }>(), {
   modelValue: false,
-  width: 'max-w-lg'
+  width: 'max-w-lg',
+  zIndex: 50
 })
 
 const emit = defineEmits(['update:modelValue', 'close'])
@@ -46,7 +48,7 @@ onMounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <div v-if="modelValue" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6" :style="{ zIndex: zIndex }">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/50 transition-opacity" @click="close"></div>
         

@@ -17,26 +17,22 @@
 
 | Field | Aturan Validasi |
 |---|---|
-| Nama Lengkap | Required, min 3 karakter, hanya huruf & spasi |
-| Nama Panggilan | Required, min 2 karakter |
+| Nama | Required, min 3 karakter, hanya huruf & spasi |
 | NIK | Required, exactly 16 digit angka, cek duplikat ke API onBlur |
+| Email | Required, format email valid, cek duplikat ke API onBlur |
+| No Telepon | Required, format Indonesia (08xx atau +628xx), min 10 max 13 digit |
+| Tanggal Lahir | Required, format RFC 3339: 2017-07-21T17:32:28Z, tidak boleh future date |
 | Tempat Lahir | Required, min 3 karakter, hanya huruf & spasi |
-| Tanggal Lahir | Required, format date valid, tidak boleh future date |
 | Jenis Kelamin | Required, pilih salah satu |
 | Agama | Required, pilih salah satu dari dropdown |
-| Kewarganegaraan | Required |
-| Anak ke | Required, angka, min 1 |
-| Jumlah Saudara | Required, angka, min 0 |
-| Golongan Darah | Optional |
-| Alamat Lengkap | Required, min 10 karakter |
-| RT / RW | Required, format 000/000 |
-| Provinsi | Required, pilih dari dropdown |
-| Kota/Kabupaten | Required, pilih dari dropdown (cascade) |
-| Kecamatan | Required, pilih dari dropdown (cascade) |
+| Alamat | Required, min 10 karakter |
+| RT | Required, format numerik/angka |
+| RW | Required, format numerik/angka |
 | Kelurahan | Required, pilih dari dropdown (cascade) |
+| Kecamatan | Required, pilih dari dropdown (cascade) |
+| Kabupaten/Kota | Required, pilih dari dropdown (cascade) |
+| Provinsi | Required, pilih dari dropdown |
 | Kode Pos | Required, exactly 5 digit angka |
-| No. HP Siswa | Required, format Indonesia (08xx atau +628xx), min 10 max 13 digit |
-| Email | Required, format email valid, cek duplikat ke API onBlur |
 
 ---
 
@@ -45,10 +41,10 @@
 | Field | Aturan Validasi |
 |---|---|
 | Nama Sekolah Asal | Required, min 5 karakter |
-| NPSN | Required, exactly 8 digit angka |
 | Alamat Sekolah Asal | Required, min 10 karakter |
+| NPSN Sekolah Asal | Required, exactly 8 digit angka |
 | Tahun Lulus | Required, 4 digit angka, tidak boleh future year |
-| No. Ijazah / SKHUN | Optional |
+| No Ijazah | Required |
 
 ---
 
