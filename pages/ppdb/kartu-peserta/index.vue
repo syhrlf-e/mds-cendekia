@@ -98,7 +98,8 @@ const generatePDF = async () => {
       <div v-show="dataPeserta" class="w-full bg-white border border-border shadow-xl rounded-none overflow-hidden" ref="cardRef">
         <!-- Header -->
         <div class="border-b border-border p-6 flex items-center justify-center gap-4 bg-brand text-white">
-          <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center font-heading font-bold text-xl">MDS</div>
+          <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
+          <img src="" alt="Logo MDS" class="w-16 h-16 object-contain" />
           <div class="flex flex-col">
             <h2 class="text-2xl font-heading font-bold uppercase tracking-wider">Kartu Peserta Didik Baru</h2>
             <p class="text-sm opacity-90 font-medium">Tahun Ajaran 2026/2027 | PPDB MDS Cendekia</p>

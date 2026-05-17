@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { ArrowLeft } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
 
@@ -66,6 +67,14 @@ const closeResult = () => {
   hasResult.value = false
   resultData.value = null
 }
+
+const isConfirmDoneOpen = ref(false)
+
+const checkAnother = () => {
+  isConfirmDoneOpen.value = false
+  nomorPendaftaran.value = ''
+  closeResult()
+}
 </script>
 
 <template>
@@ -75,9 +84,8 @@ const closeResult = () => {
       <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
       
       <div class="z-10 text-center max-w-2xl">
-        <div class="w-24 h-24 bg-white/20 rounded-2xl mx-auto mb-8 flex items-center justify-center backdrop-blur-sm cursor-pointer" @click="$router.push('/ppdb')">
-          <span class="text-3xl font-heading font-bold text-white">MDS</span>
-        </div>
+        <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
+        <img src="" alt="Logo MDS Cendekia" class="w-24 h-24 object-contain mx-auto mb-8 cursor-pointer" @click="$router.push('/ppdb')" />
         <h1 class="text-4xl lg:text-5xl font-heading font-bold mb-6 leading-tight">
           Cek Status Pendaftaran
         </h1>
@@ -90,13 +98,11 @@ const closeResult = () => {
     <!-- Right Column: Interactive Content (40%) -->
     <div class="w-full lg:w-[40%] relative flex shrink-0">
       <!-- Form Container -->
-      <div class="w-full flex flex-col p-4 sm:p-8 lg:p-12 min-h-screen bg-bg-surface justify-center items-center relative z-10 transition-transform duration-500"
-           :class="{'lg:-translate-x-full': hasResult && !isMobile}">
+      <div class="w-full flex flex-col p-4 sm:p-8 lg:p-12 min-h-screen bg-bg-surface justify-center items-center relative z-10">
         <div class="w-full max-w-md">
           <div class="mb-8 lg:hidden flex items-center gap-3 cursor-pointer" @click="$router.push('/ppdb')">
-            <div class="w-12 h-12 bg-brand rounded-xl flex items-center justify-center">
-              <span class="text-lg font-heading font-bold text-white">MDS</span>
-            </div>
+            <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
+            <img src="" alt="Logo MDS" class="w-12 h-12 object-contain" />
             <span class="text-xl font-heading font-bold text-text-primary">MDS Cendekia</span>
           </div>
           
@@ -130,15 +136,11 @@ const closeResult = () => {
       <div class="hidden lg:flex absolute inset-0 bg-bg-surface p-12 flex-col min-h-screen overflow-y-auto transform transition-transform duration-500 z-20 border-l border-border"
            :class="hasResult && !isMobile ? 'translate-x-0' : 'translate-x-full'">
         <div class="w-full max-w-md mx-auto" v-if="resultData">
-          <button @click="closeResult" class="mb-8 text-text-secondary hover:text-brand transition-colors font-medium flex items-center gap-2">
-            ← Kembali ke Pencarian
-          </button>
-          
           <div class="flex items-center gap-4 mb-8">
             <AppBadge :status="resultData.status" />
           </div>
 
-          <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-error/5">
+          <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-bg-base">
             <p class="text-sm font-semibold text-error mb-1">Alasan Penolakan:</p>
             <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
           </div>
@@ -171,11 +173,31 @@ const closeResult = () => {
                 <div class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</div>
               </div>
             </div>
+
+            <div class="pt-6">
+              <AppButton variant="primary" class="w-full" @click="isConfirmDoneOpen = true">
+                Selesai
+              </AppButton>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal Konfirmasi Selesai (Desktop) -->
+  <AppModal v-model="isConfirmDoneOpen" title="Konfirmasi">
+    <p class="text-text-primary text-base">Apakah kamu masih ingin mengecek status pendaftaran lainnya?</p>
+    
+    <template #footer>
+      <AppButton variant="secondary" @click="$router.push('/ppdb')">
+        Tidak, Kembali ke Awal
+      </AppButton>
+      <AppButton variant="primary" @click="checkAnother">
+        Ya, Cek Lainnya
+      </AppButton>
+    </template>
+  </AppModal>
 
   <!-- Mobile Result Bottom Sheet -->
   <AppBottomSheet v-model="hasResult" v-if="isMobile">
@@ -184,7 +206,7 @@ const closeResult = () => {
         <AppBadge :status="resultData.status" />
       </div>
 
-      <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-error/5">
+      <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-bg-base">
         <p class="text-sm font-semibold text-error mb-1">Alasan Penolakan:</p>
         <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
       </div>
