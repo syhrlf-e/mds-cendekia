@@ -87,7 +87,7 @@
   - Card 3: Informasi Penting (kontak, catatan sekolah)
 
 ---
-/
+
 ## HALAMAN USER — FORMULIR PENDAFTARAN
 
 - [x] **Phase 16 — Accordion Data Diri + Validasi**
@@ -95,28 +95,59 @@
   - Error message per field
 
 - [x] **Phase 17 — Cascade Dropdown Wilayah**
-  - Integrasi API emsifa: provinsi → kota → kecamatan → kelurahan
+  - Integrasi API emsifa:
+    - provinsi
+    - kota/kabupaten
+    - kecamatan
+    - kelurahan
   - Reset & disable cascade behavior
+  - Auto-fill kode pos setelah Kelurahan dipilih
+  - Integrasi helper API `sooluh/kodepos`
+  - Field Kode Pos tetap editable manual
+  - Loading state kecil saat proses lookup kode pos
 
 - [x] **Phase 18 — Accordion Data Asal Sekolah + Validasi**
   - Semua field accordion 2 beserta validasi onBlur
 
-- [x] **Phase 19 — Accordion Data Orang Tua + Validasi**
-  - Sub-section: Data Ayah, Data Ibu
-  - Sub-section Data Wali kondisional (muncul jika checkbox dicentang)
-  - Validasi per field
+- [x] **Phase 19 — Accordion Data Orang Tua / Wali + Validasi**
+  - Form penanggung jawab utama siswa
+  - Peran:
+    - Ayah
+    - Ibu
+    - Wali
+  - Validasi field required:
+    - nama
+    - nik
+    - agama
+    - hubungan
+    - peran
+    - no telepon
+  - Optional:
+    - email
+    - pendidikan
+    - pekerjaan
+    - penghasilan
 
-- [x] **Phase 20 — Logic Lock/Unlock Accordion**
-  - Accordion unlock jika semua field accordion sebelumnya valid
-  - Icon centang ✅ muncul di header accordion yang selesai
-  - Accordion yang sudah terbuka tidak bisa dikunci kembali
+- [x] **Phase 20 — Accordion Interaction Logic**
+  - Accordion berikutnya enabled setelah accordion sebelumnya valid
+  - Accordion berikutnya tidak otomatis terbuka
+  - User membuka accordion berikutnya secara manual
+  - Saat accordion baru dibuka:
+    - accordion sebelumnya collapse otomatis
+  - Hanya satu accordion terbuka dalam satu waktu
+  - Status accordion:
+    - `✓ Lengkap`
+    - `• Belum lengkap`
+  - Reactive validation:
+    - status berubah realtime jika field menjadi invalid
+  - Accordion lain tetap enabled meskipun accordion sebelumnya invalid kembali
+  - Tombol submit disabled sampai seluruh accordion valid
 
-- [x] **Phase 21 — Tombol Berikutnya + Modal Konfirmasi**
-  - Tombol disabled sampai semua accordion ✅
-  - Modal konfirmasi: "Data sudah sesuai?"
-  - "Ya, Lanjut" → redirect ke `/ppdb/daftar/berkas`
-  - "Belum" → modal tutup
-
+- [x] **Phase 21 — Tombol Berikutnya**
+  - Tombol disabled sampai seluruh accordion valid
+  - Klik tombol:
+    - langsung redirect ke `/ppdb/daftar/berkas`
+  - Tanpa modal konfirmasi tambahan
 ---
 
 ## HALAMAN USER — UPLOAD BERKAS
@@ -125,32 +156,75 @@
   - Upload area per berkas (6 berkas)
   - Validasi format + ukuran saat file dipilih
   - Tampilkan nama + ukuran file setelah dipilih
-  - Tombol Kirim disabled sampai semua berkas terupload
+  - Tombol submit disabled sampai semua berkas required terupload
+  - Tombol action:
+    - `[Kembali]`
+    - `[Kirim Pendaftaran]`
+  - Tombol Kembali:
+    - kembali ke halaman formulir sebelumnya
+    - preserve seluruh state form
+    - tidak reset data pendaftaran
 
 - [x] **Phase 23 — Submit + Bottom Sheet Nomor Pendaftaran**
   - Modal konfirmasi sebelum submit
-  - Loading dot wave saat proses
-  - Bottom sheet hasil: nomor pendaftaran + tombol Cek Status
-
+  - Loading dot wave saat proses submit
+  - Tombol disabled selama proses submit berlangsung
+  - Bottom sheet hasil:
+    - nomor pendaftaran
+    - status berhasil submit
+    - tombol `Cek Status`
+  - Bottom sheet menggunakan animasi:
+    - slide up
+    - fade in
 ---
 
 ## HALAMAN USER — CEK STATUS & KARTU PESERTA
 
 - [x] **Phase 24 — Halaman Cek Status `/ppdb/cek-status`**
   - Input nomor pendaftaran
-  - Tombol "Cek Sekarang"
-  - Layout: mobile center / desktop 60:40
+  - Tombol action:
+    - `[Back]`
+    - `[Cek Sekarang]`
+  - Layout:
+    - mobile centered
+    - desktop centered single-column
+    - lebar konten ±40% viewport desktop
+  - Tidak menggunakan layout split `60:40`
+  - Area hasil muncul expand ke bawah form
+  - Expand menggunakan smooth transition:
+    - height
+    - opacity/fade
 
 - [x] **Phase 25 — Hasil Cek Status**
-  - Mobile: Bottom Sheet dengan data + badge status
-  - Desktop: slide in from right dengan data + badge status
-  - Tampilkan alasan penolakan jika status Ditolak
+  - Hasil ditampilkan inline di bawah input
+  - Tidak menggunakan:
+    - bottom sheet
+    - slide-in panel
+  - Tampilkan:
+    - data peserta
+    - badge status
+    - informasi pendaftaran
+  - Jika status `Ditolak`:
+    - tampilkan alasan penolakan
+  - Jika nomor pendaftaran tidak ditemukan:
+    - tampilkan empty state soft
+    - copywriting informatif
+    - bukan toast error
+  - Setelah hasil muncul:
+    - tombol berubah menjadi:
+      `[Cek Pendaftaran Lainnya]`
+  - Behavior tombol:
+    - reset input
+    - clear hasil
+    - collapse result area
+    - focus kembali ke input
 
 - [x] **Phase 26 — Halaman Kartu Peserta + Generate PDF**
   - Hit API ambil data peserta via parameter URL
-  - Generate PDF layout 2 kolom (foto kiri, biodata kanan)
+  - Generate PDF layout 2 kolom:
+    - foto kiri
+    - biodata kanan
   - Auto download di browser
-
 ---
 
 ## HALAMAN ADMIN

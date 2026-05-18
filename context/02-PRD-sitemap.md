@@ -42,7 +42,7 @@
 | `/ppdb` | Single column, padding 16px | 60% ilustrasi kiri / 40% konten kanan |
 | `/ppdb/daftar` | Full width, padding 16px | Accordion 50% lebar, di-center |
 | `/ppdb/daftar/berkas` | Full width, padding 16px | 50% lebar, di-center |
-| `/ppdb/cek-status` | Input di tengah viewport | 60% ilustrasi kiri / 40% form+hasil kanan |
+| `/ppdb/cek-status` | Input di tengah viewport, hasil via Bottom Sheet | Centered single-column ±40% width, hasil expand ke bawah |
 | `/ppdb/kartu-peserta` | — | Auto generate & download PDF |
 | `/admin/*` | Tidak didukung | Full desktop layout |
 

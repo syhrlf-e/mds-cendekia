@@ -66,7 +66,48 @@ Pilih Kecamatan
 
 ---
 
-## 3. PDF Generation (FE-side)
+---
+
+## 3. API Kode Pos Indonesia
+
+**Source:** https://github.com/sooluh/kodepos
+
+Digunakan untuk auto-fill field `Kode Pos`
+setelah user memilih Kelurahan.
+
+### Tujuan
+
+API ini bukan pengganti API wilayah utama (`emsifa`),
+melainkan enhancement UX untuk mengurangi input manual.
+
+### Flow
+
+1. User memilih:
+   - Provinsi
+   - Kabupaten/Kota
+   - Kecamatan
+   - Kelurahan
+
+2. FE melakukan lookup kode pos berdasarkan kombinasi:
+   - Kelurahan
+   - Kecamatan
+   - Kabupaten/Kota
+
+3. Jika kode pos ditemukan:
+   - field `Kode Pos` otomatis terisi
+
+4. Jika tidak ditemukan:
+   - user mengisi manual
+
+### Catatan Penting
+
+- API ini hanya digunakan sebagai helper auto-fill
+- Bukan source validasi utama
+- Field `Kode Pos` tetap editable secara manual
+- Query tidak boleh hanya menggunakan nama Kelurahan
+  karena beberapa wilayah dapat memiliki nama yang sama
+
+## 4. PDF Generation (FE-side)
 
 Kartu peserta di-generate di sisi FE — BE tidak perlu handle generate PDF.
 
@@ -90,7 +131,7 @@ npm install pdfmake
 
 ---
 
-## 4. Email (Handled by BE)
+## 5. Email (Handled by BE)
 
 Email dikirim oleh BE (NestJS) menggunakan library mailer (misal `@nestjs-modules/mailer`).
 

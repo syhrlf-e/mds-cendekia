@@ -2,7 +2,7 @@
 # Sistem PPDB — MDS Cendekia
 ### Mukti Daris Sasmita Cendekia
 
-**Versi:** 1.0.0 (MVP)
+**Versi:** 1.1.0 (MVP)
 **Tanggal:** Mei 2026
 **Status:** Draft — Subject to API Contract
 **API Docs:** https://cendekia.sekata.my.id/api-docs
@@ -13,7 +13,8 @@
 
 | File | Konten |
 |---|---|
-| `01-PRD-main.md` | Overview, Tech Stack, Design System, UX Laws |
+| `00-PRD-design-language.md` | **Visual spec lengkap — WAJIB DIBACA PERTAMA** |
+| `01-PRD-main.md` | Overview, Tech Stack, Design System ringkas, UX Laws |
 | `02-PRD-sitemap.md` | Sitemap & Routing |
 | `03-PRD-user-pages.md` | Semua halaman sisi user |
 | `04-PRD-admin-pages.md` | Semua halaman sisi admin |
@@ -21,6 +22,8 @@
 | `06-PRD-api.md` | API & integrasi eksternal |
 | `07-PRD-email.md` | Email templates |
 | `08-PHASES.md` | Checklist phase development |
+
+> ⚠️ **Urutan baca wajib:** `00` → `01` → file relevan lainnya sesuai kebutuhan phase.
 
 ---
 
@@ -58,6 +61,7 @@ MVP ini berfokus pada **flow pendaftaran** secara menyeluruh. Fitur profil sekol
 - Kuota pendaftaran otomatis
 - Fitur multi-sekolah (multi-tenant)
 - Navbar user
+- Data orang tua / wali (menunggu API siap)
 
 ---
 
@@ -67,174 +71,145 @@ MVP ini berfokus pada **flow pendaftaran** secara menyeluruh. Fitur profil sekol
 |---|---|
 | Frontend | Nuxt.js + Tailwind CSS v4 |
 | Backend | NestJS |
-| Icon | Lucide Icons |
+| Icon | Lucide Icons (`lucide-vue-next`) |
 | PDF Generation | jsPDF / pdfmake (FE-side) |
 | Wilayah API | api-wilayah-indonesia (emsifa) |
 | Design System | `npx getdesign@latest add apple` |
+| Font | Plus Jakarta Sans (heading) + Inter (body) via `@nuxt/google-fonts` |
 | API Docs | https://cendekia.sekata.my.id/api-docs |
 
-> ⚠️ **Catatan:** Semua field, endpoint, dan validasi bersifat **subject to API contract**. Sesuaikan dengan dokumentasi BE saat development.
+> ⚠️ **Catatan:** Semua field, endpoint, dan validasi bersifat **subject to API contract**. Fetch dokumentasi BE sebelum implementasi API apapun.
 
 ---
 
 ## 4. Design System
 
-### 4.1 Setup Design System
+> ⚠️ Detail lengkap ada di `00-PRD-design-language.md` — file tersebut adalah acuan visual utama dan wajib dibaca sebelum mengerjakan UI apapun. Section ini hanya ringkasan dan pointer.
+
+### 4.1 Setup
 
 ```bash
+# Install design system base
 npx getdesign@latest add apple
-```
 
-Jalankan perintah ini di awal setup project untuk menginstall design system base.
-
-### 4.2 Warna (Color Tokens)
-
-#### Primary — Roof Terracotta
-| Token | Variable | Hex |
-|---|---|---|
-| primary-50 | `--color-primary-50` | `#fef3f2` |
-| primary-100 | `--color-primary-100` | `#fee3e2` |
-| primary-200 | `--color-primary-200` | `#ffccc9` |
-| primary-300 | `--color-primary-300` | `#fda8a4` |
-| primary-400 | `--color-primary-400` | `#fa766f` |
-| primary-500 | `--color-primary-500` | `#f24a41` |
-| primary-600 | `--color-primary-600` | `#df2c23` |
-| primary-700 | `--color-primary-700` | `#bb221a` |
-| primary-800 | `--color-primary-800` | `#a7221b` |
-| primary-900 | `--color-primary-900` | `#81201b` |
-| primary-950 | `--color-primary-950` | `#460c09` |
-
-#### Secondary — Kournikova
-| Token | Variable | Hex |
-|---|---|---|
-| secondary-50 | `--color-secondary-50` | `#fffceb` |
-| secondary-100 | `--color-secondary-100` | `#fdf4c8` |
-| secondary-200 | `--color-secondary-200` | `#fbe579` |
-| secondary-300 | `--color-secondary-300` | `#fad74f` |
-| secondary-400 | `--color-secondary-400` | `#f8c427` |
-| secondary-500 | `--color-secondary-500` | `#f2a40e` |
-| secondary-600 | `--color-secondary-600` | `#d67d09` |
-| secondary-700 | `--color-secondary-700` | `#b2580b` |
-| secondary-800 | `--color-secondary-800` | `#904410` |
-| secondary-900 | `--color-secondary-900` | `#773810` |
-| secondary-950 | `--color-secondary-950` | `#441c04` |
-
-#### Semantic Tokens
-```css
-/* Background */
---color-bg-base:         #fef3f2;  /* primary-50, background halaman utama */
---color-bg-surface:      #ffffff;  /* card, modal, input */
-
-/* Brand */
---color-brand:           #a7221b;  /* primary-800, sidebar admin, logo area */
---color-brand-hover:     #bb221a;  /* primary-700 */
-
-/* CTA */
---color-cta:             #fbe579;  /* secondary-200, tombol utama */
---color-cta-hover:       #fad74f;  /* secondary-300 */
---color-cta-text:        #81201b;  /* primary-900, teks di atas tombol emas */
-
-/* Text */
---color-text-primary:    #1a1a1a;
---color-text-secondary:  #6b7280;
-
-/* Border */
---color-border:          #fee3e2;  /* primary-100 */
-
-/* Feedback */
---color-success:         #16a34a;
---color-error:           #dc2626;
---color-warning:         #d97706;
-
-/* Status Badge */
---color-status-pending:  #fbe579;  /* Menunggu — kuning */
---color-status-approved: #16a34a;  /* Diterima — hijau */
---color-status-rejected: #dc2626;  /* Ditolak — merah */
-```
-
-### 4.3 Tipografi
-
-| Peran | Font | Weight |
-|---|---|---|
-| Heading | Plus Jakarta Sans | 600, 700 |
-| Body | Inter | 400, 500 |
-
-```css
---font-heading: 'Plus Jakarta Sans', sans-serif;
---font-body: 'Inter', sans-serif;
-```
-
-> Load via `@nuxt/google-fonts` — keduanya tersedia di Google Fonts.
-
-### 4.4 Ikon
-
-Gunakan **Lucide Icons** secara konsisten di seluruh sistem.
-
-```bash
+# Install icon
 npm install lucide-vue-next
+
+# Font via nuxt.config.ts @nuxt/google-fonts
+# Plus Jakarta Sans: weights 400, 600
+# Inter: weights 400, 500
 ```
 
-### 4.5 Loading State
+### 4.2 Visual Personality
 
-Gunakan **dot wave animation** (3 titik naik turun bergelombang) sebagai loading indicator global.
-
-```css
-.dot-wave span {
-  animation: wave 1.2s ease-in-out infinite;
-}
-.dot-wave span:nth-child(2) { animation-delay: 0.2s; }
-.dot-wave span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes wave {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-```
-
-### 4.6 Empty State
-
-Gunakan pola berikut secara konsisten untuk seluruh kondisi empty state:
+Sistem ini mengadopsi filosofi Apple: **UI meresap ke belakang, konten yang berbicara.**
 
 ```
-[Lucide Icon — ukuran besar, warna primary-300]
-[Teks bold — "Belum ada data di sini"]
-[Teks subtext — deskripsi singkat atau instruksi]
+Tone    : Prestisius, terpercaya, institusional — tapi tidak kaku
+Feel    : Clean seperti Linear, warm seperti brand merah-emas MDS Cendekia
+Prinsip : Whitespace adalah fitur. Border bukan shadow. Satu aksen warna.
 ```
 
-### 4.7 Toast Pill
+### 4.3 Warna Utama
 
-Digunakan untuk feedback ringan yang tidak membutuhkan aksi dari user.
+> Full color scale (Terracotta + Kournikova) dan semua semantic token ada di `00-PRD-design-language.md` section 2.
 
-**Spesifikasi:**
-- Bentuk: pill (border-radius penuh)
-- Posisi: top-center
-- Struktur: `[Lucide Icon]  [Teks feedback]`
-- Auto dismiss: 3 detik
-- Animasi: slide down + fade in saat muncul, fade out saat dismiss
+| Peran | Token | Hex |
+|---|---|---|
+| Background halaman | `--color-canvas-warm` | `#fef3f2` |
+| Surface (card, modal, input) | `--color-canvas` | `#ffffff` |
+| Brand / aksen | `--color-brand` | `#a7221b` |
+| CTA button background | `--color-cta` | `#fbe579` | Hanya untuk accent/decorative, bukan button |
+| CTA button text | `--color-cta-text` | `#81201b` | Hanya untuk accent/decorative, bukan button |
+| Text utama | `--color-ink` | `#1d1d1f` |
+| Text sekunder | `--color-ink-secondary` | `#6b7280` |
+| Border / hairline | `--color-hairline` | `#fee3e2` |
+| Success | `--color-success` | `#16a34a` |
+| Error | `--color-error` | `#dc2626` |
+| Warning | `--color-warning` | `#d97706` |
 
-**Digunakan pada:**
-- Berhasil approve/reject (admin)
-- Gagal upload file
-- Session expired
-- Akses periode pendaftaran ditutup
+**Aturan warna kritis — tidak boleh dilanggar:**
+```
+✅ Background halaman SELALU #fef3f2 — bukan pure white
+✅ Sidebar admin SELALU putih #ffffff — bukan merah
+✅ Merah (#a7221b) HANYA untuk active state, focus ring, accent kecil
+✅ Emas (#fbe579) HANYA untuk tombol CTA utama
+✅ Card pakai border #fee3e2 — bukan box-shadow
+✅ Text utama #1d1d1f — bukan pure black #000000
+```
 
-### 4.8 Bottom Sheet
+### 4.4 Tipografi
 
-Digunakan untuk momen penting yang membutuhkan atensi penuh user (mobile).
+> Full type scale ada di `00-PRD-design-language.md` section 3.
 
-**Spesifikasi:**
-- Tinggi: **85% viewport height** (fixed, tidak bisa di-drag)
-- Gap atas: 15% viewport — backdrop gelap semi-transparan
-- Drag handle: garis kecil di bagian atas sheet (dekoratif)
-- Animasi: slide up dari bawah
-- Dismiss: tap backdrop atau tombol tutup eksplisit
+| Font | Peran | Weight |
+|---|---|---|
+| Plus Jakarta Sans | Heading, label, button | 600 |
+| Inter | Body, caption, input, placeholder | 400, 500 |
 
-**Digunakan pada:**
-- Konten card di halaman `/ppdb` (mobile)
-- Hasil cek status pendaftaran (mobile)
-- Nomor pendaftaran setelah submit berhasil
+**Aturan tipografi kritis:**
+```
+✅ Heading selalu weight 600 — bukan 700
+✅ Body text 17px — bukan 16px
+✅ Letter-spacing negatif (-0.2px) di font size ≥ 17px
+✅ Button weight 500
+✅ Line-height tight di display (1.07–1.20), relaxed di body (1.47)
+```
 
-### 4.9 Favicon & Page Title
+### 4.5 Spacing
+
+> Full spacing system ada di `00-PRD-design-language.md` section 4.
+
+Base unit: **4px** (micro) / **8px** (structural grid)
+
+| Konteks | Nilai |
+|---|---|
+| Section vertical padding | 80px |
+| Card padding | 24px |
+| Input padding | 12px 16px |
+| Button padding (primary) | 11px 22px |
+| Button padding (sm) | 8px 16px |
+| Gap antar form field | 16px |
+| Gap antar card | 20px |
+| Sidebar width | 240px |
+| Table row height | 56px |
+| Min touch target (mobile) | 44px × 44px |
+
+### 4.6 Ringkasan Komponen Global
+
+> Spesifikasi lengkap (ukuran, warna, animasi, state) ada di `00-PRD-design-language.md` section 6.
+
+| Komponen | Ringkasan |
+|---|---|
+| Button Primary | Pill, bg emas `#fbe579`, teks `#81201b` |
+| Button Secondary | Pill, outline merah `#a7221b` |
+| Button Danger | Rect 8px radius, outline merah error |
+| Button Success | Rect 8px radius, bg hijau solid |
+| Input | Border `#fee3e2`, focus border `#a7221b` + shadow ring |
+| Badge Status | Pill, soft color (bg + text, bukan solid) |
+| Card | Border `#fee3e2`, radius 16px, tanpa shadow |
+| Toast Pill | Near-black, pill, top-center, auto dismiss 3s |
+| Bottom Sheet | 85vh fixed, radius 20px top, backdrop 40% |
+| Modal | Radius 16px, backdrop 40%, scale animation |
+| Accordion | Border `#fee3e2`, radius 12px, 3 state: locked/active/done |
+| Sidebar | Putih, border-right `#fee3e2`, active indicator merah kiri 3px |
+| Table | Border `#fee3e2`, radius 12px, header uppercase 12px |
+| Empty State | Icon 48px Terracotta-300, bold title, muted subtext |
+| Loading | Dot wave 3 titik warna `#a7221b` |
+
+### 4.7 Elevation & Shadow
+
+```
+Filosofi: SATU shadow di seluruh sistem — hanya untuk modal & toast.
+
+Card         → border saja, NO shadow
+Button       → NO shadow
+Modal        → rgba(0,0,0,0.22) 3px 5px 30px 0
+Toast        → rgba(0,0,0,0.22) 3px 5px 30px 0
+Sticky bar   → backdrop-filter blur(20px)
+```
+
+### 4.8 Favicon & Page Title
 
 **Favicon:** Logo MDS Cendekia versi icon/square
 
@@ -260,15 +235,15 @@ Digunakan untuk momen penting yang membutuhkan atensi penuh user (mobile).
 **Implementasi:**
 - Tombol CTA utama berukuran besar dan mudah dijangkau
 - Tombol Approve (hijau) di kanan, Tolak (merah outline) di kiri
-- Touch target minimum 44x44px di mobile
+- Touch target minimum **44×44px** di mobile
 
 ### 5.2 Hick's Law
 > Makin banyak pilihan, makin lama user mengambil keputusan.
 
 **Implementasi:**
-- Halaman `/ppdb` hanya menampilkan 3 card informasi
+- Halaman `/ppdb` hanya menampilkan **3 card** informasi
 - Tombol CTA hanya 2: Daftar Sekarang & Cek Status
-- Filter tabel admin menggunakan dropdown tunggal
+- Filter tabel admin menggunakan **1 dropdown** tunggal
 
 ### 5.3 Jakob's Law
 > User mengharapkan sistem baru bekerja seperti sistem yang sudah mereka kenal.
@@ -283,8 +258,8 @@ Digunakan untuk momen penting yang membutuhkan atensi penuh user (mobile).
 > Manusia rata-rata hanya dapat menyimpan 7±2 item dalam memori kerja.
 
 **Implementasi:**
-- Form dibagi ke accordion berdasarkan kategori
-- Modal detail admin menggunakan tab untuk memisahkan kelompok informasi
+- Form dibagi ke accordion berdasarkan kategori (Data Diri, Asal Sekolah)
+- Modal detail admin menggunakan sidebar tab untuk memisahkan kelompok informasi
 - Upload berkas dipisah ke halaman tersendiri
 
 ### 5.5 Progressive Disclosure
@@ -293,7 +268,6 @@ Digunakan untuk momen penting yang membutuhkan atensi penuh user (mobile).
 **Implementasi:**
 - Accordion berikutnya hanya terbuka setelah accordion sebelumnya selesai
 - Card di `/ppdb` hanya tampil ringkasan, detail muncul di bottom sheet/modal
-- Data Wali hanya muncul jika user mencentang "Berbeda dengan orang tua"
 - Tombol Kirim hanya aktif setelah semua accordion selesai
 
 ### 5.6 Law of Similarity

@@ -32,7 +32,7 @@
 | Kecamatan | Required, pilih dari dropdown (cascade) |
 | Kabupaten/Kota | Required, pilih dari dropdown (cascade) |
 | Provinsi | Required, pilih dari dropdown |
-| Kode Pos | Required, exactly 5 digit angka |
+| Kode Pos | Required, exactly 5 digit angka, dapat diisi otomatis dari API kodepos namun tetap editable manual |
 
 ---
 
