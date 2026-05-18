@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Dot wave animation CSS is globally defined in assets/css/main.css
 </script>
 
 <template>

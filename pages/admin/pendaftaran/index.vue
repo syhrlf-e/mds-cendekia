@@ -83,17 +83,14 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-// Tab State
 const activeTab = ref<'diri' | 'ortu' | 'berkas'>('diri')
 const ortuTabAyahOpen = ref(true)
 const ortuTabIbuOpen = ref(false)
 const ortuTabWaliOpen = ref(false)
 
-// Modals State
 const isDetailModalOpen = ref(false)
 const selectedItem = ref<any>(null)
 
-// Action Handlers
 const handleView = (id: string) => {
   selectedItem.value = mockData.value.find(item => item.id === id) || null
   if (selectedItem.value) {
@@ -102,7 +99,6 @@ const handleView = (id: string) => {
   }
 }
 
-// Approve Flow
 const isApproveModalOpen = ref(false)
 const isProcessingApprove = ref(false)
 
@@ -123,7 +119,6 @@ const handleApprove = () => {
   }, 1000)
 }
 
-// Reject Flow
 const isRejectModalOpen = ref(false)
 const rejectReason = ref('')
 const isProcessingReject = ref(false)
@@ -397,7 +392,6 @@ const handleReject = () => {
       </div>
     </div>
 
-    <!-- Sticky Footer -->
     <template #footer>
       <AppButton variant="danger" class="min-w-30" @click="promptReject" v-if="selectedItem?.status === 'pending'">
         Tolak
@@ -411,7 +405,6 @@ const handleReject = () => {
     </template>
     </AppModal>
 
-    <!-- Modal Approve Confirmation (Phase 35) -->
     <AppModal v-model="isApproveModalOpen" title="Konfirmasi Pendaftaran" width="max-w-md" :zIndex="60">
     <p class="text-text-primary text-base leading-relaxed">Apakah Anda yakin ingin menerima pendaftar ini?</p>
     <p class="text-sm text-text-secondary mt-2">Sistem akan secara otomatis memperbarui status dan mengirimkan email konfirmasi penerimaan kepada calon siswa beserta link Kartu Peserta.</p>

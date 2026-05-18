@@ -51,9 +51,9 @@ const handleInput = (event: Event) => {
       :maxlength="maxlength"
       :rows="rows"
       :class="[
-        'w-full rounded-xl border bg-bg-surface p-4 text-text-primary outline-none transition-colors placeholder:text-text-secondary resize-y min-h-[100px]',
-        error 
-          ? 'border-error focus:border-error focus:ring-1 focus:ring-error' 
+        'w-full rounded-xl border bg-bg-surface p-4 text-text-primary outline-none transition-colors placeholder:text-text-secondary resize-y min-h-25',
+        error
+          ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
           : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
         disabled ? 'cursor-not-allowed opacity-60 bg-bg-base' : ''
       ]"

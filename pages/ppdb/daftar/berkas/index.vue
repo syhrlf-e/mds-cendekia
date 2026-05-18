@@ -56,14 +56,12 @@ const proceedSubmit = () => {
 
 const submitForm = async () => {
   isSubmitting.value = true
-  
-  // Mock API Call delay
+
   await new Promise(resolve => setTimeout(resolve, 2000))
-  
+
   isSubmitting.value = false
   isConfirmModalOpen.value = false
-  
-  // Mock generated registration number
+
   nomorPendaftaran.value = `MDS-2026-${Math.floor(1000 + Math.random() * 9000)}`
   isSuccessSheetOpen.value = true
 }
@@ -72,7 +70,7 @@ const submitForm = async () => {
 <template>
   <div class="min-h-screen bg-bg-base py-8 md:py-12 px-4">
     <div class="w-full lg:w-1/2 mx-auto flex flex-col gap-6">
-      
+
       <div class="mb-2">
         <h1 class="text-2xl md:text-3xl font-heading font-bold text-text-primary">Upload Berkas</h1>
         <p class="text-text-secondary mt-1">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
@@ -87,11 +85,10 @@ const submitForm = async () => {
         <AppFileUpload v-model="berkas.kk" label="6. Kartu Keluarga" accept=".pdf" :maxSize="2" />
       </div>
 
-      <!-- Tombol Kirim -->
       <div class="flex justify-end">
-        <AppButton 
-          variant="primary" 
-          :disabled="!isAllUploaded" 
+        <AppButton
+          variant="primary"
+          :disabled="!isAllUploaded"
           @click="proceedSubmit"
           class="w-full md:w-auto shadow-md"
         >
@@ -102,10 +99,9 @@ const submitForm = async () => {
     </div>
   </div>
 
-  <!-- Modal Konfirmasi Submit -->
   <AppModal v-model="isConfirmModalOpen" title="Konfirmasi">
     <p class="text-text-primary text-base">Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?</p>
-    
+
     <template #footer>
       <AppButton variant="secondary" @click="isConfirmModalOpen = false" :disabled="isSubmitting">
         Belum
@@ -116,19 +112,17 @@ const submitForm = async () => {
     </template>
   </AppModal>
 
-  <!-- Hasil Submit (Responsive: Modal untuk Desktop, Bottom Sheet untuk Mobile) -->
   <template v-if="isSuccessSheetOpen">
-    <!-- Desktop Modal -->
     <AppModal v-if="!isMobile" v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
       <template #header><div></div></template>
       <div class="flex flex-col items-center text-center pt-2">
         <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        
+
         <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
         <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
-        
+
         <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
           <div class="text-left">
             <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
@@ -141,15 +135,15 @@ const submitForm = async () => {
         </div>
 
         <div class="w-full flex flex-col gap-3">
-          <AppButton 
-            variant="primary" 
+          <AppButton
+            variant="primary"
             class="w-full"
             @click="$router.push('/ppdb/cek-status')"
           >
             Cek Status Pendaftaran
           </AppButton>
-          <AppButton 
-            variant="secondary" 
+          <AppButton
+            variant="secondary"
             class="w-full"
             @click="$router.push('/ppdb')"
           >
@@ -159,16 +153,15 @@ const submitForm = async () => {
       </div>
     </AppModal>
 
-    <!-- Mobile Bottom Sheet -->
     <AppBottomSheet v-else v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
       <div class="flex flex-col items-center text-center pt-6">
         <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        
+
         <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
         <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
-        
+
         <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
           <div class="text-left">
             <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
@@ -181,15 +174,15 @@ const submitForm = async () => {
         </div>
 
         <div class="w-full flex flex-col gap-3 pb-4">
-          <AppButton 
-            variant="primary" 
+          <AppButton
+            variant="primary"
             class="w-full"
             @click="$router.push('/ppdb/cek-status')"
           >
             Cek Status Pendaftaran
           </AppButton>
-          <AppButton 
-            variant="secondary" 
+          <AppButton
+            variant="secondary"
             class="w-full"
             @click="$router.push('/ppdb')"
           >

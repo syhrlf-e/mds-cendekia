@@ -9,7 +9,7 @@ const isChecking = ref(false)
 
 const isMobile = ref(false)
 const checkMobile = () => {
-  isMobile.value = window.innerWidth < 1024 // lg breakpoint
+  isMobile.value = window.innerWidth < 1024
 }
 
 onMounted(() => {
@@ -21,20 +21,17 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
-// Mock Result State
 const hasResult = ref(false)
 const resultData = ref<any>(null)
 
 const handleCheck = async () => {
   if (!nomorPendaftaran.value) return
-  
+
   isChecking.value = true
   hasResult.value = false
-  
-  // Mock API Call delay
+
   await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  // Mock Logic: Determine status based on last digit for demo purposes
+
   const lastDigit = parseInt(nomorPendaftaran.value.slice(-1) || '0')
   let status: 'pending' | 'approved' | 'rejected' = 'pending'
   let alasanPenolakan = ''
@@ -79,12 +76,10 @@ const checkAnother = () => {
 
 <template>
   <div class="min-h-screen flex flex-col lg:flex-row bg-bg-base overflow-hidden">
-    <!-- Left Column: Branding / Illustration (60%) - Desktop Only -->
     <div class="hidden lg:flex lg:w-[60%] bg-brand p-12 flex-col justify-center items-center text-white relative overflow-hidden shrink-0">
       <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
-      
+
       <div class="z-10 text-center max-w-2xl">
-        <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
         <img src="" alt="Logo MDS Cendekia" class="w-24 h-24 object-contain mx-auto mb-8 cursor-pointer" @click="$router.push('/ppdb')" />
         <h1 class="text-4xl lg:text-5xl font-heading font-bold mb-6 leading-tight">
           Cek Status Pendaftaran
@@ -95,33 +90,30 @@ const checkAnother = () => {
       </div>
     </div>
 
-    <!-- Right Column: Interactive Content (40%) -->
     <div class="w-full lg:w-[40%] relative flex shrink-0">
-      <!-- Form Container -->
       <div class="w-full flex flex-col p-4 sm:p-8 lg:p-12 min-h-screen bg-bg-surface justify-center items-center relative z-10">
         <div class="w-full max-w-md">
           <div class="mb-8 lg:hidden flex items-center gap-3 cursor-pointer" @click="$router.push('/ppdb')">
-            <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
             <img src="" alt="Logo MDS" class="w-12 h-12 object-contain" />
             <span class="text-xl font-heading font-bold text-text-primary">MDS Cendekia</span>
           </div>
-          
+
           <div class="mb-8">
             <h1 class="text-3xl font-heading font-bold text-text-primary mb-3">Cek Status</h1>
             <p class="text-text-secondary">Masukkan nomor pendaftaran untuk melihat hasil seleksi.</p>
           </div>
 
           <form @submit.prevent="handleCheck" class="flex flex-col gap-5">
-            <AppInput 
-              v-model="nomorPendaftaran" 
-              label="Nomor Pendaftaran" 
-              placeholder="Contoh: MDS-2026-1234" 
-              required 
+            <AppInput
+              v-model="nomorPendaftaran"
+              label="Nomor Pendaftaran"
+              placeholder="Contoh: MDS-2026-1234"
+              required
             />
-            
-            <AppButton 
-              type="submit" 
-              variant="primary" 
+
+            <AppButton
+              type="submit"
+              variant="primary"
               :disabled="!nomorPendaftaran.trim() || isChecking"
               :loading="isChecking"
               class="w-full shadow-md"
@@ -132,7 +124,6 @@ const checkAnother = () => {
         </div>
       </div>
 
-      <!-- Desktop Result Overlay (Slide in from right) -->
       <div class="hidden lg:flex absolute inset-0 bg-bg-surface p-12 flex-col min-h-screen overflow-y-auto transform transition-transform duration-500 z-20 border-l border-border"
            :class="hasResult && !isMobile ? 'translate-x-0' : 'translate-x-full'">
         <div class="w-full max-w-md mx-auto" v-if="resultData">
@@ -185,10 +176,9 @@ const checkAnother = () => {
     </div>
   </div>
 
-  <!-- Modal Konfirmasi Selesai (Desktop) -->
   <AppModal v-model="isConfirmDoneOpen" title="Konfirmasi">
     <p class="text-text-primary text-base">Apakah kamu masih ingin mengecek status pendaftaran lainnya?</p>
-    
+
     <template #footer>
       <AppButton variant="secondary" @click="$router.push('/ppdb')">
         Tidak, Kembali ke Awal
@@ -199,7 +189,6 @@ const checkAnother = () => {
     </template>
   </AppModal>
 
-  <!-- Mobile Result Bottom Sheet -->
   <AppBottomSheet v-model="hasResult" v-if="isMobile">
     <div class="flex flex-col pt-2" v-if="resultData">
       <div class="flex justify-center mb-6">

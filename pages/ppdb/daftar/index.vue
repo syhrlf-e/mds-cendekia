@@ -3,7 +3,6 @@ import { reactive, ref, computed, watch, onMounted } from 'vue'
 
 useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
-// Form State Accordion 1
 const form = reactive({
   nama: '',
   nik: '',

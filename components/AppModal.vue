@@ -20,7 +20,6 @@ const close = () => {
   emit('close')
 }
 
-// Prevent body scroll when modal is open
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
     document.body.style.overflow = 'hidden'
@@ -31,13 +30,13 @@ watch(() => props.modelValue, (isOpen) => {
 
 onMounted(() => {
   if (props.modelValue) document.body.style.overflow = 'hidden'
-  
+
   // Close on Escape key
   const handleEscape = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && props.modelValue) close()
   }
   document.addEventListener('keydown', handleEscape)
-  
+
   onUnmounted(() => {
     document.body.style.overflow = ''
     document.removeEventListener('keydown', handleEscape)
@@ -49,37 +48,32 @@ onMounted(() => {
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="modelValue" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6" :style="{ zIndex: zIndex }">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/50 transition-opacity" @click="close"></div>
-        
-        <!-- Modal Panel -->
-        <div 
+
+        <div
           :class="[
             'relative bg-bg-surface rounded-2xl shadow-xl w-full max-h-[90vh] flex flex-col',
             width
           ]"
         >
-          <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
             <h3 v-if="title" class="text-lg font-heading font-semibold text-text-primary">
               {{ title }}
             </h3>
             <slot name="header" v-else></slot>
-            
-            <button 
+
+            <button
               @click="close"
               class="p-2 -mr-2 text-text-secondary hover:text-text-primary hover:bg-bg-base rounded-full transition-colors"
             >
               <X class="w-5 h-5" />
             </button>
           </div>
-          
-          <!-- Body -->
+
           <div class="p-6 overflow-y-auto grow">
             <slot></slot>
           </div>
-          
-          <!-- Footer -->
+
           <div v-if="$slots.footer" class="px-6 py-4 border-t border-border shrink-0 bg-bg-base/50 rounded-b-2xl flex items-center justify-end gap-3">
             <slot name="footer"></slot>
           </div>

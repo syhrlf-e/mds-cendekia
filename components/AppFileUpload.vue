@@ -5,7 +5,7 @@ import { UploadCloud, File as FileIcon, X } from 'lucide-vue-next'
 const props = defineProps<{
   label: string
   accept: string
-  maxSize: number // in MB
+  maxSize: number
   modelValue: File | null
 }>()
 
@@ -18,7 +18,7 @@ const handleFileChange = (event: Event) => {
   error.value = ''
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (!file) return
 
   const acceptedFormats = props.accept.split(',').map(ext => ext.trim().toLowerCase())
@@ -56,12 +56,12 @@ const formatSize = (bytes: number) => {
 <template>
   <div class="flex flex-col gap-1.5 w-full">
     <label class="text-sm font-medium text-text-primary">{{ label }}</label>
-    
+
     <div v-if="!modelValue" class="relative">
-      <input 
+      <input
         ref="fileInput"
-        type="file" 
-        :accept="accept" 
+        type="file"
+        :accept="accept"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         @change="handleFileChange"
       >
@@ -74,7 +74,7 @@ const formatSize = (bytes: number) => {
         <p class="text-xs text-text-secondary mt-1 text-center">Format: {{ accept }} (Maks. {{ maxSize }} MB)</p>
       </div>
     </div>
-    
+
     <div v-else class="flex items-center justify-between p-4 border border-border rounded-xl bg-bg-base">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="p-2 bg-white rounded-lg shrink-0 text-brand shadow-sm">
@@ -89,7 +89,7 @@ const formatSize = (bytes: number) => {
         <X class="w-5 h-5" />
       </button>
     </div>
-    
+
     <span v-if="error" class="text-sm text-error">{{ error }}</span>
   </div>
 </template>

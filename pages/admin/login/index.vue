@@ -53,7 +53,7 @@ const handleLogin = async () => {
   if (data && data.accessToken) {
     failedAttempts.value = 0
     const adminToken = useCookie('admin_token', {
-      maxAge: 60 * 60 * 24 // 24 hours
+      maxAge: 60 * 60 * 24
     })
     adminToken.value = data.accessToken
     router.push('/admin/pendaftaran')

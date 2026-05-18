@@ -35,7 +35,6 @@ const handleLogout = () => {
     <aside class="hidden lg:flex flex-col w-64 bg-primary-800 text-white shrink-0 border-r border-primary-900/50 shadow-xl sticky top-0 h-screen overflow-y-auto">
 
       <div class="h-20 flex items-center gap-3 px-6 shrink-0 border-b border-white/10">
-        <!-- TODO: Ganti src dengan path logo MDS yang asli (.jpg/.png) -->
         <img src="" alt="Logo MDS Cendekia" class="h-10 w-auto object-contain" />
       </div>
 

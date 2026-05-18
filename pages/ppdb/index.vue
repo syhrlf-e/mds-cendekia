@@ -76,11 +76,8 @@ const formatDateRange = (startDate: string, endDate: string) => {
   <div class="min-h-screen bg-bg-base font-sans">
 
     <section class="relative min-h-[60vh] overflow-hidden pt-20 pb-16 flex items-center">
-      <!-- Background Gradient -->
       <div class="absolute inset-0 bg-brand opacity-5"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--color-cta)_0%,_transparent_40%)] opacity-20"></div>
 
-      <!-- Hero Content -->
       <div class="relative z-10 w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
         <div class="max-w-2xl">
           <h1 class="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold text-text-primary mb-6 leading-tight">
@@ -93,7 +90,6 @@ const formatDateRange = (startDate: string, endDate: string) => {
             Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.
           </p>
 
-          <!-- CTA Buttons -->
           <div class="flex flex-col sm:flex-row gap-4 w-full">
             <AppButton
               variant="primary"
@@ -116,12 +112,10 @@ const formatDateRange = (startDate: string, endDate: string) => {
       </div>
     </section>
 
-    <!-- Info Cards Section -->
     <section class="py-16 bg-bg-surface border-y border-border">
       <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-          <!-- Jadwal Pendaftaran -->
           <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4 mb-6">
               <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
@@ -131,17 +125,16 @@ const formatDateRange = (startDate: string, endDate: string) => {
             </div>
             <ul class="space-y-4 text-sm md:text-base text-text-secondary">
               <li v-for="wave in landingInfo.waves" :key="wave.id" class="flex items-start gap-3">
-                <span class="w-2 h-2 rounded-full bg-cta mt-2 flex-shrink-0"></span>
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 shrink-0"></span>
                 <span>{{ wave.name }}: <br/><strong class="text-text-primary">{{ formatDateRange(wave.start_date, wave.end_date) }}</strong></span>
               </li>
               <li v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex items-start gap-3">
-                <span class="w-2 h-2 rounded-full bg-border mt-2 flex-shrink-0"></span>
+                <span class="w-2 h-2 rounded-full bg-border mt-2 shrink-0"></span>
                 <span>{{ jadwal.label }}: <br/><strong class="text-text-primary">{{ jadwal.value }}</strong></span>
               </li>
             </ul>
           </div>
 
-          <!-- Persyaratan -->
           <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4 mb-6">
               <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
@@ -151,13 +144,12 @@ const formatDateRange = (startDate: string, endDate: string) => {
             </div>
             <ul class="space-y-4 text-sm md:text-base text-text-secondary">
               <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-3">
-                <span class="w-2 h-2 rounded-full bg-cta mt-2 flex-shrink-0"></span>
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 shrink-0"></span>
                 <span>{{ item }}</span>
               </li>
             </ul>
           </div>
 
-          <!-- Biaya Pendaftaran -->
           <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4 mb-6">
               <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
@@ -185,7 +177,6 @@ const formatDateRange = (startDate: string, endDate: string) => {
       </div>
     </section>
 
-    <!-- Download Center Section -->
     <section class="py-16 bg-bg-base">
       <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-3xl">
         <div class="flex items-center gap-4 mb-8">
@@ -200,7 +191,6 @@ const formatDateRange = (startDate: string, endDate: string) => {
           </div>
         </div>
 
-        <!-- Document List -->
         <div v-if="documents && documents.length > 0" class="bg-bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
           <div class="divide-y divide-border">
             <div
@@ -219,7 +209,6 @@ const formatDateRange = (startDate: string, endDate: string) => {
           </div>
         </div>
 
-        <!-- Empty State -->
         <div v-else class="text-center py-12 bg-bg-surface rounded-2xl border-2 border-dashed border-border">
           <FileText class="w-12 h-12 text-border mx-auto mb-3" />
           <p class="text-text-secondary font-medium">Belum ada dokumen yang tersedia.</p>
