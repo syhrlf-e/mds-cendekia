@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 type Sanitizer = (value: string) => string
 
@@ -23,7 +23,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
-const textareaId = computed(() => props.id || `textarea-${Math.random().toString(36).substring(2, 9)}`)
+const fallbackId = useId()
+const textareaId = computed(() => props.id || `textarea-${fallbackId}`)
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement

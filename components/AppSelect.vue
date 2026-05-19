@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 
 const props = withDefaults(defineProps<{
   modelValue?: string | number
@@ -19,7 +19,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
-const selectId = computed(() => props.id || `select-${Math.random().toString(36).substring(2, 9)}`)
+const fallbackId = useId()
+const selectId = computed(() => props.id || `select-${fallbackId}`)
 const selectedValue = computed(() => props.modelValue === null || props.modelValue === undefined ? '' : String(props.modelValue))
 const selectedOption = computed(() => props.options.find(option => String(option.value) === selectedValue.value))
 const isOpen = ref(false)

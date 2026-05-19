@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { UploadCloud, File as FileIcon, X } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -13,6 +13,8 @@ const emit = defineEmits(['update:modelValue'])
 
 const error = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
+const fallbackId = useId()
+const fileInputId = computed(() => `file-upload-${fallbackId}`)
 
 const handleFileChange = (event: Event) => {
   error.value = ''
@@ -55,11 +57,12 @@ const formatSize = (bytes: number) => {
 
 <template>
   <div class="flex flex-col gap-1.5 w-full">
-    <label class="text-sm font-medium text-text-primary">{{ label }}</label>
+    <label :for="fileInputId" class="text-sm font-medium text-text-primary">{{ label }}</label>
 
     <div v-if="!modelValue" class="relative">
       <input
         ref="fileInput"
+        :id="fileInputId"
         type="file"
         :accept="accept"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"

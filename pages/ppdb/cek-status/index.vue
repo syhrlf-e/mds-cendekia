@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ArrowLeft } from 'lucide-vue-next'
+import { SearchX } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
 
-const nomorPendaftaran = ref('')
-const isChecking = ref(false)
+type CheckState = 'initial' | 'loading' | 'success' | 'not-found'
+type StatusResult = {
+  nomor: string
+  tanggal: string
+  nama: string
+  ttl: string
+  jenisKelamin: string
+  sekolah: string
+  email: string
+  noHp: string
+  status: 'pending' | 'approved' | 'rejected'
+  alasanPenolakan: string
+}
 
+const router = useRouter()
+const nomorPendaftaran = ref('')
+const state = ref<CheckState>('initial')
+const resultData = ref<StatusResult | null>(null)
 const isMobile = ref(false)
+
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
 }
@@ -21,30 +37,43 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
-const hasResult = ref(false)
-const resultData = ref<any>(null)
+const hasResult = computed(() => state.value === 'success' || state.value === 'not-found')
+const isChecking = computed(() => state.value === 'loading')
+const rightButtonLabel = computed(() => hasResult.value ? 'Cek Pendaftaran Lainnya' : 'Cek Sekarang')
 
 const handleCheck = async () => {
-  if (!nomorPendaftaran.value) return
+  if (hasResult.value) {
+    checkAnother()
+    return
+  }
 
-  isChecking.value = true
-  hasResult.value = false
+  if (!nomorPendaftaran.value.trim()) return
 
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  state.value = 'loading'
+  resultData.value = null
 
-  const lastDigit = parseInt(nomorPendaftaran.value.slice(-1) || '0')
-  let status: 'pending' | 'approved' | 'rejected' = 'pending'
+  await new Promise(resolve => setTimeout(resolve, 900))
+
+  const normalizedNumber = nomorPendaftaran.value.trim().toUpperCase()
+  const lastDigit = Number(normalizedNumber.match(/\d$/)?.[0] ?? 0)
+
+  if (normalizedNumber.includes('404') || lastDigit === 9) {
+    state.value = 'not-found'
+    return
+  }
+
+  let status: StatusResult['status'] = 'pending'
   let alasanPenolakan = ''
 
   if (lastDigit % 3 === 1) {
     status = 'approved'
   } else if (lastDigit % 3 === 2) {
     status = 'rejected'
-    alasanPenolakan = 'Berkas tidak lengkap dan nilai rata-rata raport di bawah standar.'
+    alasanPenolakan = 'Berkas tidak lengkap dan nilai rata-rata rapor di bawah standar.'
   }
 
   resultData.value = {
-    nomor: nomorPendaftaran.value,
+    nomor: normalizedNumber,
     tanggal: '17/05/2026',
     nama: 'Syahrul Efendi',
     ttl: 'Jakarta, 12 Januari 2011',
@@ -56,179 +85,187 @@ const handleCheck = async () => {
     alasanPenolakan
   }
 
-  isChecking.value = false
-  hasResult.value = true
+  state.value = 'success'
 }
-
-const closeResult = () => {
-  hasResult.value = false
-  resultData.value = null
-}
-
-const isConfirmDoneOpen = ref(false)
 
 const checkAnother = () => {
-  isConfirmDoneOpen.value = false
+  state.value = 'initial'
+  resultData.value = null
   nomorPendaftaran.value = ''
-  closeResult()
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col lg:flex-row bg-bg-base overflow-hidden">
-    <div class="hidden lg:flex lg:w-[60%] bg-brand p-12 flex-col justify-center items-center text-white relative overflow-hidden shrink-0">
-      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
-
-      <div class="z-10 text-center max-w-2xl">
-        <img src="" alt="Logo MDS Cendekia" class="w-24 h-24 object-contain mx-auto mb-8 cursor-pointer" @click="$router.push('/ppdb')" />
-        <h1 class="text-4xl lg:text-5xl font-heading font-bold mb-6 leading-tight">
+  <div class="min-h-screen bg-bg-base px-4 py-8 md:py-12">
+    <div class="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-[640px] flex-col justify-center">
+      <div class="mb-8 text-center">
+        <h1 class="mb-3 font-heading text-3xl font-semibold text-text-primary">
           Cek Status Pendaftaran
         </h1>
-        <p class="text-white/80 text-lg lg:text-xl">
-          Pantau perkembangan status penerimaan peserta didik baru secara *real-time*.
+        <p class="text-text-secondary">
+          Masukkan nomor pendaftaran untuk melihat hasil seleksi.
         </p>
       </div>
-    </div>
 
-    <div class="w-full lg:w-[40%] relative flex shrink-0">
-      <div class="w-full flex flex-col p-4 sm:p-8 lg:p-12 min-h-screen bg-bg-surface justify-center items-center relative z-10">
-        <div class="w-full max-w-md">
-          <div class="mb-8 lg:hidden flex items-center gap-3 cursor-pointer" @click="$router.push('/ppdb')">
-            <img src="" alt="Logo MDS" class="w-12 h-12 object-contain" />
-            <span class="text-xl font-heading font-bold text-text-primary">MDS Cendekia</span>
-          </div>
+      <form class="flex flex-col gap-5" @submit.prevent="handleCheck">
+        <AppInput
+          v-model="nomorPendaftaran"
+          label="Nomor Pendaftaran"
+          placeholder="Contoh: MDS-2025-0001"
+          required
+          :disabled="isChecking || hasResult"
+        />
 
-          <div class="mb-8">
-            <h1 class="text-3xl font-heading font-bold text-text-primary mb-3">Cek Status</h1>
-            <p class="text-text-secondary">Masukkan nomor pendaftaran untuk melihat hasil seleksi.</p>
-          </div>
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          <AppButton
+            variant="secondary"
+            type="button"
+            class="w-full sm:w-auto"
+            @click="router.push('/ppdb')"
+          >
+            Kembali
+          </AppButton>
 
-          <form @submit.prevent="handleCheck" class="flex flex-col gap-5">
-            <AppInput
-              v-model="nomorPendaftaran"
-              label="Nomor Pendaftaran"
-              placeholder="Contoh: MDS-2026-1234"
-              required
-            />
-
-            <AppButton
-              type="submit"
-              variant="primary"
-              :disabled="!nomorPendaftaran.trim() || isChecking"
-              :loading="isChecking"
-              class="w-full shadow-md"
-            >
-              Cek Sekarang
-            </AppButton>
-          </form>
+          <AppButton
+            type="submit"
+            variant="primary"
+            :disabled="(!nomorPendaftaran.trim() && !hasResult) || isChecking"
+            :loading="isChecking"
+            class="w-full sm:w-auto"
+          >
+            {{ rightButtonLabel }}
+          </AppButton>
         </div>
-      </div>
+      </form>
 
-      <div class="hidden lg:flex absolute inset-0 bg-bg-surface p-12 flex-col min-h-screen overflow-y-auto transform transition-transform duration-500 z-20 border-l border-border"
-           :class="hasResult && !isMobile ? 'translate-x-0' : 'translate-x-full'">
-        <div class="w-full max-w-md mx-auto" v-if="resultData">
-          <div class="flex items-center gap-4 mb-8">
-            <AppBadge :status="resultData.status" />
+      <div
+        class="hidden lg:grid transition-all duration-300 ease-out"
+        :class="state !== 'initial' ? 'mt-8 opacity-100 grid-rows-[1fr]' : 'mt-0 opacity-0 grid-rows-[0fr]'"
+      >
+        <div class="overflow-hidden">
+          <div v-if="isChecking" class="flex justify-center rounded-2xl border border-border bg-bg-surface p-8">
+            <AppLoadingDotWave />
           </div>
 
-          <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-bg-base">
-            <p class="text-sm font-semibold text-error mb-1">Alasan Penolakan:</p>
-            <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
+          <div v-else-if="state === 'success' && resultData" class="rounded-2xl border border-border bg-bg-surface p-6">
+            <div class="mb-4 flex items-center justify-between">
+              <AppBadge :status="resultData.status" />
+            </div>
+
+            <p class="mb-6 text-[17px] text-text-secondary">
+              Status pendaftaran kamu: {{ resultData.status === 'pending' ? 'Menunggu Persetujuan' : resultData.status === 'approved' ? 'Pendaftaran Diterima' : 'Pendaftaran Ditolak' }}
+            </p>
+
+            <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
+              <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
+              <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
+            </div>
+
+            <div class="space-y-6">
+              <section>
+                <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Informasi Pendaftaran</h2>
+                <div class="grid grid-cols-3 gap-y-2 text-sm">
+                  <span class="text-text-secondary">Nomor Pendaftaran</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
+                  <span class="text-text-secondary">Tanggal Daftar</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
+                </div>
+              </section>
+
+              <section>
+                <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Identitas Calon Siswa</h2>
+                <div class="grid grid-cols-3 gap-y-2 text-sm">
+                  <span class="text-text-secondary">Nama Lengkap</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</span>
+                  <span class="text-text-secondary">Tempat, Tgl Lahir</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</span>
+                  <span class="text-text-secondary">Jenis Kelamin</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
+                  <span class="text-text-secondary">Asal Sekolah</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</span>
+                  <span class="text-text-secondary">Email</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.email }}</span>
+                  <span class="text-text-secondary">No. HP</span>
+                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</span>
+                </div>
+              </section>
+            </div>
           </div>
 
-          <div class="space-y-6">
-            <div>
-              <h3 class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 border-b border-border pb-2">Informasi Pendaftaran</h3>
-              <div class="grid grid-cols-3 gap-y-2 text-sm">
-                <div class="text-text-secondary">Nomor</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</div>
-                <div class="text-text-secondary">Tanggal</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</div>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 border-b border-border pb-2">Identitas Calon Siswa</h3>
-              <div class="grid grid-cols-3 gap-y-2 text-sm">
-                <div class="text-text-secondary">Nama Lengkap</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</div>
-                <div class="text-text-secondary">TTL</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</div>
-                <div class="text-text-secondary">Jenis Kelamin</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</div>
-                <div class="text-text-secondary">Asal Sekolah</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</div>
-                <div class="text-text-secondary">Email</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.email }}</div>
-                <div class="text-text-secondary">No. HP</div>
-                <div class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</div>
-              </div>
-            </div>
-
-            <div class="pt-6">
-              <AppButton variant="primary" class="w-full" @click="isConfirmDoneOpen = true">
-                Selesai
-              </AppButton>
-            </div>
-          </div>
+          <AppEmptyState
+            v-else-if="state === 'not-found'"
+            title="Nomor pendaftaran tidak ditemukan"
+            description="Periksa kembali nomor pendaftaran kamu dan pastikan tidak ada kesalahan penulisan."
+            class="rounded-2xl border border-border bg-bg-surface"
+          >
+            <template #icon>
+              <SearchX class="h-10 w-10 text-gray-300" />
+            </template>
+          </AppEmptyState>
         </div>
       </div>
     </div>
   </div>
 
-  <AppModal v-model="isConfirmDoneOpen" title="Konfirmasi">
-    <p class="text-text-primary text-base">Apakah kamu masih ingin mengecek status pendaftaran lainnya?</p>
-
-    <template #footer>
-      <AppButton variant="secondary" @click="$router.push('/ppdb')">
-        Tidak, Kembali ke Awal
-      </AppButton>
-      <AppButton variant="primary" @click="checkAnother">
-        Ya, Cek Lainnya
-      </AppButton>
-    </template>
-  </AppModal>
-
-  <AppBottomSheet v-model="hasResult" v-if="isMobile">
-    <div class="flex flex-col pt-2" v-if="resultData">
-      <div class="flex justify-center mb-6">
+  <AppBottomSheet v-if="isMobile && hasResult" :modelValue="hasResult" @update:modelValue="checkAnother">
+    <div v-if="state === 'success' && resultData" class="flex flex-col pt-2">
+      <div class="mb-6 flex justify-center">
         <AppBadge :status="resultData.status" />
       </div>
 
-      <div v-if="resultData.status === 'rejected'" class="mb-6 p-4 rounded-xl border border-error bg-bg-base">
-        <p class="text-sm font-semibold text-error mb-1">Alasan Penolakan:</p>
+      <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
+        <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
         <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
       </div>
 
       <div class="space-y-6 px-1">
-        <div>
-          <h3 class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 border-b border-border pb-2">Informasi Pendaftaran</h3>
+        <section>
+          <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Informasi Pendaftaran</h2>
           <div class="grid grid-cols-3 gap-y-3 text-sm">
-            <div class="text-text-secondary">Nomor</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</div>
-            <div class="text-text-secondary">Tanggal</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</div>
+            <span class="text-text-secondary">Nomor</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
+            <span class="text-text-secondary">Tanggal</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
           </div>
-        </div>
+        </section>
 
-        <div>
-          <h3 class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 border-b border-border pb-2">Identitas Calon Siswa</h3>
+        <section>
+          <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Identitas Calon Siswa</h2>
           <div class="grid grid-cols-3 gap-y-3 text-sm">
-            <div class="text-text-secondary">Nama Lengkap</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</div>
-            <div class="text-text-secondary">TTL</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</div>
-            <div class="text-text-secondary">J. Kelamin</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</div>
-            <div class="text-text-secondary">Asal Sekolah</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</div>
-            <div class="text-text-secondary">Email</div>
-            <div class="col-span-2 font-medium text-text-primary truncate">{{ resultData.email }}</div>
-            <div class="text-text-secondary">No. HP</div>
-            <div class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</div>
+            <span class="text-text-secondary">Nama</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</span>
+            <span class="text-text-secondary">TTL</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</span>
+            <span class="text-text-secondary">J. Kelamin</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
+            <span class="text-text-secondary">Asal Sekolah</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</span>
+            <span class="text-text-secondary">Email</span>
+            <span class="col-span-2 truncate font-medium text-text-primary">{{ resultData.email }}</span>
+            <span class="text-text-secondary">No. HP</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</span>
           </div>
-        </div>
+        </section>
+
+        <AppButton class="w-full" @click="checkAnother">
+          Cek Pendaftaran Lainnya
+        </AppButton>
       </div>
     </div>
+
+    <AppEmptyState
+      v-else
+      title="Nomor pendaftaran tidak ditemukan"
+      description="Periksa kembali nomor pendaftaran kamu dan pastikan tidak ada kesalahan penulisan."
+    >
+      <template #icon>
+        <SearchX class="h-10 w-10 text-gray-300" />
+      </template>
+      <template #action>
+        <AppButton class="w-full" @click="checkAnother">
+          Cek Pendaftaran Lainnya
+        </AppButton>
+      </template>
+    </AppEmptyState>
   </AppBottomSheet>
 </template>

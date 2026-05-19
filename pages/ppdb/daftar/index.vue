@@ -3,26 +3,16 @@ import { reactive, ref, computed, watch, onMounted } from 'vue'
 
 useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
-const form = reactive({
-  nama: '',
-  nik: '',
-  email: '',
-  no_telepon: '',
-  tanggal_lahir: '',
-  tempat_lahir: '',
-  jenis_kelamin: '',
-  agama: '',
-  alamat: '',
-  rt: '',
-  rw: '',
-  provinsi: '',
-  kabupaten_kota: '',
-  kecamatan: '',
-  kelurahan: '',
-  kode_pos: '',
-  id_gelombang: '',
-  id_program: ''
-})
+const {
+  biodata,
+  sekolah,
+  orangTua,
+  isWaliBerbeda,
+  isRestoringDraft,
+  ensureOrangTuaShape
+} = usePpdbRegistrationForm()
+
+const form = biodata.value
 
 const errors = reactive<Record<string, string>>({})
 
@@ -36,47 +26,10 @@ const agamaOptions = [
   { label: 'Konghucu', value: 'Konghucu' }
 ]
 
-const golDarahOptions = [
-  { label: 'A', value: 'A' },
-  { label: 'B', value: 'B' },
-  { label: 'AB', value: 'AB' },
-  { label: 'O', value: 'O' },
-  { label: 'Tidak Tahu', value: 'Tidak Tahu' }
-]
-
-// Form State Accordion 2
-const formSekolah = reactive({
-  nama_sekolah_asal: '',
-  alamat_sekolah_asal: '',
-  npsn_sekolah_asal: '',
-  tahun_lulus: '',
-  no_ijazah: ''
-})
-
-// Form State Accordion 3
-const formOrtu = reactive({
-  namaAyah: '',
-  nikAyah: '',
-  tempatLahirAyah: '',
-  tanggalLahirAyah: '',
-  pendidikanAyah: '',
-  pekerjaanAyah: '',
-  penghasilanAyah: '',
-  noHpAyah: '',
-  namaIbu: '',
-  nikIbu: '',
-  tempatLahirIbu: '',
-  tanggalLahirIbu: '',
-  pendidikanIbu: '',
-  pekerjaanIbu: '',
-  penghasilanIbu: '',
-  noHpIbu: '',
-  isWaliBerbeda: false,
-  namaWali: '',
-  hubunganWali: '',
-  noHpWali: '',
-  alamatWali: ''
-})
+const formSekolah = sekolah.value
+const ayah = orangTua.value[0]!
+const ibu = orangTua.value[1]!
+const wali = orangTua.value[2]!
 
 const pendidikanOptions = [
   { label: 'Tidak Sekolah', value: 'Tidak Sekolah' },
@@ -89,7 +42,7 @@ const pendidikanOptions = [
   { label: 'S3', value: 'S3' }
 ]
 
-const penghasilanOptions = [
+const gajiOptions = [
   { label: 'Kurang dari Rp 1.000.000', value: '<1M' },
   { label: 'Rp 1.000.000 - Rp 2.000.000', value: '1M-2M' },
   { label: 'Rp 2.000.000 - Rp 5.000.000', value: '2M-5M' },
@@ -97,17 +50,26 @@ const penghasilanOptions = [
   { label: 'Lebih dari Rp 10.000.000', value: '>10M' }
 ]
 
+const waliHubunganOptions = [
+  { label: 'Wali', value: 'Wali' },
+  { label: 'Paman', value: 'Paman' },
+  { label: 'Bibi', value: 'Bibi' },
+  { label: 'Kakek', value: 'Kakek' },
+  { label: 'Nenek', value: 'Nenek' },
+  { label: 'Kakak', value: 'Kakak' },
+  { label: 'Saudara', value: 'Saudara' },
+  { label: 'Orang Tua Asuh', value: 'Orang Tua Asuh' },
+  { label: 'Lainnya', value: 'Lainnya' }
+]
+
+const maxBirthYear = new Date().getFullYear() - 1
+
 type StringRecord = Record<string, string>
 
 const sanitizeDigits = (value: unknown, maxLength?: number) => {
   const sanitized = String(value ?? '').replace(/\D/g, '')
   return typeof maxLength === 'number' ? sanitized.slice(0, maxLength) : sanitized
 }
-
-const sanitizePhone = (value: unknown) => String(value ?? '')
-  .replace(/[^\d+]/g, '')
-  .replace(/(?!^)\+/g, '')
-  .slice(0, 15)
 
 const sanitizeIndonesianMobile = (value: unknown) => {
   const digits = sanitizeDigits(value, 13)
@@ -148,6 +110,18 @@ const setSanitized = (target: StringRecord, key: string, sanitized: string) => {
   }
 }
 
+const revalidateErroredField = (field: string) => {
+  if (errors[field]) {
+    validateField(field)
+  }
+}
+
+const revalidateErroredOrangTuaField = (index: number, field: string) => {
+  if (errors[`orangTua.${index}.${field}`]) {
+    validateOrangTuaField(index, field)
+  }
+}
+
 // Sanitization Watchers (Global Form Input Sanitization)
 watch(form, (val) => {
   const fields = val as StringRecord
@@ -160,6 +134,8 @@ watch(form, (val) => {
   setSanitized(fields, 'kode_pos', sanitizeDigits(val.kode_pos, 5))
   setSanitized(fields, 'no_telepon', sanitizeIndonesianMobile(val.no_telepon))
   setSanitized(fields, 'email', sanitizeEmail(val.email))
+
+  Object.keys(val).forEach((field) => revalidateErroredField(field))
 }, { deep: true })
 
 watch(formSekolah, (val) => {
@@ -169,78 +145,120 @@ watch(formSekolah, (val) => {
   setSanitized(fields, 'alamat_sekolah_asal', sanitizeSafeText(val.alamat_sekolah_asal, 220))
   setSanitized(fields, 'tahun_lulus', sanitizeDigits(val.tahun_lulus, 4))
   setSanitized(fields, 'no_ijazah', sanitizeSafeText(val.no_ijazah, 80))
+
+  Object.keys(val).forEach((field) => revalidateErroredField(field))
 }, { deep: true })
 
-watch(formOrtu, (val) => {
-  const fields = val as unknown as StringRecord
-  setSanitized(fields, 'namaAyah', sanitizeName(val.namaAyah))
-  setSanitized(fields, 'namaIbu', sanitizeName(val.namaIbu))
-  setSanitized(fields, 'namaWali', sanitizeName(val.namaWali))
-  setSanitized(fields, 'tempatLahirAyah', sanitizeName(val.tempatLahirAyah))
-  setSanitized(fields, 'tempatLahirIbu', sanitizeName(val.tempatLahirIbu))
-  setSanitized(fields, 'nikAyah', sanitizeDigits(val.nikAyah, 16))
-  setSanitized(fields, 'nikIbu', sanitizeDigits(val.nikIbu, 16))
-  setSanitized(fields, 'pekerjaanAyah', sanitizeSafeText(val.pekerjaanAyah, 80))
-  setSanitized(fields, 'pekerjaanIbu', sanitizeSafeText(val.pekerjaanIbu, 80))
-  setSanitized(fields, 'hubunganWali', sanitizeSafeText(val.hubunganWali, 60))
-  setSanitized(fields, 'alamatWali', sanitizeSafeText(val.alamatWali, 220))
-  setSanitized(fields, 'noHpAyah', sanitizePhone(val.noHpAyah))
-  setSanitized(fields, 'noHpIbu', sanitizePhone(val.noHpIbu))
-  setSanitized(fields, 'noHpWali', sanitizePhone(val.noHpWali))
+watch(orangTua, (items) => {
+  ensureOrangTuaShape()
+  items.forEach((item, index) => {
+    const fields = item as unknown as StringRecord
+    setSanitized(fields, 'nama', sanitizeName(item.nama))
+    setSanitized(fields, 'nik', sanitizeDigits(item.nik, 16))
+    setSanitized(fields, 'pekerjaan', sanitizeSafeText(item.pekerjaan, 80))
+    setSanitized(fields, 'no_telepon', sanitizeIndonesianMobile(item.no_telepon))
+    setSanitized(fields, 'email', sanitizeEmail(item.email))
+    setSanitized(fields, 'hubungan_lainnya', sanitizeSafeText(item.hubungan_lainnya, 60))
+
+    Object.keys(item).forEach((field) => revalidateErroredOrangTuaField(index, field))
+  })
 }, { deep: true })
 
-// Region State & Logic (Emsifa API)
-type RegionOption = { label: string; value: string }
-const provinsiOptions = ref<RegionOption[]>([])
-const kotaOptions = ref<RegionOption[]>([])
-const kecamatanOptions = ref<RegionOption[]>([])
-const kelurahanOptions = ref<RegionOption[]>([])
+watch(isWaliBerbeda, () => {
+  ensureOrangTuaShape()
+})
 
-const fetchRegion = async (url: string) => {
-  try {
-    const res = await fetch(url)
-    const data = await res.json()
-    return data.map((d: { id: string; name: string }) => ({ label: d.name, value: d.id }))
-  } catch {
-    return []
-  }
+const {
+  provinsiOptions,
+  kotaOptions,
+  kecamatanOptions,
+  kelurahanOptions,
+  loadProvinsi,
+  loadKota,
+  loadKecamatan,
+  loadKelurahan,
+  findLabel
+} = useWilayahIndonesia()
+
+const { isLookingUpKodePos, lookupKodePos } = useKodePos()
+
+const loadSelectedRegions = async () => {
+  await loadProvinsi()
+  if (form.provinsi) await loadKota(form.provinsi)
+  if (form.kabupaten_kota) await loadKecamatan(form.kabupaten_kota)
+  if (form.kecamatan) await loadKelurahan(form.kecamatan)
 }
 
 onMounted(async () => {
-  provinsiOptions.value = await fetchRegion('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+  await loadSelectedRegions()
+})
+
+watch(isRestoringDraft, async (isRestoring) => {
+  if (!isRestoring) {
+    await loadSelectedRegions()
+  }
 })
 
 watch(() => form.provinsi, async (newVal) => {
+  if (isRestoringDraft.value) return
+
   form.kabupaten_kota = ''
   form.kecamatan = ''
   form.kelurahan = ''
+  form.kode_pos = ''
   kotaOptions.value = []
   kecamatanOptions.value = []
   kelurahanOptions.value = []
   if (newVal) {
-    kotaOptions.value = await fetchRegion(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${newVal}.json`)
+    await loadKota(newVal)
   }
   validateField('provinsi')
 })
 
 watch(() => form.kabupaten_kota, async (newVal) => {
+  if (isRestoringDraft.value) return
+
   form.kecamatan = ''
   form.kelurahan = ''
+  form.kode_pos = ''
   kecamatanOptions.value = []
   kelurahanOptions.value = []
   if (newVal) {
-    kecamatanOptions.value = await fetchRegion(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${newVal}.json`)
+    await loadKecamatan(newVal)
   }
   validateField('kabupaten_kota')
 })
 
 watch(() => form.kecamatan, async (newVal) => {
+  if (isRestoringDraft.value) return
+
   form.kelurahan = ''
+  form.kode_pos = ''
   kelurahanOptions.value = []
   if (newVal) {
-    kelurahanOptions.value = await fetchRegion(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${newVal}.json`)
+    await loadKelurahan(newVal)
   }
   validateField('kecamatan')
+})
+
+watch(() => form.kelurahan, async (newVal) => {
+  if (isRestoringDraft.value) return
+
+  form.kode_pos = ''
+  validateField('kelurahan')
+
+  if (!newVal) return
+
+  const kodePos = await lookupKodePos({
+    kelurahan: findLabel(kelurahanOptions.value, form.kelurahan),
+    kecamatan: findLabel(kecamatanOptions.value, form.kecamatan),
+    kabupatenKota: findLabel(kotaOptions.value, form.kabupaten_kota)
+  })
+
+  if (kodePos) {
+    form.kode_pos = kodePos
+    validateField('kode_pos')
+  }
 })
 
 // Validation Logic
@@ -270,6 +288,7 @@ const validateField = (field: string) => {
         } else {
           const selectedDate = new Date(val)
           if (selectedDate > new Date()) errors[field] = 'Tanggal lahir tidak boleh di masa depan'
+          else if (selectedDate.getFullYear() > maxBirthYear) errors[field] = 'Tahun lahir tidak boleh tahun ini'
         }
         break
 
@@ -342,42 +361,48 @@ const validateField = (field: string) => {
     }
   }
 
-  // Accordion 3
-  if (field in formOrtu && field !== 'isWaliBerbeda') {
-    const val = String(formOrtu[field as keyof typeof formOrtu]).trim()
-    const isWaliField = ['namaWali', 'hubunganWali', 'noHpWali', 'alamatWali'].includes(field)
+}
 
-    if (isWaliField && !formOrtu.isWaliBerbeda) {
-      errors[field] = ''
-    } else if (!val) {
-      errors[field] = 'Field ini wajib diisi'
-    } else {
-      switch (field) {
-        case 'namaAyah':
-        case 'namaIbu':
-          if (val.length < 3) errors[field] = 'Minimal 3 karakter'
-          else if (!/^[a-zA-Z\s]*$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan spasi'
-          break
-        case 'tempatLahirAyah':
-        case 'tempatLahirIbu':
-        case 'pekerjaanAyah':
-        case 'pekerjaanIbu':
-          if (val.length < 3) errors[field] = 'Minimal 3 karakter'
-          break
-        case 'nikAyah':
-        case 'nikIbu':
-          if (!/^\d{16}$/.test(val)) errors[field] = 'NIK harus 16 digit angka'
-          break
-        case 'noHpAyah':
-        case 'noHpIbu':
-        case 'noHpWali':
-          if (!/^(08|\+628)\d{8,11}$/.test(val)) errors[field] = 'Format nomor HP tidak valid'
-          break
-        case 'alamatWali':
-          if (val.length < 10) errors[field] = 'Minimal 10 karakter'
-          break
-      }
-    }
+const validateOrangTuaField = (index: number, field: string) => {
+  const item = orangTua.value[index]
+  if (!item) return
+
+  const errorKey = `orangTua.${index}.${field}`
+  errors[errorKey] = ''
+
+  if (index === 2 && !isWaliBerbeda.value) return
+
+  const value = item[field as keyof typeof item]
+  const val = String(value ?? '').trim()
+  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran']
+  const isRequired = index === 2
+    ? requiredFields.includes(field) || (field === 'hubungan_lainnya' && item.hubungan === 'Lainnya')
+    : requiredFields.includes(field)
+
+  if (isRequired && !val) {
+    errors[errorKey] = 'Field ini wajib diisi'
+    return
+  }
+
+  if (!val) return
+
+  switch (field) {
+    case 'nama':
+      if (val.length < 3) errors[errorKey] = 'Minimal 3 karakter'
+      else if (!/^[a-zA-Z\s]*$/.test(val)) errors[errorKey] = 'Hanya boleh berisi huruf dan spasi'
+      break
+    case 'pekerjaan':
+      if (val.length < 3) errors[errorKey] = 'Minimal 3 karakter'
+      break
+    case 'nik':
+      if (!/^\d{16}$/.test(val)) errors[errorKey] = 'NIK harus 16 digit angka'
+      break
+    case 'no_telepon':
+      if (!/^(08|\+628)\d{8,11}$/.test(val)) errors[errorKey] = 'Format nomor HP tidak valid'
+      break
+    case 'email':
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[errorKey] = 'Format email tidak valid'
+      break
   }
 }
 
@@ -419,17 +444,21 @@ const isAcc2Valid = computed(() => {
 })
 
 const isAcc3Valid = computed(() => {
-  const reqFields: (keyof typeof formOrtu)[] = [
-    'namaAyah', 'nikAyah', 'tempatLahirAyah', 'tanggalLahirAyah', 'pendidikanAyah', 'pekerjaanAyah', 'penghasilanAyah', 'noHpAyah',
-    'namaIbu', 'nikIbu', 'tempatLahirIbu', 'tanggalLahirIbu', 'pendidikanIbu', 'pekerjaanIbu', 'penghasilanIbu', 'noHpIbu'
-  ]
-  const waliFields: (keyof typeof formOrtu)[] = ['namaWali', 'hubunganWali', 'noHpWali', 'alamatWali']
+  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran'] as const
 
-  const baseValid = reqFields.every(f => formOrtu[f] !== '' && !errors[f])
-  if (!formOrtu.isWaliBerbeda) return baseValid
+  const parentValid = [0, 1].every((index) => requiredFields.every((field) => {
+    const item = orangTua.value[index]
+    return item?.[field] !== '' && !errors[`orangTua.${index}.${field}`]
+  }))
 
-  const waliValid = waliFields.every(f => formOrtu[f] !== '' && !errors[f])
-  return baseValid && waliValid
+  if (!isWaliBerbeda.value) return parentValid
+
+  const waliValid = requiredFields.every((field) => {
+    const item = orangTua.value[2]
+    return item?.[field] !== '' && !errors[`orangTua.2.${field}`]
+  })
+
+  return parentValid && waliValid
 })
 
 // Unlock management (Once unlocked, never locked again based on PRD: "Setelah unlock, accordion tidak bisa dikunci kembali meskipun user edit ulang")
@@ -438,7 +467,7 @@ watch(isAcc1Valid, (valid) => {
   if (valid && !acc2UnlockedEver.value) {
     acc2UnlockedEver.value = true
   }
-})
+}, { immediate: true })
 const acc2FinalLock = computed(() => !acc2UnlockedEver.value)
 
 const acc3UnlockedEver = ref(false)
@@ -446,16 +475,14 @@ watch(isAcc2Valid, (valid) => {
   if (valid && !acc3UnlockedEver.value) {
     acc3UnlockedEver.value = true
   }
-})
+}, { immediate: true })
 const acc3FinalLock = computed(() => !acc3UnlockedEver.value)
 
 // Phase 21 Logic
 const isAllValid = computed(() => isAcc1Valid.value && isAcc2Valid.value && isAcc3Valid.value)
-const isConfirmModalOpen = ref(false)
 const router = useRouter()
 
 const proceedNext = () => {
-  isConfirmModalOpen.value = false
   router.push('/ppdb/daftar/berkas')
 }
 </script>
@@ -473,6 +500,8 @@ const proceedNext = () => {
         title="Data Diri Siswa"
         :isOpen="isAcc1Open"
         :isCompleted="isAcc1Valid"
+        :status="isAcc1Valid ? 'complete' : 'incomplete'"
+        showStatusText
         @toggle="toggleAccordion(1)"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -481,7 +510,7 @@ const proceedNext = () => {
           <AppInput v-model="form.email" type="email" label="Email" required :error="errors.email" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateField('email')" />
           <AppInput v-model="form.no_telepon" label="No. Telepon" required :error="errors.no_telepon" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateField('no_telepon')" placeholder="08xxxxxxxxxx" />
           <AppInput v-model="form.tempat_lahir" label="Tempat Lahir" required :error="errors.tempat_lahir" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('tempat_lahir')" />
-          <AppInput v-model="form.tanggal_lahir" type="date" label="Tanggal Lahir" required :error="errors.tanggal_lahir" @blur="validateField('tanggal_lahir')" />
+          <AppDateInput v-model="form.tanggal_lahir" label="Tanggal Lahir" required :max-year="maxBirthYear" :error="errors.tanggal_lahir" @blur="validateField('tanggal_lahir')" />
 
           <div class="flex flex-col gap-1.5 w-full md:col-span-2">
             <label class="text-sm font-medium text-text-primary">Jenis Kelamin</label>
@@ -533,7 +562,20 @@ const proceedNext = () => {
           <AppSelect v-model="form.kecamatan" label="Kecamatan" required :options="kecamatanOptions" :disabled="!form.kabupaten_kota" :error="errors.kecamatan" @blur="validateField('kecamatan')" placeholder="Pilih Kecamatan" />
           <AppSelect v-model="form.kelurahan" label="Kelurahan" required :options="kelurahanOptions" :disabled="!form.kecamatan" :error="errors.kelurahan" @blur="validateField('kelurahan')" placeholder="Pilih Kelurahan" />
 
-          <AppInput v-model="form.kode_pos" label="Kode Pos" required :error="errors.kode_pos" :sanitizer="(value) => sanitizeDigits(value, 5)" inputmode="numeric" :maxlength="5" @blur="validateField('kode_pos')" />
+          <div class="flex flex-col gap-1.5">
+            <AppInput
+              v-model="form.kode_pos"
+              label="Kode Pos"
+              required
+              :disabled="isLookingUpKodePos"
+              :error="errors.kode_pos"
+              :sanitizer="(value) => sanitizeDigits(value, 5)"
+              inputmode="numeric"
+              :maxlength="5"
+              @blur="validateField('kode_pos')"
+            />
+            <span v-if="isLookingUpKodePos" class="text-xs text-text-secondary">Mencari kode pos...</span>
+          </div>
         </div>
       </AppAccordion>
 
@@ -543,6 +585,8 @@ const proceedNext = () => {
         :isOpen="isAcc2Open"
         :isLocked="acc2FinalLock"
         :isCompleted="isAcc2Valid"
+        :status="acc2FinalLock ? 'locked' : isAcc2Valid ? 'complete' : 'incomplete'"
+        showStatusText
         @toggle="toggleAccordion(2)"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -563,6 +607,8 @@ const proceedNext = () => {
         :isOpen="isAcc3Open"
         :isLocked="acc3FinalLock"
         :isCompleted="isAcc3Valid"
+        :status="acc3FinalLock ? 'locked' : isAcc3Valid ? 'complete' : 'incomplete'"
+        showStatusText
         @toggle="toggleAccordion(3)"
       >
         <div class="flex flex-col gap-8">
@@ -570,14 +616,14 @@ const proceedNext = () => {
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ayah</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <AppInput v-model="formOrtu.namaAyah" label="Nama Lengkap Ayah" required :error="errors.namaAyah" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('namaAyah')" />
-              <AppInput v-model="formOrtu.nikAyah" label="NIK Ayah" required :error="errors.nikAyah" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateField('nikAyah')" placeholder="16 digit angka" />
-              <AppInput v-model="formOrtu.tempatLahirAyah" label="Tempat Lahir" required :error="errors.tempatLahirAyah" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('tempatLahirAyah')" />
-              <AppInput v-model="formOrtu.tanggalLahirAyah" type="date" label="Tanggal Lahir" required :error="errors.tanggalLahirAyah" @blur="validateField('tanggalLahirAyah')" />
-              <AppSelect v-model="formOrtu.pendidikanAyah" label="Pendidikan Terakhir" required :options="pendidikanOptions" :error="errors.pendidikanAyah" @blur="validateField('pendidikanAyah')" />
-              <AppInput v-model="formOrtu.pekerjaanAyah" label="Pekerjaan" required :error="errors.pekerjaanAyah" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateField('pekerjaanAyah')" />
-              <AppSelect v-model="formOrtu.penghasilanAyah" label="Penghasilan Per Bulan" required :options="penghasilanOptions" :error="errors.penghasilanAyah" @blur="validateField('penghasilanAyah')" />
-              <AppInput v-model="formOrtu.noHpAyah" label="No. HP Ayah" required :error="errors.noHpAyah" :sanitizer="sanitizePhone" inputmode="tel" :maxlength="15" @blur="validateField('noHpAyah')" placeholder="08xx / +628xx" />
+              <AppInput v-model="ayah.nama" label="Nama Lengkap Ayah" required :error="errors['orangTua.0.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(0, 'nama')" />
+              <AppInput v-model="ayah.nik" label="NIK Ayah" required :error="errors['orangTua.0.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(0, 'nik')" placeholder="16 digit angka" />
+              <AppSelect v-model="ayah.agama" label="Agama Ayah" required :options="agamaOptions" :error="errors['orangTua.0.agama']" @blur="validateOrangTuaField(0, 'agama')" />
+              <AppSelect v-model="ayah.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.0.pendidikan']" @blur="validateOrangTuaField(0, 'pendidikan')" />
+              <AppInput v-model="ayah.pekerjaan" label="Pekerjaan" :error="errors['orangTua.0.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(0, 'pekerjaan')" />
+              <AppSelect v-model="ayah.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.0.gaji']" @blur="validateOrangTuaField(0, 'gaji')" />
+              <AppInput v-model="ayah.no_telepon" label="No. HP Ayah" :error="errors['orangTua.0.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(0, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="ayah.email" type="email" label="Email Ayah" :error="errors['orangTua.0.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(0, 'email')" />
             </div>
           </div>
 
@@ -585,35 +631,39 @@ const proceedNext = () => {
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ibu</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <AppInput v-model="formOrtu.namaIbu" label="Nama Lengkap Ibu" required :error="errors.namaIbu" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('namaIbu')" />
-              <AppInput v-model="formOrtu.nikIbu" label="NIK Ibu" required :error="errors.nikIbu" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateField('nikIbu')" placeholder="16 digit angka" />
-              <AppInput v-model="formOrtu.tempatLahirIbu" label="Tempat Lahir" required :error="errors.tempatLahirIbu" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('tempatLahirIbu')" />
-              <AppInput v-model="formOrtu.tanggalLahirIbu" type="date" label="Tanggal Lahir" required :error="errors.tanggalLahirIbu" @blur="validateField('tanggalLahirIbu')" />
-              <AppSelect v-model="formOrtu.pendidikanIbu" label="Pendidikan Terakhir" required :options="pendidikanOptions" :error="errors.pendidikanIbu" @blur="validateField('pendidikanIbu')" />
-              <AppInput v-model="formOrtu.pekerjaanIbu" label="Pekerjaan" required :error="errors.pekerjaanIbu" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateField('pekerjaanIbu')" />
-              <AppSelect v-model="formOrtu.penghasilanIbu" label="Penghasilan Per Bulan" required :options="penghasilanOptions" :error="errors.penghasilanIbu" @blur="validateField('penghasilanIbu')" />
-              <AppInput v-model="formOrtu.noHpIbu" label="No. HP Ibu" required :error="errors.noHpIbu" :sanitizer="sanitizePhone" inputmode="tel" :maxlength="15" @blur="validateField('noHpIbu')" placeholder="08xx / +628xx" />
+              <AppInput v-model="ibu.nama" label="Nama Lengkap Ibu" required :error="errors['orangTua.1.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(1, 'nama')" />
+              <AppInput v-model="ibu.nik" label="NIK Ibu" required :error="errors['orangTua.1.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(1, 'nik')" placeholder="16 digit angka" />
+              <AppSelect v-model="ibu.agama" label="Agama Ibu" required :options="agamaOptions" :error="errors['orangTua.1.agama']" @blur="validateOrangTuaField(1, 'agama')" />
+              <AppSelect v-model="ibu.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.1.pendidikan']" @blur="validateOrangTuaField(1, 'pendidikan')" />
+              <AppInput v-model="ibu.pekerjaan" label="Pekerjaan" :error="errors['orangTua.1.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(1, 'pekerjaan')" />
+              <AppSelect v-model="ibu.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.1.gaji']" @blur="validateOrangTuaField(1, 'gaji')" />
+              <AppInput v-model="ibu.no_telepon" label="No. HP Ibu" :error="errors['orangTua.1.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(1, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="ibu.email" type="email" label="Email Ibu" :error="errors['orangTua.1.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(1, 'email')" />
             </div>
           </div>
 
           <!-- Data Wali Checkbox -->
           <div class="flex items-center gap-3 p-4 bg-bg-surface border border-border rounded-xl">
-            <input type="checkbox" id="waliCheckbox" v-model="formOrtu.isWaliBerbeda" class="w-5 h-5 rounded border-border text-brand focus:ring-brand accent-brand">
+            <input type="checkbox" id="waliCheckbox" v-model="isWaliBerbeda" class="w-5 h-5 rounded border-border text-brand focus:ring-brand accent-brand">
             <label for="waliCheckbox" class="text-text-primary font-medium cursor-pointer select-none">
               Wali berbeda dengan orang tua
             </label>
           </div>
 
           <!-- Data Wali (Conditional) -->
-          <div v-if="formOrtu.isWaliBerbeda" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div v-if="isWaliBerbeda" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Wali</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <AppInput v-model="formOrtu.namaWali" label="Nama Lengkap Wali" required :error="errors.namaWali" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('namaWali')" />
-              <AppInput v-model="formOrtu.hubunganWali" label="Hubungan dengan Siswa" required :error="errors.hubunganWali" :sanitizer="(value) => sanitizeSafeText(value, 60)" :maxlength="60" @blur="validateField('hubunganWali')" />
-              <AppInput v-model="formOrtu.noHpWali" label="No. HP Wali" required :error="errors.noHpWali" :sanitizer="sanitizePhone" inputmode="tel" :maxlength="15" @blur="validateField('noHpWali')" class="md:col-span-2" />
-              <div class="md:col-span-2">
-                <AppTextarea v-model="formOrtu.alamatWali" label="Alamat Wali" required :error="errors.alamatWali" :sanitizer="(value) => sanitizeSafeText(value, 220)" :maxlength="220" @blur="validateField('alamatWali')" :rows="3" />
-              </div>
+              <AppInput v-model="wali.nama" label="Nama Lengkap Wali" required :error="errors['orangTua.2.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(2, 'nama')" />
+              <AppInput v-model="wali.nik" label="NIK Wali" required :error="errors['orangTua.2.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(2, 'nik')" placeholder="16 digit angka" />
+              <AppSelect v-model="wali.agama" label="Agama Wali" required :options="agamaOptions" :error="errors['orangTua.2.agama']" @blur="validateOrangTuaField(2, 'agama')" />
+              <AppSelect v-model="wali.hubungan" label="Hubungan dengan Siswa" required :error="errors['orangTua.2.hubungan']" :options="waliHubunganOptions" @blur="validateOrangTuaField(2, 'hubungan')" />
+              <AppInput v-if="wali.hubungan === 'Lainnya'" v-model="wali.hubungan_lainnya" label="Hubungan Wali Lainnya" required :error="errors['orangTua.2.hubungan_lainnya']" :sanitizer="(value) => sanitizeSafeText(value, 60)" :maxlength="60" @blur="validateOrangTuaField(2, 'hubungan_lainnya')" />
+              <AppSelect v-model="wali.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.2.pendidikan']" @blur="validateOrangTuaField(2, 'pendidikan')" />
+              <AppInput v-model="wali.pekerjaan" label="Pekerjaan" :error="errors['orangTua.2.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(2, 'pekerjaan')" />
+              <AppSelect v-model="wali.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.2.gaji']" @blur="validateOrangTuaField(2, 'gaji')" />
+              <AppInput v-model="wali.no_telepon" label="No. HP Wali" :error="errors['orangTua.2.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(2, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="wali.email" type="email" label="Email Wali" :error="errors['orangTua.2.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(2, 'email')" />
             </div>
           </div>
         </div>
@@ -624,7 +674,7 @@ const proceedNext = () => {
         <AppButton
           variant="primary"
           :disabled="!isAllValid"
-          @click="isConfirmModalOpen = true"
+          @click="proceedNext"
           class="w-full md:w-auto shadow-md"
         >
           Berikutnya
@@ -633,17 +683,4 @@ const proceedNext = () => {
     </div>
   </div>
 
-  <!-- Modal Konfirmasi -->
-  <AppModal v-model="isConfirmModalOpen" title="Konfirmasi">
-    <p class="text-text-primary text-base">Apakah kamu yakin data yang diisikan sudah sesuai?</p>
-
-    <template #footer>
-      <AppButton variant="secondary" @click="isConfirmModalOpen = false">
-        Belum
-      </AppButton>
-      <AppButton variant="primary" @click="proceedNext">
-        Ya, Lanjut
-      </AppButton>
-    </template>
-  </AppModal>
 </template>

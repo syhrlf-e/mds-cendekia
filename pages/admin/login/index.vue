@@ -32,10 +32,10 @@ const handleLogin = async () => {
   isSubmitting.value = true
   errorMsg.value = ''
 
-  const { data, error } = await post<{ accessToken: string }>('/auth/login', {
+  const { data, error } = await post<{ success: boolean, message: string }>('/auth/login', {
     username: username.value,
     password: password.value
-  })
+  }, { showErrorToast: false })
 
   isSubmitting.value = false
 
@@ -50,12 +50,8 @@ const handleLogin = async () => {
     return
   }
 
-  if (data && data.accessToken) {
+  if (data?.success) {
     failedAttempts.value = 0
-    const adminToken = useCookie('admin_token', {
-      maxAge: 60 * 60 * 24
-    })
-    adminToken.value = data.accessToken
     router.push('/admin/pendaftaran')
   } else {
     errorMsg.value = 'Terjadi kesalahan sistem.'

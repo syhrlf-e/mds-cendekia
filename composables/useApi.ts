@@ -1,34 +1,35 @@
-import { useRuntimeConfig, useCookie, useRequestHeaders } from '#app'
+import { useRuntimeConfig, useRequestHeaders } from '#app'
 import { useToast } from './useToast'
 
 export const useApi = () => {
   const config = useRuntimeConfig()
   const { addToast } = useToast()
 
-  const baseURL = config.public.apiBaseUrl || 'https://cendekia.sekata.my.id/api'
+  const baseURL = config.public.apiBaseUrl || 'https://cendekia.sekata.my.id'
+  const defaultTimeout = Number(config.public.apiTimeoutMs || 15000)
 
   const customFetch = async <T>(endpoint: string, options: any = {}) => {
-    const adminToken = useCookie('admin_token')
-    const reqHeaders = import.meta.server ? useRequestHeaders(['cookie', 'authorization']) : {}
+    const { showErrorToast = true, ...fetchOptions } = options
+    const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {}
 
     const headers = {
       ...reqHeaders,
-      ...options.headers,
-      ...(adminToken.value ? { Authorization: `Bearer ${adminToken.value}` } : {})
+      ...fetchOptions.headers
     }
 
     try {
       const response = await $fetch<T>(endpoint, {
         baseURL,
-        ...options,
+        credentials: 'include',
+        timeout: defaultTimeout,
+        ...fetchOptions,
         headers,
         onResponseError({ response }) {
-          if (import.meta.client) {
+          if (import.meta.client && showErrorToast) {
             const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
 
             if (response.status === 401) {
               addToast('Sesi telah habis. Silakan login kembali.', 'error')
-              adminToken.value = null
             } else {
               addToast(errorMsg, 'error')
             }

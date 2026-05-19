@@ -4,6 +4,22 @@ import { Copy, Check } from 'lucide-vue-next'
 
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
+const router = useRouter()
+const { biodata, buildMultipartPayload, resetForm } = usePpdbRegistrationForm()
+const { post } = useApi()
+const { addToast } = useToast()
+const {
+  provinsiOptions,
+  kotaOptions,
+  kecamatanOptions,
+  kelurahanOptions,
+  loadProvinsi,
+  loadKota,
+  loadKecamatan,
+  loadKelurahan,
+  findLabel
+} = useWilayahIndonesia()
+
 const berkas = reactive({
   foto: null as File | null,
   rapor: null as File | null,
@@ -18,9 +34,13 @@ const isAllUploaded = computed(() => {
 })
 
 const isConfirmModalOpen = ref(false)
+const isLeaveGuardOpen = ref(false)
 const isSubmitting = ref(false)
+const submitErrorMessage = ref('')
 const isSuccessSheetOpen = ref(false)
 const nomorPendaftaran = ref('')
+const pendingNavigationPath = ref('')
+const allowRouteLeave = ref(false)
 
 const isMobile = ref(true)
 const isCopied = ref(false)
@@ -32,10 +52,50 @@ const updateDeviceType = () => {
 onMounted(() => {
   updateDeviceType()
   window.addEventListener('resize', updateDeviceType)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateDeviceType)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+const hasUploadedFiles = computed(() => Object.values(berkas).some(Boolean))
+
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (!hasUploadedFiles.value || isSubmitting.value || isSuccessSheetOpen.value) return
+
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+const requestLeave = (path: string) => {
+  if (!hasUploadedFiles.value) {
+    allowRouteLeave.value = true
+    router.push(path)
+    return
+  }
+
+  pendingNavigationPath.value = path
+  isLeaveGuardOpen.value = true
+}
+
+const confirmLeave = () => {
+  isLeaveGuardOpen.value = false
+  const path = pendingNavigationPath.value || '/ppdb/daftar'
+  pendingNavigationPath.value = ''
+  allowRouteLeave.value = true
+  router.push(path)
+}
+
+onBeforeRouteLeave((to) => {
+  if (allowRouteLeave.value || !hasUploadedFiles.value || isSubmitting.value || isSuccessSheetOpen.value) {
+    return true
+  }
+
+  pendingNavigationPath.value = to.fullPath
+  isLeaveGuardOpen.value = true
+  return false
 })
 
 const copyNomor = async () => {
@@ -51,18 +111,85 @@ const copyNomor = async () => {
 }
 
 const proceedSubmit = () => {
+  submitErrorMessage.value = ''
   isConfirmModalOpen.value = true
 }
 
-const submitForm = async () => {
-  isSubmitting.value = true
+const getSubmitErrorMessage = (error: any, fallbackMessage?: string) => {
+  if (fallbackMessage) return fallbackMessage
+  if (import.meta.client && !navigator.onLine) {
+    return 'Koneksi internet kamu sedang offline. Sambungkan internet, lalu coba kirim ulang.'
+  }
 
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  const status = error?.response?.status
+  if (status >= 400 && status < 500) {
+    return error?.response?._data?.message || 'Data pendaftaran belum sesuai dengan ketentuan server. Periksa kembali data dan berkas kamu.'
+  }
+
+  const rawMessage = String(error?.message || error?.cause?.message || '').toLowerCase()
+  const isNetworkProblem = rawMessage.includes('timeout') ||
+    rawMessage.includes('timed out') ||
+    rawMessage.includes('abort') ||
+    rawMessage.includes('failed to fetch') ||
+    rawMessage.includes('fetch failed') ||
+    rawMessage.includes('network')
+
+  if (isNetworkProblem || !status) {
+    return 'Server pendaftaran sedang tidak bisa dihubungi. Data dan berkas kamu belum terkirim. Silakan coba lagi beberapa saat lagi.'
+  }
+
+  return 'Pendaftaran gagal dikirim karena server mengalami kendala. Silakan coba lagi beberapa saat lagi.'
+}
+
+const submitForm = async () => {
+  if (!isAllUploaded.value) return
+
+  isSubmitting.value = true
+  submitErrorMessage.value = ''
+
+  const form = biodata.value
+  await loadProvinsi()
+  if (form.provinsi) await loadKota(form.provinsi)
+  if (form.kabupaten_kota) await loadKecamatan(form.kabupaten_kota)
+  if (form.kecamatan) await loadKelurahan(form.kecamatan)
+
+  const formData = buildMultipartPayload({
+    foto: berkas.foto!,
+    rapor: berkas.rapor!,
+    skRapor: berkas.skRapor!,
+    ijazah: berkas.ijazah!,
+    akta: berkas.akta!,
+    kk: berkas.kk!
+  }, {
+    provinsi: findLabel(provinsiOptions.value, form.provinsi),
+    kabupaten_kota: findLabel(kotaOptions.value, form.kabupaten_kota),
+    kecamatan: findLabel(kecamatanOptions.value, form.kecamatan),
+    kelurahan: findLabel(kelurahanOptions.value, form.kelurahan)
+  })
+
+  const { data, error } = await post<{
+    success: boolean
+    message: string
+    data?: {
+      id_pendaftaran?: number
+      nomor_pendaftaran?: string
+    }
+  }>('/register/siswa', formData, {
+    showErrorToast: false,
+    timeout: 15000
+  })
 
   isSubmitting.value = false
-  isConfirmModalOpen.value = false
 
-  nomorPendaftaran.value = `MDS-2026-${Math.floor(1000 + Math.random() * 9000)}`
+  if (error || !data?.success) {
+    submitErrorMessage.value = getSubmitErrorMessage(error, data?.success === false ? data.message : undefined)
+    addToast('Pendaftaran belum terkirim.', 'error')
+    return
+  }
+
+  isConfirmModalOpen.value = false
+  nomorPendaftaran.value = data.data?.nomor_pendaftaran || String(data.data?.id_pendaftaran || '')
+  resetForm()
   isSuccessSheetOpen.value = true
 }
 </script>
@@ -85,12 +212,20 @@ const submitForm = async () => {
         <AppFileUpload v-model="berkas.kk" label="6. Kartu Keluarga" accept=".pdf" :maxSize="2" />
       </div>
 
-      <div class="flex justify-end">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+        <AppButton
+          variant="secondary"
+          class="w-full sm:w-auto"
+          @click="requestLeave('/ppdb/daftar')"
+        >
+          Kembali
+        </AppButton>
+
         <AppButton
           variant="primary"
           :disabled="!isAllUploaded"
           @click="proceedSubmit"
-          class="w-full md:w-auto shadow-md"
+          class="w-full sm:w-auto shadow-md"
         >
           Kirim Pendaftaran
         </AppButton>
@@ -99,15 +234,45 @@ const submitForm = async () => {
     </div>
   </div>
 
-  <AppModal v-model="isConfirmModalOpen" title="Konfirmasi">
-    <p class="text-text-primary text-base">Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?</p>
+  <AppModal
+    v-model="isConfirmModalOpen"
+    :title="submitErrorMessage ? 'Pendaftaran Belum Terkirim' : 'Konfirmasi'"
+  >
+    <div class="space-y-4">
+      <p v-if="!submitErrorMessage" class="text-text-primary text-base">Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?</p>
+
+      <div v-if="isSubmitting" class="rounded-xl border border-border bg-bg-base p-4">
+        <p class="text-sm font-medium text-text-primary">Menghubungi server pendaftaran...</p>
+        <p class="mt-1 text-sm text-text-secondary">Jika server sedang tidak tersedia, proses akan otomatis berhenti dalam beberapa detik.</p>
+      </div>
+
+      <div v-if="submitErrorMessage" class="rounded-xl border border-error/30 bg-error/10 p-4">
+        <p class="text-sm font-semibold text-error">Pendaftaran belum terkirim</p>
+        <p class="mt-1 text-sm text-text-primary">{{ submitErrorMessage }}</p>
+      </div>
+    </div>
 
     <template #footer>
       <AppButton variant="secondary" @click="isConfirmModalOpen = false" :disabled="isSubmitting">
-        Belum
+        {{ submitErrorMessage ? 'Tutup' : 'Belum' }}
       </AppButton>
       <AppButton variant="primary" @click="submitForm" :loading="isSubmitting">
-        Ya, Kirim
+        {{ submitErrorMessage ? 'Coba Lagi' : 'Ya, Kirim' }}
+      </AppButton>
+    </template>
+  </AppModal>
+
+  <AppModal v-model="isLeaveGuardOpen" title="Berkas Belum Dikirim">
+    <p class="text-text-primary text-base leading-relaxed">
+      Kamu yakin mau meninggalkan halaman ini? File yang sudah kamu unggah kemungkinan akan hilang dan perlu diunggah ulang.
+    </p>
+
+    <template #footer>
+      <AppButton variant="secondary" @click="isLeaveGuardOpen = false">
+        Tetap di Halaman
+      </AppButton>
+      <AppButton variant="danger" @click="confirmLeave">
+        Ya, Tinggalkan
       </AppButton>
     </template>
   </AppModal>

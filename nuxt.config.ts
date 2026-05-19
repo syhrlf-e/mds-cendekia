@@ -4,6 +4,14 @@ export default defineNuxtConfig({
   srcDir: '.',
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: 'https://cendekia.sekata.my.id',
+      apiTimeoutMs: '15000',
+      ppdbProgramId: '1',
+      ppdbGelombangId: '2'
+    }
+  },
   css: ['~/assets/css/main.css'],
   vite: {
     plugins: [

@@ -18,9 +18,9 @@ defineEmits(['click'])
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'bg-cta hover:bg-cta-hover text-cta-text focus:ring-cta'
+      return 'bg-brand hover:bg-brand-hover text-white focus:ring-brand'
     case 'secondary':
-      return 'border border-border bg-transparent text-text-primary hover:bg-bg-base focus:ring-border'
+      return 'border border-brand bg-transparent text-brand hover:bg-primary-50 focus:ring-brand'
     case 'danger':
       return 'border border-error bg-transparent text-error hover:bg-error hover:text-white focus:ring-error'
     default:
@@ -34,10 +34,10 @@ const variantClasses = computed(() => {
     :type="type"
     :disabled="disabled || loading"
     :class="[
-      'inline-flex items-center justify-center rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
-      'h-12 px-6',
+      'inline-flex items-center justify-center rounded-full font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]',
+      'min-h-11 px-[22px] py-[11px] text-[15px] leading-none',
       variantClasses,
-      (disabled || loading) ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''
+      (disabled || loading) ? 'opacity-40 cursor-not-allowed pointer-events-none active:scale-100' : ''
     ]"
     @click="$emit('click', $event)"
   >
