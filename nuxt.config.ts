@@ -40,7 +40,7 @@ export default defineNuxtConfig({
     },
     xssValidator: {},
     corsHandler: {
-      origin: '*', // Adjust to actual backend origin in production
+      origin: '*',
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     }
   },
