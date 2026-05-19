@@ -135,7 +135,7 @@ const getSubmitErrorMessage = (error: any, fallbackMessage?: string) => {
     rawMessage.includes('network')
 
   if (isNetworkProblem || !status) {
-    return 'Server pendaftaran sedang tidak bisa dihubungi. Data dan berkas kamu belum terkirim. Silakan coba lagi beberapa saat lagi.'
+    return 'Terjadi gangguan saat mengirim pendaftaran. Silakan coba lagi.'
   }
 
   return 'Pendaftaran gagal dikirim karena server mengalami kendala. Silakan coba lagi beberapa saat lagi.'
@@ -241,15 +241,9 @@ const submitForm = async () => {
     <div class="space-y-4">
       <p v-if="!submitErrorMessage" class="text-text-primary text-base">Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?</p>
 
-      <div v-if="isSubmitting" class="rounded-xl border border-border bg-bg-base p-4">
-        <p class="text-sm font-medium text-text-primary">Menghubungi server pendaftaran...</p>
-        <p class="mt-1 text-sm text-text-secondary">Jika server sedang tidak tersedia, proses akan otomatis berhenti dalam beberapa detik.</p>
-      </div>
-
-      <div v-if="submitErrorMessage" class="rounded-xl border border-error/30 bg-error/10 p-4">
-        <p class="text-sm font-semibold text-error">Pendaftaran belum terkirim</p>
-        <p class="mt-1 text-sm text-text-primary">{{ submitErrorMessage }}</p>
-      </div>
+      <p v-if="submitErrorMessage" class="text-sm text-text-primary">
+        {{ submitErrorMessage }}
+      </p>
     </div>
 
     <template #footer>
