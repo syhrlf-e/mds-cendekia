@@ -16,7 +16,6 @@ const form = biodata.value
 
 const errors = reactive<Record<string, string>>({})
 
-// Static Options
 const agamaOptions = [
   { label: 'Islam', value: 'Islam' },
   { label: 'Kristen', value: 'Kristen' },

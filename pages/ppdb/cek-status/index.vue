@@ -116,6 +116,73 @@ const checkAnother = () => {
           :disabled="isChecking || hasResult"
         />
 
+        <div
+          class="hidden lg:grid transition-all duration-300 ease-out"
+          :class="state !== 'initial' ? 'opacity-100 grid-rows-[1fr]' : 'opacity-0 grid-rows-[0fr]'"
+        >
+          <div class="overflow-hidden">
+            <div v-if="isChecking" class="flex justify-center rounded-2xl border border-border bg-bg-surface p-8">
+              <AppLoadingDotWave />
+            </div>
+
+            <div v-else-if="state === 'success' && resultData" class="rounded-2xl border border-border bg-bg-surface p-6">
+              <div class="mb-4 flex items-center justify-between">
+                <AppBadge :status="resultData.status" />
+              </div>
+
+              <p class="mb-6 text-[17px] text-text-secondary">
+                Status pendaftaran kamu: {{ resultData.status === 'pending' ? 'Menunggu Persetujuan' : resultData.status === 'approved' ? 'Pendaftaran Diterima' : 'Pendaftaran Ditolak' }}
+              </p>
+
+              <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
+                <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
+                <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
+              </div>
+
+              <div class="space-y-6">
+                <section>
+                  <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Informasi Pendaftaran</h2>
+                  <div class="grid grid-cols-3 gap-y-2 text-sm">
+                    <span class="text-text-secondary">Nomor Pendaftaran</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
+                    <span class="text-text-secondary">Tanggal Daftar</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
+                  </div>
+                </section>
+
+                <section>
+                  <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Identitas Calon Siswa</h2>
+                  <div class="grid grid-cols-3 gap-y-2 text-sm">
+                    <span class="text-text-secondary">Nama Lengkap</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</span>
+                    <span class="text-text-secondary">Tempat, Tgl Lahir</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</span>
+                    <span class="text-text-secondary">Jenis Kelamin</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
+                    <span class="text-text-secondary">Asal Sekolah</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</span>
+                    <span class="text-text-secondary">Email</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.email }}</span>
+                    <span class="text-text-secondary">No. HP</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</span>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <AppEmptyState
+              v-else-if="state === 'not-found'"
+              title="Nomor pendaftaran tidak ditemukan"
+              description="Periksa kembali nomor pendaftaran kamu dan pastikan tidak ada kesalahan penulisan."
+              class="rounded-2xl border border-border bg-bg-surface"
+            >
+              <template #icon>
+                <SearchX class="h-10 w-10 text-gray-300" />
+              </template>
+            </AppEmptyState>
+          </div>
+        </div>
+
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
           <AppButton
             variant="secondary"
@@ -137,73 +204,6 @@ const checkAnother = () => {
           </AppButton>
         </div>
       </form>
-
-      <div
-        class="hidden lg:grid transition-all duration-300 ease-out"
-        :class="state !== 'initial' ? 'mt-8 opacity-100 grid-rows-[1fr]' : 'mt-0 opacity-0 grid-rows-[0fr]'"
-      >
-        <div class="overflow-hidden">
-          <div v-if="isChecking" class="flex justify-center rounded-2xl border border-border bg-bg-surface p-8">
-            <AppLoadingDotWave />
-          </div>
-
-          <div v-else-if="state === 'success' && resultData" class="rounded-2xl border border-border bg-bg-surface p-6">
-            <div class="mb-4 flex items-center justify-between">
-              <AppBadge :status="resultData.status" />
-            </div>
-
-            <p class="mb-6 text-[17px] text-text-secondary">
-              Status pendaftaran kamu: {{ resultData.status === 'pending' ? 'Menunggu Persetujuan' : resultData.status === 'approved' ? 'Pendaftaran Diterima' : 'Pendaftaran Ditolak' }}
-            </p>
-
-            <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
-              <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
-              <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
-            </div>
-
-            <div class="space-y-6">
-              <section>
-                <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Informasi Pendaftaran</h2>
-                <div class="grid grid-cols-3 gap-y-2 text-sm">
-                  <span class="text-text-secondary">Nomor Pendaftaran</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
-                  <span class="text-text-secondary">Tanggal Daftar</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
-                </div>
-              </section>
-
-              <section>
-                <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Identitas Calon Siswa</h2>
-                <div class="grid grid-cols-3 gap-y-2 text-sm">
-                  <span class="text-text-secondary">Nama Lengkap</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</span>
-                  <span class="text-text-secondary">Tempat, Tgl Lahir</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</span>
-                  <span class="text-text-secondary">Jenis Kelamin</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
-                  <span class="text-text-secondary">Asal Sekolah</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</span>
-                  <span class="text-text-secondary">Email</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.email }}</span>
-                  <span class="text-text-secondary">No. HP</span>
-                  <span class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</span>
-                </div>
-              </section>
-            </div>
-          </div>
-
-          <AppEmptyState
-            v-else-if="state === 'not-found'"
-            title="Nomor pendaftaran tidak ditemukan"
-            description="Periksa kembali nomor pendaftaran kamu dan pastikan tidak ada kesalahan penulisan."
-            class="rounded-2xl border border-border bg-bg-surface"
-          >
-            <template #icon>
-              <SearchX class="h-10 w-10 text-gray-300" />
-            </template>
-          </AppEmptyState>
-        </div>
-      </div>
     </div>
   </div>
 

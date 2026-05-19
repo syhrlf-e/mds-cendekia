@@ -15,6 +15,7 @@ const error = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const fallbackId = useId()
 const fileInputId = computed(() => `file-upload-${fallbackId}`)
+const acceptText = computed(() => props.accept.split(',').map(ext => ext.trim().replace(/^\./, '').toUpperCase()).join(', '))
 
 const handleFileChange = (event: Event) => {
   error.value = ''
@@ -69,12 +70,27 @@ const formatSize = (bytes: number) => {
         @change="handleFileChange"
       >
       <div :class="[
-        'flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition-colors bg-bg-surface',
+        'hidden sm:flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition-colors bg-bg-surface',
         error ? 'border-error bg-error/5' : 'border-border hover:border-brand hover:bg-bg-base/50'
       ]">
         <UploadCloud :class="['w-8 h-8 mb-2', error ? 'text-error' : 'text-text-secondary']" />
         <p class="text-sm text-text-primary font-medium text-center">Klik atau seret file ke sini</p>
         <p class="text-xs text-text-secondary mt-1 text-center">Format: {{ accept }} (Maks. {{ maxSize }} MB)</p>
+      </div>
+      <div :class="[
+        'flex sm:hidden items-center justify-between gap-3 p-4 border rounded-xl bg-bg-base transition-colors',
+        error ? 'border-error bg-error/5' : 'border-border'
+      ]">
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-text-primary truncate">Belum ada file</p>
+          <p class="text-xs text-text-secondary">{{ acceptText }} · maks. {{ maxSize }} MB</p>
+        </div>
+        <div :class="[
+          'h-9 shrink-0 rounded-lg border px-4 text-sm font-medium flex items-center justify-center transition-colors',
+          error ? 'border-error bg-white text-error' : 'border-border bg-white text-text-primary'
+        ]">
+          Upload
+        </div>
       </div>
     </div>
 

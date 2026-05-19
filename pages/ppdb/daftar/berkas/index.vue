@@ -5,7 +5,7 @@ import { Copy, Check } from 'lucide-vue-next'
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 const router = useRouter()
-const { biodata, buildMultipartPayload, resetForm } = usePpdbRegistrationForm()
+const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { post } = useApi()
 const { addToast } = useToast()
 const {
@@ -19,6 +19,15 @@ const {
   loadKelurahan,
   findLabel
 } = useWilayahIndonesia()
+
+const berkasJenis = {
+  foto: 'Foto Siswa',
+  rapor: 'Buku Rapor SMP',
+  skRapor: 'Surat Keterangan Nilai Rapor Semester I-V',
+  ijazah: 'Ijazah / SKL',
+  akta: 'Akta Kelahiran',
+  kk: 'Kartu Keluarga'
+} as const
 
 const berkas = reactive({
   foto: null as File | null,
@@ -141,6 +150,22 @@ const getSubmitErrorMessage = (error: any, fallbackMessage?: string) => {
   return 'Pendaftaran gagal dikirim karena server mengalami kendala. Silakan coba lagi beberapa saat lagi.'
 }
 
+const buildBerkasFormData = (idPendaftaran: number) => {
+  const formData = new FormData()
+
+  formData.append('id_pendaftaran', String(idPendaftaran))
+
+  Object.entries(berkasJenis).forEach(([key, jenis]) => {
+    const file = berkas[key as keyof typeof berkas]
+    if (!file) return
+
+    formData.append('jenis_berkas', jenis)
+    formData.append('berkas_persyaratan', file)
+  })
+
+  return formData
+}
+
 const submitForm = async () => {
   if (!isAllUploaded.value) return
 
@@ -153,42 +178,50 @@ const submitForm = async () => {
   if (form.kabupaten_kota) await loadKecamatan(form.kabupaten_kota)
   if (form.kecamatan) await loadKelurahan(form.kecamatan)
 
-  const formData = buildMultipartPayload({
-    foto: berkas.foto!,
-    rapor: berkas.rapor!,
-    skRapor: berkas.skRapor!,
-    ijazah: berkas.ijazah!,
-    akta: berkas.akta!,
-    kk: berkas.kk!
-  }, {
+  const registrationPayload = buildPayload({
     provinsi: findLabel(provinsiOptions.value, form.provinsi),
     kabupaten_kota: findLabel(kotaOptions.value, form.kabupaten_kota),
     kecamatan: findLabel(kecamatanOptions.value, form.kecamatan),
     kelurahan: findLabel(kelurahanOptions.value, form.kelurahan)
   })
 
-  const { data, error } = await post<{
-    success: boolean
+  const { data: registrationData, error: registrationError } = await post<{
+    status: boolean
     message: string
     data?: {
       id_pendaftaran?: number
-      nomor_pendaftaran?: string
+      kode_pendaftaran?: string
     }
-  }>('/register/siswa', formData, {
+  }>('/register/siswa', registrationPayload, {
+    showErrorToast: false,
+    timeout: 15000
+  })
+
+  if (registrationError || !registrationData?.status || !registrationData.data?.id_pendaftaran) {
+    isSubmitting.value = false
+    submitErrorMessage.value = getSubmitErrorMessage(registrationError, registrationData?.status === false ? registrationData.message : undefined)
+    addToast('Pendaftaran belum terkirim.', 'error')
+    return
+  }
+
+  const { data: berkasData, error: berkasError } = await post<{
+    status: boolean
+    message: string
+  }>('/register/berkas', buildBerkasFormData(registrationData.data.id_pendaftaran), {
     showErrorToast: false,
     timeout: 15000
   })
 
   isSubmitting.value = false
 
-  if (error || !data?.success) {
-    submitErrorMessage.value = getSubmitErrorMessage(error, data?.success === false ? data.message : undefined)
+  if (berkasError || !berkasData?.status) {
+    submitErrorMessage.value = getSubmitErrorMessage(berkasError, berkasData?.status === false ? berkasData.message : undefined)
     addToast('Pendaftaran belum terkirim.', 'error')
     return
   }
 
   isConfirmModalOpen.value = false
-  nomorPendaftaran.value = data.data?.nomor_pendaftaran || String(data.data?.id_pendaftaran || '')
+  nomorPendaftaran.value = registrationData.data.kode_pendaftaran || String(registrationData.data.id_pendaftaran)
   resetForm()
   isSuccessSheetOpen.value = true
 }
