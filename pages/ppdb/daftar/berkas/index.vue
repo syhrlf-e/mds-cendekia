@@ -6,7 +6,6 @@ useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 const router = useRouter()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
-const { post } = useApi()
 const { addToast } = useToast()
 const {
   provinsiOptions,
@@ -21,12 +20,12 @@ const {
 } = useWilayahIndonesia()
 
 const berkasJenis = {
-  foto: 'Foto Siswa',
-  rapor: 'Buku Rapor SMP',
-  skRapor: 'Surat Keterangan Nilai Rapor Semester I-V',
-  ijazah: 'Ijazah / SKL',
-  akta: 'Akta Kelahiran',
-  kk: 'Kartu Keluarga'
+  foto: 'Foto',
+  rapor: 'Rapor',
+  skRapor: 'SK Rapor',
+  ijazah: 'Ijazah',
+  akta: 'Akta',
+  kk: 'KK'
 } as const
 
 const berkas = reactive({
@@ -50,6 +49,8 @@ const isSuccessSheetOpen = ref(false)
 const nomorPendaftaran = ref('')
 const pendingNavigationPath = ref('')
 const allowRouteLeave = ref(false)
+const pendingRegistrationStorageKey = 'ppdb-pending-registration'
+const pendingRegistration = ref<{ id: number, kode: string } | null>(null)
 
 const isMobile = ref(true)
 const isCopied = ref(false)
@@ -60,6 +61,22 @@ const updateDeviceType = () => {
 
 onMounted(() => {
   updateDeviceType()
+  if (import.meta.client) {
+    const rawPendingRegistration = localStorage.getItem(pendingRegistrationStorageKey)
+    if (rawPendingRegistration) {
+      try {
+        const parsed = JSON.parse(rawPendingRegistration) as { id?: number, kode?: string }
+        if (parsed.id) {
+          pendingRegistration.value = {
+            id: parsed.id,
+            kode: parsed.kode || String(parsed.id)
+          }
+        }
+      } catch {
+        localStorage.removeItem(pendingRegistrationStorageKey)
+      }
+    }
+  }
   window.addEventListener('resize', updateDeviceType)
   window.addEventListener('beforeunload', handleBeforeUnload)
 })
@@ -150,6 +167,20 @@ const getSubmitErrorMessage = (error: any, fallbackMessage?: string) => {
   return 'Pendaftaran gagal dikirim karena server mengalami kendala. Silakan coba lagi beberapa saat lagi.'
 }
 
+const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: number) => {
+  try {
+    const data = await $fetch<T>(endpoint, {
+      method: 'POST',
+      body,
+      timeout
+    })
+
+    return { data, error: null }
+  } catch (error: any) {
+    return { data: null, error }
+  }
+}
+
 const buildBerkasFormData = (idPendaftaran: number) => {
   const formData = new FormData()
 
@@ -166,11 +197,75 @@ const buildBerkasFormData = (idPendaftaran: number) => {
   return formData
 }
 
-const submitForm = async () => {
-  if (!isAllUploaded.value) return
+type RegistrationSubmitResponse = {
+  success?: boolean
+  status?: boolean
+  message?: string
+  data?: {
+    id?: number
+    id_pendaftaran?: number
+    kode?: string
+    kode_pendaftaran?: string
+    nomor_pendaftaran?: string
+  }
+}
 
-  isSubmitting.value = true
-  submitErrorMessage.value = ''
+type CheckStatusLookupResponse = {
+  success?: boolean
+  status?: boolean
+  message?: string
+  data?: {
+    id?: number
+    kode?: string
+    nomor_pendaftaran?: string
+  }
+}
+
+const isSuccessResponse = (response?: { success?: boolean, status?: boolean } | null) => {
+  return response?.success === true || response?.status === true
+}
+
+const isFailedResponse = (response?: { success?: boolean, status?: boolean } | null) => {
+  return response?.success === false || response?.status === false
+}
+
+const getRegistrationId = (response?: RegistrationSubmitResponse | null) => {
+  return response?.data?.id_pendaftaran || response?.data?.id || 0
+}
+
+const getRegistrationCode = (response?: RegistrationSubmitResponse | null) => {
+  return response?.data?.nomor_pendaftaran || response?.data?.kode_pendaftaran || response?.data?.kode || ''
+}
+
+const lookupRegistrationId = async (nomorPendaftaran: string) => {
+  if (!nomorPendaftaran || !biodata.value.nisn) return 0
+
+  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>('/api/register/cek-status', {
+    kode_pendaftaran: nomorPendaftaran,
+    nisn: biodata.value.nisn
+  }, 15000)
+
+  if (error || !isSuccessResponse(data)) return 0
+
+  return data?.data?.id || 0
+}
+
+const savePendingRegistration = (registration: { id: number, kode: string }) => {
+  pendingRegistration.value = registration
+  if (import.meta.client) {
+    localStorage.setItem(pendingRegistrationStorageKey, JSON.stringify(registration))
+  }
+}
+
+const clearPendingRegistration = () => {
+  pendingRegistration.value = null
+  if (import.meta.client) {
+    localStorage.removeItem(pendingRegistrationStorageKey)
+  }
+}
+
+const submitRegistrationData = async () => {
+  if (pendingRegistration.value) return pendingRegistration.value
 
   const form = biodata.value
   await loadProvinsi()
@@ -185,43 +280,69 @@ const submitForm = async () => {
     kelurahan: findLabel(kelurahanOptions.value, form.kelurahan)
   })
 
-  const { data: registrationData, error: registrationError } = await post<{
-    status: boolean
-    message: string
-    data?: {
-      id_pendaftaran?: number
-      kode_pendaftaran?: string
-    }
-  }>('/register/siswa', registrationPayload, {
-    showErrorToast: false,
-    timeout: 15000
-  })
+  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>('/api/register/siswa', registrationPayload, 15000)
 
-  if (registrationError || !registrationData?.status || !registrationData.data?.id_pendaftaran) {
+  const registrationCode = getRegistrationCode(data)
+  const registrationId = getRegistrationId(data) || await lookupRegistrationId(registrationCode)
+
+  if (error || !isSuccessResponse(data) || !registrationId) {
+    const failedMessage = isFailedResponse(data)
+      ? data?.message
+      : data && !registrationId
+        ? 'Register berhasil, tetapi ID pendaftaran belum bisa ditemukan untuk upload berkas. Silakan coba beberapa saat lagi.'
+        : undefined
+    throw new Error(getSubmitErrorMessage(error, failedMessage))
+  }
+
+  const registration = {
+    id: registrationId,
+    kode: registrationCode || String(registrationId)
+  }
+  savePendingRegistration(registration)
+
+  return registration
+}
+
+const submitForm = async () => {
+  if (!isAllUploaded.value) return
+
+  isSubmitting.value = true
+  submitErrorMessage.value = ''
+
+  let registration: { id: number, kode: string }
+  try {
+    registration = await submitRegistrationData()
+  } catch (error) {
     isSubmitting.value = false
-    submitErrorMessage.value = getSubmitErrorMessage(registrationError, registrationData?.status === false ? registrationData.message : undefined)
+    submitErrorMessage.value = error instanceof Error
+      ? error.message
+      : 'Registrasi gagal. Periksa kembali data pendaftaran kamu.'
     addToast('Pendaftaran belum terkirim.', 'error')
     return
   }
 
-  const { data: berkasData, error: berkasError } = await post<{
-    status: boolean
+  const { data: berkasData, error: berkasError } = await postRegistrationApi<{
+    success?: boolean
+    status?: boolean
     message: string
-  }>('/register/berkas', buildBerkasFormData(registrationData.data.id_pendaftaran), {
-    showErrorToast: false,
-    timeout: 15000
-  })
+  }>('/api/register/berkas', buildBerkasFormData(registration.id), 30000)
 
   isSubmitting.value = false
 
-  if (berkasError || !berkasData?.status) {
-    submitErrorMessage.value = getSubmitErrorMessage(berkasError, berkasData?.status === false ? berkasData.message : undefined)
+  const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
+
+  if (berkasError || !isBerkasUploaded) {
+    const failedMessage = berkasData?.success === false || berkasData?.status === false
+      ? berkasData.message
+      : undefined
+    submitErrorMessage.value = getSubmitErrorMessage(berkasError, failedMessage)
     addToast('Pendaftaran belum terkirim.', 'error')
     return
   }
 
   isConfirmModalOpen.value = false
-  nomorPendaftaran.value = registrationData.data.kode_pendaftaran || String(registrationData.data.id_pendaftaran)
+  nomorPendaftaran.value = registration.kode
+  clearPendingRegistration()
   resetForm()
   isSuccessSheetOpen.value = true
 }

@@ -5,7 +5,14 @@ export const useApi = () => {
   const config = useRuntimeConfig()
   const { addToast } = useToast()
 
-  const baseURL = config.public.apiBaseUrl || 'https://cendekia.sekata.my.id'
+  const normalizeBaseUrl = (url: unknown) => {
+    const rawUrl = String(url || '').trim()
+    const markdownUrlMatch = rawUrl.match(/\((https?:\/\/[^)]+)\)/)
+
+    return markdownUrlMatch?.[1] || rawUrl || 'https://cendekia.sekata.my.id'
+  }
+
+  const baseURL = normalizeBaseUrl(config.public.apiBaseUrl)
   const defaultTimeout = Number(config.public.apiTimeoutMs || 15000)
 
   const customFetch = async <T>(endpoint: string, options: any = {}) => {

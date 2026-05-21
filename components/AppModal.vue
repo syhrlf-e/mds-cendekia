@@ -48,33 +48,33 @@ onMounted(() => {
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="modelValue" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6" :style="{ zIndex: zIndex }">
-        <div class="absolute inset-0 bg-black/50 transition-opacity" @click="close"></div>
+        <div class="absolute inset-0 bg-black/40 transition-opacity" @click="close"></div>
 
         <div
           :class="[
-            'relative bg-bg-surface rounded-2xl shadow-xl w-full max-h-[90vh] flex flex-col',
+            'relative flex max-h-[90vh] w-full flex-col rounded-2xl bg-bg-surface shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0]',
             width
           ]"
         >
-          <div class="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-            <h3 v-if="title" class="text-lg font-heading font-semibold text-text-primary">
+          <div class="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
+            <h3 v-if="title" class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
               {{ title }}
             </h3>
             <slot name="header" v-else></slot>
 
             <button
               @click="close"
-              class="p-2 -mr-2 text-text-secondary hover:text-text-primary hover:bg-bg-base rounded-full transition-colors"
+              class="-mr-2 rounded-full p-2 text-text-secondary transition-colors hover:bg-bg-base hover:text-text-primary"
             >
               <X class="w-5 h-5" />
             </button>
           </div>
 
-          <div class="p-6 overflow-y-auto grow">
+          <div class="grow overflow-y-auto p-6">
             <slot></slot>
           </div>
 
-          <div v-if="$slots.footer" class="px-6 py-4 border-t border-border shrink-0 bg-bg-base/50 rounded-b-2xl flex items-center justify-end gap-3">
+          <div v-if="$slots.footer" class="flex shrink-0 items-center justify-end gap-3 rounded-b-2xl border-t border-border bg-bg-surface px-6 py-4">
             <slot name="footer"></slot>
           </div>
         </div>

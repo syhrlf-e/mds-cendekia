@@ -56,10 +56,11 @@ Selamat! Pendaftaran kamu telah disetujui.
 Kamu resmi menjadi calon peserta didik baru
 MDS Cendekia tahun ajaran 2025/2026.
 
-Di bawah ini adalah kartu peserta kamu.
+Kartu peserta kamu telah dibuat oleh sistem.
 Simpan dan bawa kartu ini saat proses daftar ulang.
 
-[ Download Kartu Peserta ]  ← tombol/link ke /ppdb/kartu-peserta?id={param}
+[ Download Kartu Peserta ]  ← tombol/link download PDF dari BE
+atau PDF dilampirkan langsung pada email.
 
 ─────────────────────────────────────────
 © 2025 MDS Cendekia — Mukti Daris Sasmita Cendekia
@@ -105,4 +106,5 @@ Untuk informasi lebih lanjut, silakan hubungi kami:
 | `{DD/MM/YYYY}` | Tanggal submit pendaftaran |
 | `{Alasan dari admin}` | Input textarea modal reject admin |
 | `{Kontak Sekolah}` | Data kontak sekolah (dari pengaturan atau hardcoded) |
-| `{param}` | ID atau token untuk akses kartu peserta |
+| `{pdfDownloadUrl}` | Link download PDF kartu peserta dari BE (opsional jika PDF dilampirkan) |
+| `{pdfAttachmentName}` | Nama file lampiran PDF kartu peserta (opsional) |

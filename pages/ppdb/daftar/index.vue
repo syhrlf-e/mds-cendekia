@@ -9,7 +9,8 @@ const {
   orangTua,
   isWaliBerbeda,
   isRestoringDraft,
-  ensureOrangTuaShape
+  ensureOrangTuaShape,
+  resetForm
 } = usePpdbRegistrationForm()
 
 const form = biodata.value
@@ -42,11 +43,11 @@ const pendidikanOptions = [
 ]
 
 const gajiOptions = [
-  { label: 'Kurang dari Rp 1.000.000', value: '<1M' },
-  { label: 'Rp 1.000.000 - Rp 2.000.000', value: '1M-2M' },
-  { label: 'Rp 2.000.000 - Rp 5.000.000', value: '2M-5M' },
-  { label: 'Rp 5.000.000 - Rp 10.000.000', value: '5M-10M' },
-  { label: 'Lebih dari Rp 10.000.000', value: '>10M' }
+  { label: 'Kurang dari Rp 1.000.000', value: '1000000' },
+  { label: 'Rp 1.000.000 - Rp 2.000.000', value: '2000000' },
+  { label: 'Rp 2.000.000 - Rp 5.000.000', value: '5000000' },
+  { label: 'Rp 5.000.000 - Rp 10.000.000', value: '10000000' },
+  { label: 'Lebih dari Rp 10.000.000', value: '10000001' }
 ]
 
 const waliHubunganOptions = [
@@ -96,6 +97,15 @@ const sanitizeSafeText = (value: unknown, maxLength = 160) => stripControlChars(
   .replace(/\s{2,}/g, ' ')
   .slice(0, maxLength)
 
+const sanitizeSchoolName = (value: unknown) => String(value ?? '')
+  .replace(/[^a-zA-Z0-9\s]/g, '')
+  .replace(/\s{2,}/g, ' ')
+  .slice(0, 120)
+
+const sanitizeIjazahNumber = (value: unknown) => String(value ?? '')
+  .replace(/[^a-zA-Z0-9/-]/g, '')
+  .slice(0, 25)
+
 const sanitizeEmail = (value: unknown) => String(value ?? '')
   .trim()
   .toLowerCase()
@@ -125,6 +135,7 @@ const revalidateErroredOrangTuaField = (index: number, field: string) => {
 watch(form, (val) => {
   const fields = val as StringRecord
   setSanitized(fields, 'nama', sanitizeName(val.nama))
+  setSanitized(fields, 'nisn', sanitizeDigits(val.nisn, 10))
   setSanitized(fields, 'nik', sanitizeDigits(val.nik, 16))
   setSanitized(fields, 'tempat_lahir', sanitizeName(val.tempat_lahir))
   setSanitized(fields, 'alamat', sanitizeSafeText(val.alamat, 220))
@@ -139,11 +150,11 @@ watch(form, (val) => {
 
 watch(formSekolah, (val) => {
   const fields = val as StringRecord
-  setSanitized(fields, 'nama_sekolah_asal', sanitizeSafeText(val.nama_sekolah_asal, 120))
+  setSanitized(fields, 'nama_sekolah_asal', sanitizeSchoolName(val.nama_sekolah_asal))
   setSanitized(fields, 'npsn_sekolah_asal', sanitizeDigits(val.npsn_sekolah_asal, 8))
   setSanitized(fields, 'alamat_sekolah_asal', sanitizeSafeText(val.alamat_sekolah_asal, 220))
   setSanitized(fields, 'tahun_lulus', sanitizeDigits(val.tahun_lulus, 4))
-  setSanitized(fields, 'no_ijazah', sanitizeSafeText(val.no_ijazah, 80))
+  setSanitized(fields, 'no_ijazah', sanitizeIjazahNumber(val.no_ijazah))
 
   Object.keys(val).forEach((field) => revalidateErroredField(field))
 }, { deep: true })
@@ -281,6 +292,11 @@ const validateField = (field: string) => {
         else if (val === '1234567812345678') errors[field] = 'NIK ini sudah terdaftar dalam sistem'
         break
 
+      case 'nisn':
+        if (!val) errors[field] = 'Field ini wajib diisi'
+        else if (!/^\d{10}$/.test(val)) errors[field] = 'NISN harus 10 digit angka'
+        break
+
       case 'tanggal_lahir':
         if (!val) {
           errors[field] = 'Field ini wajib diisi'
@@ -308,7 +324,7 @@ const validateField = (field: string) => {
       case 'rt':
       case 'rw':
         if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d+$/.test(val)) errors[field] = 'Harus berupa angka'
+        else if (!/^\d{3}$/.test(val)) errors[field] = `${field.toUpperCase()} harus 3 digit angka`
         break
 
       case 'kode_pos':
@@ -318,7 +334,7 @@ const validateField = (field: string) => {
 
       case 'no_telepon':
         if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^(08|\+628)\d{8,11}$/.test(val)) errors[field] = 'Format nomor HP tidak valid'
+        else if (!/^08\d{10,11}$/.test(val)) errors[field] = 'Nomor HP harus 12-13 digit dan diawali 08'
         break
 
       case 'email':
@@ -336,6 +352,7 @@ const validateField = (field: string) => {
       case 'nama_sekolah_asal':
         if (!val) errors[field] = 'Field ini wajib diisi'
         else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
+        else if (!/^[a-zA-Z0-9\s]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan angka'
         break
 
       case 'npsn_sekolah_asal':
@@ -356,6 +373,9 @@ const validateField = (field: string) => {
 
       case 'no_ijazah':
         if (!val) errors[field] = 'Field ini wajib diisi'
+        else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
+        else if (val.length > 25) errors[field] = 'Maksimal 25 karakter'
+        else if (!/^[a-zA-Z0-9/-]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf, angka, tanda - dan /'
         break
     }
   }
@@ -397,7 +417,7 @@ const validateOrangTuaField = (index: number, field: string) => {
       if (!/^\d{16}$/.test(val)) errors[errorKey] = 'NIK harus 16 digit angka'
       break
     case 'no_telepon':
-      if (!/^(08|\+628)\d{8,11}$/.test(val)) errors[errorKey] = 'Format nomor HP tidak valid'
+      if (!/^08\d{10,11}$/.test(val)) errors[errorKey] = 'Nomor HP harus 12-13 digit dan diawali 08'
       break
     case 'email':
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[errorKey] = 'Format email tidak valid'
@@ -428,7 +448,7 @@ const toggleAccordion = (target: 1 | 2 | 3) => {
 // Computed validity
 const isAcc1Valid = computed(() => {
   const reqFields: (keyof typeof form)[] = [
-    'nama', 'nik', 'email', 'no_telepon', 'tanggal_lahir',
+    'nama', 'nisn', 'nik', 'email', 'no_telepon', 'tanggal_lahir',
     'tempat_lahir', 'jenis_kelamin', 'agama', 'alamat',
     'rt', 'rw', 'provinsi', 'kabupaten_kota', 'kecamatan', 'kelurahan', 'kode_pos'
   ]
@@ -480,8 +500,53 @@ const acc3FinalLock = computed(() => !acc3UnlockedEver.value)
 // Phase 21 Logic
 const isAllValid = computed(() => isAcc1Valid.value && isAcc2Valid.value && isAcc3Valid.value)
 const router = useRouter()
+const isLeaveGuardOpen = ref(false)
+const pendingNavigationPath = ref('')
+const allowRouteLeave = ref(false)
+
+const hasFilledValue = (value: unknown) => String(value ?? '').trim() !== ''
+
+const hasFilledForm = computed(() => {
+  const biodataFilled = Object.values(form).some(hasFilledValue)
+  const sekolahFilled = Object.values(formSekolah).some(hasFilledValue)
+  const orangTuaFilled = orangTua.value.some((item) => Object.entries(item).some(([key, value]) => {
+    if (key === 'peran' || key === 'hubungan') return false
+    return hasFilledValue(value)
+  }))
+
+  return biodataFilled || sekolahFilled || orangTuaFilled || isWaliBerbeda.value
+})
+
+const requestLeave = (path: string) => {
+  if (!hasFilledForm.value) {
+    allowRouteLeave.value = true
+    router.push(path)
+    return
+  }
+
+  pendingNavigationPath.value = path
+  isLeaveGuardOpen.value = true
+}
+
+const confirmLeave = () => {
+  isLeaveGuardOpen.value = false
+  const path = pendingNavigationPath.value || '/ppdb'
+  pendingNavigationPath.value = ''
+  resetForm()
+  allowRouteLeave.value = true
+  router.push(path)
+}
+
+onBeforeRouteLeave((to) => {
+  if (allowRouteLeave.value || !hasFilledForm.value) return true
+
+  pendingNavigationPath.value = to.fullPath
+  isLeaveGuardOpen.value = true
+  return false
+})
 
 const proceedNext = () => {
+  allowRouteLeave.value = true
   router.push('/ppdb/daftar/berkas')
 }
 </script>
@@ -504,23 +569,26 @@ const proceedNext = () => {
         @toggle="toggleAccordion(1)"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <AppInput v-model="form.nama" label="Nama Lengkap" required :error="errors.nama" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('nama')" />
+          <AppInput v-model="form.nama" label="Nama Lengkap" required :error="errors.nama" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('nama')" class="md:col-span-2" />
           <AppInput v-model="form.nik" label="NIK" required :error="errors.nik" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateField('nik')" placeholder="16 digit NIK" />
-          <AppInput v-model="form.email" type="email" label="Email" required :error="errors.email" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateField('email')" />
+          <AppInput v-model="form.nisn" label="NISN" required :error="errors.nisn" :sanitizer="(value) => sanitizeDigits(value, 10)" inputmode="numeric" :maxlength="10" @blur="validateField('nisn')" placeholder="10 digit NISN" />
           <AppInput v-model="form.no_telepon" label="No. Telepon" required :error="errors.no_telepon" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateField('no_telepon')" placeholder="08xxxxxxxxxx" />
+          <AppInput v-model="form.email" type="email" label="Email" required :error="errors.email" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateField('email')" />
           <AppInput v-model="form.tempat_lahir" label="Tempat Lahir" required :error="errors.tempat_lahir" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('tempat_lahir')" />
           <AppDateInput v-model="form.tanggal_lahir" label="Tanggal Lahir" required :max-year="maxBirthYear" :error="errors.tanggal_lahir" @blur="validateField('tanggal_lahir')" />
 
-          <div class="flex flex-col gap-1.5 w-full md:col-span-2">
+          <AppSelect v-model="form.agama" label="Agama" required :options="agamaOptions" :error="errors.agama" @blur="validateField('agama')" placeholder="Pilih agama kamu" />
+
+          <div class="flex w-full flex-col gap-1.5">
             <label class="text-sm font-medium text-text-primary">Jenis Kelamin</label>
-            <div class="grid grid-cols-2 gap-2 h-12">
+            <div class="grid h-11 grid-cols-2 gap-2">
               <button
                 type="button"
                 :aria-pressed="form.jenis_kelamin === 'Laki-laki'"
                 :class="[
-                  'h-12 rounded-xl border px-4 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/30',
+                  'h-11 rounded-lg border px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/30',
                   form.jenis_kelamin === 'Laki-laki'
-                    ? 'border-brand bg-brand text-white shadow-sm'
+                    ? 'border-brand bg-brand text-white'
                     : 'border-border bg-bg-surface text-text-primary hover:border-brand hover:bg-bg-base'
                 ]"
                 @click="form.jenis_kelamin = 'Laki-laki'; validateField('jenis_kelamin')"
@@ -531,9 +599,9 @@ const proceedNext = () => {
                 type="button"
                 :aria-pressed="form.jenis_kelamin === 'Perempuan'"
                 :class="[
-                  'h-12 rounded-xl border px-4 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/30',
+                  'h-11 rounded-lg border px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/30',
                   form.jenis_kelamin === 'Perempuan'
-                    ? 'border-brand bg-brand text-white shadow-sm'
+                    ? 'border-brand bg-brand text-white'
                     : 'border-border bg-bg-surface text-text-primary hover:border-brand hover:bg-bg-base'
                 ]"
                 @click="form.jenis_kelamin = 'Perempuan'; validateField('jenis_kelamin')"
@@ -543,8 +611,6 @@ const proceedNext = () => {
             </div>
             <span v-if="errors.jenis_kelamin" class="text-sm text-error">{{ errors.jenis_kelamin }}</span>
           </div>
-
-          <AppSelect v-model="form.agama" label="Agama" required :options="agamaOptions" :error="errors.agama" @blur="validateField('agama')" placeholder="Pilih agama kamu" />
 
           <div class="md:col-span-2">
             <AppTextarea v-model="form.alamat" label="Alamat Lengkap" required :error="errors.alamat" :sanitizer="(value) => sanitizeSafeText(value, 220)" :maxlength="220" @blur="validateField('alamat')" :rows="3" />
@@ -589,10 +655,10 @@ const proceedNext = () => {
         @toggle="toggleAccordion(2)"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <AppInput v-model="formSekolah.nama_sekolah_asal" label="Nama Sekolah Asal" required :error="errors.nama_sekolah_asal" :sanitizer="(value) => sanitizeSafeText(value, 120)" :maxlength="120" @blur="validateField('nama_sekolah_asal')" class="md:col-span-2" />
-          <AppInput v-model="formSekolah.npsn_sekolah_asal" label="NPSN" required :error="errors.npsn_sekolah_asal" :sanitizer="(value) => sanitizeDigits(value, 8)" inputmode="numeric" :maxlength="8" @blur="validateField('npsn_sekolah_asal')" placeholder="8 digit angka" />
+          <AppInput v-model="formSekolah.nama_sekolah_asal" label="Nama Sekolah Asal" required :error="errors.nama_sekolah_asal" :sanitizer="sanitizeSchoolName" :maxlength="120" @blur="validateField('nama_sekolah_asal')" class="md:col-span-2" />
+          <AppInput v-model="formSekolah.npsn_sekolah_asal" label="NPSN" required :error="errors.npsn_sekolah_asal" :sanitizer="(value) => sanitizeDigits(value, 8)" inputmode="numeric" :maxlength="8" @blur="validateField('npsn_sekolah_asal')" placeholder="8 digit NPSN" />
           <AppInput v-model="formSekolah.tahun_lulus" label="Tahun Lulus" required :error="errors.tahun_lulus" :sanitizer="(value) => sanitizeDigits(value, 4)" inputmode="numeric" :maxlength="4" @blur="validateField('tahun_lulus')" placeholder="Contoh: 2024" />
-          <AppInput v-model="formSekolah.no_ijazah" label="No. Ijazah" required :error="errors.no_ijazah" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateField('no_ijazah')" placeholder="Nomor ijazah" class="md:col-span-2" />
+          <AppInput v-model="formSekolah.no_ijazah" label="No. Ijazah" required :error="errors.no_ijazah" :sanitizer="sanitizeIjazahNumber" :maxlength="25" @blur="validateField('no_ijazah')" placeholder="Contoh: DN-01/12345" class="md:col-span-2" />
 
           <div class="md:col-span-2">
             <AppTextarea v-model="formSekolah.alamat_sekolah_asal" label="Alamat Sekolah Asal" required :error="errors.alamat_sekolah_asal" :sanitizer="(value) => sanitizeSafeText(value, 220)" :maxlength="220" @blur="validateField('alamat_sekolah_asal')" :rows="3" />
@@ -616,7 +682,7 @@ const proceedNext = () => {
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ayah</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <AppInput v-model="ayah.nama" label="Nama Lengkap Ayah" required :error="errors['orangTua.0.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(0, 'nama')" />
-              <AppInput v-model="ayah.nik" label="NIK Ayah" required :error="errors['orangTua.0.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(0, 'nik')" placeholder="16 digit angka" />
+              <AppInput v-model="ayah.nik" label="NIK Ayah" required :error="errors['orangTua.0.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(0, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="ayah.agama" label="Agama Ayah" required :options="agamaOptions" :error="errors['orangTua.0.agama']" @blur="validateOrangTuaField(0, 'agama')" />
               <AppSelect v-model="ayah.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.0.pendidikan']" @blur="validateOrangTuaField(0, 'pendidikan')" />
               <AppInput v-model="ayah.pekerjaan" label="Pekerjaan" :error="errors['orangTua.0.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(0, 'pekerjaan')" />
@@ -631,7 +697,7 @@ const proceedNext = () => {
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ibu</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <AppInput v-model="ibu.nama" label="Nama Lengkap Ibu" required :error="errors['orangTua.1.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(1, 'nama')" />
-              <AppInput v-model="ibu.nik" label="NIK Ibu" required :error="errors['orangTua.1.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(1, 'nik')" placeholder="16 digit angka" />
+              <AppInput v-model="ibu.nik" label="NIK Ibu" required :error="errors['orangTua.1.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(1, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="ibu.agama" label="Agama Ibu" required :options="agamaOptions" :error="errors['orangTua.1.agama']" @blur="validateOrangTuaField(1, 'agama')" />
               <AppSelect v-model="ibu.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.1.pendidikan']" @blur="validateOrangTuaField(1, 'pendidikan')" />
               <AppInput v-model="ibu.pekerjaan" label="Pekerjaan" :error="errors['orangTua.1.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(1, 'pekerjaan')" />
@@ -654,7 +720,7 @@ const proceedNext = () => {
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Wali</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <AppInput v-model="wali.nama" label="Nama Lengkap Wali" required :error="errors['orangTua.2.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(2, 'nama')" />
-              <AppInput v-model="wali.nik" label="NIK Wali" required :error="errors['orangTua.2.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(2, 'nik')" placeholder="16 digit angka" />
+              <AppInput v-model="wali.nik" label="NIK Wali" required :error="errors['orangTua.2.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(2, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="wali.agama" label="Agama Wali" required :options="agamaOptions" :error="errors['orangTua.2.agama']" @blur="validateOrangTuaField(2, 'agama')" />
               <AppSelect v-model="wali.hubungan" label="Hubungan dengan Siswa" required :error="errors['orangTua.2.hubungan']" :options="waliHubunganOptions" @blur="validateOrangTuaField(2, 'hubungan')" />
               <AppInput v-if="wali.hubungan === 'Lainnya'" v-model="wali.hubungan_lainnya" label="Hubungan Wali Lainnya" required :error="errors['orangTua.2.hubungan_lainnya']" :sanitizer="(value) => sanitizeSafeText(value, 60)" :maxlength="60" @blur="validateOrangTuaField(2, 'hubungan_lainnya')" />
@@ -668,13 +734,20 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
-      <!-- Tombol Berikutnya -->
-      <div class="mt-4 flex justify-end">
+      <!-- Tombol Navigasi -->
+      <div class="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <AppButton
+          variant="secondary"
+          class="w-full sm:w-auto"
+          @click="requestLeave('/ppdb')"
+        >
+          Kembali
+        </AppButton>
         <AppButton
           variant="primary"
           :disabled="!isAllValid"
           @click="proceedNext"
-          class="w-full md:w-auto shadow-md"
+          class="w-full sm:w-auto shadow-md"
         >
           Berikutnya
         </AppButton>
@@ -682,4 +755,18 @@ const proceedNext = () => {
     </div>
   </div>
 
+  <AppModal v-model="isLeaveGuardOpen" title="Formulir Belum Selesai">
+    <p class="text-text-primary text-base leading-relaxed">
+      Data yang sudah kamu isi belum dilanjutkan. Kalau kamu keluar sekarang, pendaftaran belum selesai.
+    </p>
+
+    <template #footer>
+      <AppButton variant="secondary" @click="isLeaveGuardOpen = false">
+        Tetap di Sini
+      </AppButton>
+      <AppButton variant="danger" @click="confirmLeave">
+        Ya, Keluar
+      </AppButton>
+    </template>
+  </AppModal>
 </template>

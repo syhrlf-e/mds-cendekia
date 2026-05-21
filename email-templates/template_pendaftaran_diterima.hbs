@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Selamat Datang di Keluarga Besar {{nama_yayasan}}!</title>
+  </head>
+  <body style="margin:0;background:#f5f5f7;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f5f7;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #dcfce7;border-radius:18px;overflow:hidden;">
+            <tr>
+              <td style="padding:32px 32px 18px;border-bottom:1px solid #dcfce7;">
+                <img src="{{url_logo}}" alt="{{nama_yayasan}}" width="96" style="display:block;border:0;margin-bottom:20px;">
+                <h1 style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:28px;line-height:1.25;font-weight:800;color:#1d1d1f;letter-spacing:-0.5px;">
+                  Selamat Bergabung, {{nama_siswa}}!
+                </h1>
+                <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:#4b5563;">
+                  Kabar gembira yang dinanti telah tiba! Setelah melalui proses verifikasi berkas yang ketat serta rangkaian penilaian dari tim seleksi kami, dengan bangga kami menyatakan bahwa Anda <strong>DITERIMA</strong> sebagai bagian dari keluarga besar {{nama_yayasan}} untuk tahun ajaran {{tahun_ajaran}}.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;">
+                <p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#1d1d1f;">
+                  Langkah awal menuju masa depan gemilang telah Anda buka. Nomor pendaftaran resmi Anda adalah <strong style="color: #a7221b; font-size: 18px;">{{nomor_pendaftaran}}</strong>.
+                </p>
+                <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#4b5563;">
+                  Sebagai bukti kelulusan, kami telah menerbitkan <strong>Kartu Peserta Resmi</strong>. Dokumen ini sangat penting dan wajib anda tunjukan saat pendaftaran ulang. Dokumen telah kami lampirkan pada email ini atau bisa langsung Anda unduh melalui tombol di bawah.
+                </p>
+
+                {{#if url_download_pdf}}
+                <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 24px 0;">
+                  <tr>
+                    <td style="background:#a7221b;border-radius:999px;box-shadow: 0 4px 12px rgba(167, 34, 27, 0.2);">
+                      <a href="{{url_download_pdf}}" style="display:inline-block;padding:14px 28px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;letter-spacing: 0.2px;">
+                        Download Kartu Peserta
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:18px 0 0;font-size:13px;line-height:1.55;color:#86868b;">
+                  Ada kendala dengan tombol di atas? Jangan khawatir, silakan salin dan buka tautan berikut pada peramban (browser) Anda: <br>
+                  <span style="color: #2563eb; word-break: break-all;">{{url_download_pdf}}</span>
+                </p>
+                {{/if}}
+
+                <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 32px 0 24px;">
+
+                <p style="margin:0;font-size:15px;line-height:1.6;color:#1d1d1f;font-weight: 600;">
+                  Persiapkan diri Anda untuk bertumbuh, berkarya, dan mengukir prestasi bersama kami!
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 32px;background:#fef3f2;color:#81201b;font-size:13px;line-height:1.5;font-weight: 500;text-align: center;letter-spacing: 0.3px;">
+                &copy; {{tahun}} - Panitia Pusat PPDB {{nama_yayasan}}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

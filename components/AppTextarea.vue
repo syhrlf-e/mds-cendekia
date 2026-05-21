@@ -52,16 +52,16 @@ const handleInput = (event: Event) => {
       :maxlength="maxlength"
       :rows="rows"
       :class="[
-        'w-full rounded-xl border bg-bg-surface p-4 text-text-primary outline-none transition-colors placeholder:text-text-secondary resize-y min-h-25',
+        'min-h-30 w-full resize-y rounded-lg border bg-bg-surface p-4 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
         error
-          ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
-          : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
-        disabled ? 'cursor-not-allowed opacity-60 bg-bg-base' : ''
+          ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
+          : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
+        disabled ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100' : ''
       ]"
       @input="handleInput"
       @blur="emit('blur', $event)"
       @focus="emit('focus', $event)"
     ></textarea>
-    <span v-if="error" class="text-sm text-error">{{ error }}</span>
+    <span v-if="error" class="text-xs text-error">{{ error }}</span>
   </div>
 </template>

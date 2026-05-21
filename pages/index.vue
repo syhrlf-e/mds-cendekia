@@ -1,5 +1,11 @@
 <script setup lang="ts">
 definePageMeta({
-  redirect: '/ppdb'
+  middleware: () => {
+    return navigateTo('/ppdb', { redirectCode: 302 })
+  }
 })
 </script>
+
+<template>
+  <div />
+</template>

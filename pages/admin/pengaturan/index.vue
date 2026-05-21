@@ -1,92 +1,111 @@
 <script setup lang="ts">
+import { Calendar } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useToast } from '~/composables/useToast'
-import { Save } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
   middleware: ['admin-auth']
 })
 
-useHead({ title: 'Pengaturan PPDB | Admin MDS Cendekia' })
+useHead({ title: 'Pengaturan | MDS Cendekia' })
 
 const { addToast } = useToast()
-const isSaving = ref(false)
 
+const isSaving = ref(false)
 const isRegistrationOpen = ref(true)
 const startDate = ref('2026-07-01')
 const endDate = ref('2026-08-31')
+const errorMsg = ref('')
+
+const validate = () => {
+  if (!isRegistrationOpen.value) return ''
+  if (!startDate.value && !endDate.value) return 'Harap isi tanggal buka dan tutup pendaftaran'
+  if (startDate.value && !endDate.value) return 'Harap isi tanggal tutup pendaftaran'
+  if (!startDate.value && endDate.value) return 'Harap isi tanggal buka pendaftaran'
+  if (startDate.value > endDate.value) return 'Tanggal tutup tidak boleh lebih awal dari tanggal buka'
+  return ''
+}
 
 const handleSave = async () => {
+  errorMsg.value = validate()
+  if (errorMsg.value) return
+
   isSaving.value = true
-
-  await new Promise(resolve => setTimeout(resolve, 1500))
-
+  await new Promise(resolve => setTimeout(resolve, 800))
   isSaving.value = false
-  addToast('Pengaturan PPDB berhasil disimpan.', 'success')
+  addToast('Pengaturan berhasil disimpan', 'success')
 }
 </script>
 
 <template>
-  <div class="flex flex-col h-full animate-in fade-in duration-300">
-    <div class="mb-8">
-      <h1 class="text-3xl font-heading font-bold text-text-primary mb-2">Pengaturan PPDB</h1>
-      <p class="text-text-secondary">Atur periode dan konfigurasi sistem penerimaan peserta didik baru.</p>
-    </div>
+  <div>
+    <header class="mb-8">
+      <h1 class="text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-text-primary">Pengaturan</h1>
+    </header>
 
-    <div class="bg-bg-surface border border-border rounded-2xl grow shadow-sm p-6 md:p-8 max-w-3xl">
-      <form @submit.prevent="handleSave" class="flex flex-col gap-8">
+    <form
+      class="max-w-120 rounded-2xl border border-border bg-bg-surface p-6"
+      @submit.prevent="handleSave"
+    >
+      <h2 class="mb-6 text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
+        Periode Pendaftaran
+      </h2>
 
-        <div class="flex items-center justify-between p-5 bg-bg-base border border-border rounded-xl">
-          <div class="flex flex-col">
-            <span class="text-lg font-heading font-semibold text-text-primary">Status Pendaftaran</span>
-            <span class="text-sm text-text-secondary mt-1">
-              {{ isRegistrationOpen ? 'Pendaftaran saat ini dibuka untuk umum.' : 'Pendaftaran saat ini ditutup.' }}
-            </span>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="isRegistrationOpen" class="sr-only peer" :disabled="isSaving">
-            <div class="w-14 h-7 bg-text-secondary/30 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-1 after:bg-white after:border-border after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-success"></div>
-          </label>
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold leading-[1.29] tracking-[-0.15px] text-text-primary">Status Pendaftaran</p>
+          <p class="mt-1 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+            {{ isRegistrationOpen ? 'Aktif' : 'Nonaktif' }}
+          </p>
         </div>
 
-        <div class="h-px w-full bg-border"></div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input v-model="isRegistrationOpen" type="checkbox" class="peer sr-only" :disabled="isSaving">
+          <span class="h-7 w-13 rounded-full bg-gray-300 transition-colors duration-150 peer-checked:bg-success peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand/20"></span>
+          <span class="absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-150 peer-checked:translate-x-6"></span>
+        </label>
+      </div>
 
-        <div class="flex flex-col gap-4">
-          <h3 class="text-lg font-heading font-semibold text-text-primary">Periode Pendaftaran</h3>
-          <p class="text-sm text-text-secondary mb-2">Atur rentang tanggal kapan pendaftaran dapat diakses oleh calon siswa baru di halaman utama.</p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <AppInput
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="start-date" class="text-sm font-medium text-text-primary">Tanggal Buka</label>
+          <div class="relative">
+            <input
+              id="start-date"
               v-model="startDate"
               type="date"
-              label="Tanggal Buka"
-              required
               :disabled="isSaving"
-            />
-            <AppInput
-              v-model="endDate"
-              type="date"
-              label="Tanggal Tutup"
-              required
-              :disabled="isSaving"
-            />
+              class="h-11 w-full rounded-lg border border-border bg-bg-surface px-4 pr-11 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors focus:border-brand focus:ring-[3px] focus:ring-brand/12 disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+            >
+            <Calendar class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
           </div>
         </div>
 
-        <div class="pt-4 flex justify-end">
-          <AppButton
-            type="submit"
-            variant="primary"
-            :loading="isSaving"
-            :disabled="isSaving"
-            class="min-w-37.5 shadow-md flex items-center justify-center gap-2"
-          >
-            <Save v-if="!isSaving" class="w-5 h-5 shrink-0" />
-            Simpan Pengaturan
-          </AppButton>
+        <div class="flex flex-col gap-1.5">
+          <label for="end-date" class="text-sm font-medium text-text-primary">Tanggal Tutup</label>
+          <div class="relative">
+            <input
+              id="end-date"
+              v-model="endDate"
+              type="date"
+              :disabled="isSaving"
+              class="h-11 w-full rounded-lg border border-border bg-bg-surface px-4 pr-11 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors focus:border-brand focus:ring-[3px] focus:ring-brand/12 disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+            >
+            <Calendar class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+          </div>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <p v-if="errorMsg" class="mt-4 text-xs leading-[1.4] tracking-[-0.08px] text-error">
+        {{ errorMsg }}
+      </p>
+
+      <div class="mt-8 flex justify-end">
+        <AppButton type="submit" variant="primary" :loading="isSaving" :disabled="isSaving">
+          Terapkan
+        </AppButton>
+      </div>
+    </form>
   </div>
 </template>

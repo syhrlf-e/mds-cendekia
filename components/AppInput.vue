@@ -20,6 +20,7 @@ const props = withDefaults(
     id?: string
     name?: string
     type?: string
+    autocomplete?: string
     inputmode?: InputMode
     maxlength?: number
     placeholder?: string
@@ -93,19 +94,20 @@ const handleInput = (event: Event) => {
         :id="inputId"
         :name="name"
         :type="type"
+        :autocomplete="autocomplete"
         :value="modelValue"
         :inputmode="inputmode"
         :maxlength="maxlength"
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'h-12 w-full rounded-xl border bg-bg-surface text-text-primary outline-none transition-colors placeholder:text-text-secondary',
+          'h-11 w-full rounded-lg border bg-bg-surface text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
-            ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
-            : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
+            ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
+            : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
           disabled
-            ? 'cursor-not-allowed bg-bg-base opacity-60'
+            ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100'
             : ''
         ]"
         @input="handleInput"
@@ -116,7 +118,7 @@ const handleInput = (event: Event) => {
 
     <span
       v-if="error"
-      class="text-sm text-error"
+      class="text-xs text-error"
     >
       {{ error }}
     </span>

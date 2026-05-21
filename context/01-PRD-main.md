@@ -72,7 +72,7 @@ MVP ini berfokus pada **flow pendaftaran** secara menyeluruh. Fitur profil sekol
 | Frontend | Nuxt.js + Tailwind CSS v4 |
 | Backend | NestJS |
 | Icon | Lucide Icons (`lucide-vue-next`) |
-| PDF Generation | jsPDF / pdfmake (FE-side) |
+| PDF Generation | BE-side PDF generation |
 | Wilayah API | api-wilayah-indonesia (emsifa) |
 | Design System | `npx getdesign@latest add apple` |
 | Font | Plus Jakarta Sans (heading) + Inter (body) via `@nuxt/google-fonts` |

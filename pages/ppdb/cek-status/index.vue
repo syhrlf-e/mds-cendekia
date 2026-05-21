@@ -7,6 +7,7 @@ useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
 type CheckState = 'initial' | 'loading' | 'success' | 'not-found'
 type StatusResult = {
   nomor: string
+  nisn: string
   tanggal: string
   nama: string
   ttl: string
@@ -18,8 +19,33 @@ type StatusResult = {
   alasanPenolakan: string
 }
 
+type CheckStatusResponse = {
+  status?: boolean
+  success?: boolean
+  message?: string
+  data?: {
+    id: number
+    kode: string
+    status: string
+    created_at: string
+    biodata?: {
+      nama?: string
+      tempat_lahir?: string
+      tanggal_lahir?: string
+      jenis_kelamin?: string
+      agama?: string
+      no_telepon?: string
+      email?: string
+    }
+    riwayat_pendidikan?: {
+      nama_sekolah_asal?: string
+    }
+  }
+}
+
 const router = useRouter()
 const nomorPendaftaran = ref('')
+const nisn = ref('')
 const state = ref<CheckState>('initial')
 const resultData = ref<StatusResult | null>(null)
 const isMobile = ref(false)
@@ -41,48 +67,65 @@ const hasResult = computed(() => state.value === 'success' || state.value === 'n
 const isChecking = computed(() => state.value === 'loading')
 const rightButtonLabel = computed(() => hasResult.value ? 'Cek Pendaftaran Lainnya' : 'Cek Sekarang')
 
+const { post } = useApi()
+
+const mapRegistrationStatus = (status?: string): StatusResult['status'] => {
+  const normalized = String(status || '').toLowerCase()
+
+  if (normalized.includes('diterima') || normalized.includes('approved') || normalized.includes('lulus')) return 'approved'
+  if (normalized.includes('ditolak') || normalized.includes('rejected')) return 'rejected'
+  return 'pending'
+}
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '-'
+
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
 const handleCheck = async () => {
   if (hasResult.value) {
     checkAnother()
     return
   }
 
-  if (!nomorPendaftaran.value.trim()) return
+  if (!nomorPendaftaran.value.trim() || !nisn.value.trim()) return
 
   state.value = 'loading'
   resultData.value = null
 
-  await new Promise(resolve => setTimeout(resolve, 900))
-
   const normalizedNumber = nomorPendaftaran.value.trim().toUpperCase()
-  const lastDigit = Number(normalizedNumber.match(/\d$/)?.[0] ?? 0)
+  const normalizedNisn = nisn.value.trim()
 
-  if (normalizedNumber.includes('404') || lastDigit === 9) {
+  const { data, error } = await post<CheckStatusResponse>('/register/cek-status', {
+    kode_pendaftaran: normalizedNumber,
+    nisn: normalizedNisn
+  }, { showErrorToast: false })
+
+  if (error || !data?.status || !data.data) {
     state.value = 'not-found'
     return
   }
 
-  let status: StatusResult['status'] = 'pending'
-  let alasanPenolakan = ''
-
-  if (lastDigit % 3 === 1) {
-    status = 'approved'
-  } else if (lastDigit % 3 === 2) {
-    status = 'rejected'
-    alasanPenolakan = 'Berkas tidak lengkap dan nilai rata-rata rapor di bawah standar.'
-  }
+  const biodata = data.data.biodata || {}
+  const tanggalLahir = formatDate(biodata.tanggal_lahir)
 
   resultData.value = {
-    nomor: normalizedNumber,
-    tanggal: '17/05/2026',
-    nama: 'Syahrul Efendi',
-    ttl: 'Jakarta, 12 Januari 2011',
-    jenisKelamin: 'Laki-laki',
-    sekolah: 'SMP Negeri 1 Jakarta',
-    email: 'syahrul@example.com',
-    noHp: '081234567890',
-    status,
-    alasanPenolakan
+    nomor: data.data.kode || normalizedNumber,
+    nisn: normalizedNisn,
+    tanggal: formatDate(data.data.created_at),
+    nama: biodata.nama || '-',
+    ttl: `${biodata.tempat_lahir || '-'}, ${tanggalLahir}`,
+    jenisKelamin: biodata.jenis_kelamin || '-',
+    sekolah: data.data.riwayat_pendidikan?.nama_sekolah_asal || '-',
+    email: biodata.email || '-',
+    noHp: biodata.no_telepon || '-',
+    status: mapRegistrationStatus(data.data.status),
+    alasanPenolakan: data.message || ''
   }
 
   state.value = 'success'
@@ -92,18 +135,19 @@ const checkAnother = () => {
   state.value = 'initial'
   resultData.value = null
   nomorPendaftaran.value = ''
+  nisn.value = ''
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-bg-base px-4 py-8 md:py-12">
-    <div class="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-[640px] flex-col justify-center">
+    <div class="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-160 flex-col justify-center">
       <div class="mb-8 text-center">
         <h1 class="mb-3 font-heading text-3xl font-semibold text-text-primary">
           Cek Status Pendaftaran
         </h1>
         <p class="text-text-secondary">
-          Masukkan nomor pendaftaran untuk melihat hasil seleksi.
+          Masukkan nomor pendaftaran dan NISN untuk melihat hasil seleksi.
         </p>
       </div>
 
@@ -113,6 +157,16 @@ const checkAnother = () => {
           label="Nomor Pendaftaran"
           placeholder="Contoh: MDS-2025-0001"
           required
+          :disabled="isChecking || hasResult"
+        />
+        <AppInput
+          v-model="nisn"
+          label="NISN"
+          placeholder="Contoh: 0101234567"
+          required
+          inputmode="numeric"
+          :maxlength="10"
+          :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
           :disabled="isChecking || hasResult"
         />
 
@@ -145,6 +199,8 @@ const checkAnother = () => {
                   <div class="grid grid-cols-3 gap-y-2 text-sm">
                     <span class="text-text-secondary">Nomor Pendaftaran</span>
                     <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
+                    <span class="text-text-secondary">NISN</span>
+                    <span class="col-span-2 font-medium text-text-primary">{{ resultData.nisn }}</span>
                     <span class="text-text-secondary">Tanggal Daftar</span>
                     <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
                   </div>
@@ -196,7 +252,7 @@ const checkAnother = () => {
           <AppButton
             type="submit"
             variant="primary"
-            :disabled="(!nomorPendaftaran.trim() && !hasResult) || isChecking"
+            :disabled="((!nomorPendaftaran.trim() || !nisn.trim()) && !hasResult) || isChecking"
             :loading="isChecking"
             class="w-full sm:w-auto"
           >
@@ -224,6 +280,8 @@ const checkAnother = () => {
           <div class="grid grid-cols-3 gap-y-3 text-sm">
             <span class="text-text-secondary">Nomor</span>
             <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
+            <span class="text-text-secondary">NISN</span>
+            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nisn }}</span>
             <span class="text-text-secondary">Tanggal</span>
             <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
           </div>

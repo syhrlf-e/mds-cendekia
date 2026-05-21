@@ -107,9 +107,9 @@ melainkan enhancement UX untuk mengurangi input manual.
 - Query tidak boleh hanya menggunakan nama Kelurahan
   karena beberapa wilayah dapat memiliki nama yang sama
 
-## 4. PDF Generation (FE-side)
+## 4. PDF Generation (BE-side)
 
-Kartu peserta di-generate di sisi FE — BE tidak perlu handle generate PDF.
+Update terbaru: kartu peserta di-generate di sisi BE. FE tidak lagi bertanggung jawab membuat PDF kartu peserta.
 
 ### Library
 
@@ -121,13 +121,14 @@ npm install pdfmake
 
 ### Flow
 
-1. User klik link di email approval → redirect ke `/ppdb/kartu-peserta?id={param}`
-2. FE hit API → ambil data peserta berdasarkan parameter URL
-3. FE render data ke template kartu peserta
-4. FE generate PDF dari template
-5. PDF otomatis ter-download di browser user
+1. Admin approve pendaftar.
+2. BE update status dan generate PDF kartu peserta.
+3. BE mengirim email approval.
+4. Email approval dapat melampirkan PDF kartu peserta, menyediakan link download PDF dari BE, atau keduanya.
 
-### Layout PDF (lihat detail di `03-PRD-user-pages.md` section 5)
+### Layout PDF
+
+Layout PDF mengikuti desain kartu peserta pada `03-PRD-user-pages.md` section 5, tetapi rendering dan file PDF final dibuat oleh BE.
 
 ---
 
@@ -139,7 +140,7 @@ FE tidak perlu handle pengiriman email — FE hanya trigger action (submit, appr
 
 **3 trigger email:**
 1. Submit formulir + berkas berhasil → Email konfirmasi + nomor pendaftaran
-2. Admin approve → Email approval + link kartu peserta
+2. Admin approve → Email approval + PDF kartu peserta dari BE
 3. Admin reject → Email rejection + alasan penolakan
 
 > Detail konten email ada di `07-PRD-email.md`

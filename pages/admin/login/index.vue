@@ -1,148 +1,204 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { AlertTriangle } from 'lucide-vue-next'
+import { AlertTriangle, Eye, EyeOff } from 'lucide-vue-next'
+import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 definePageMeta({
   layout: false
 })
 
-useHead({ title: 'Login Admin | PPDB MDS Cendekia' })
+useHead({ title: 'Login Admin | MDS Cendekia' })
 
 const router = useRouter()
+const { post } = useApi()
+
 const username = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const isSubmitting = ref(false)
 const errorMsg = ref('')
-
-const failedAttempts = ref(0)
+const localFailedAttempts = ref(0)
 const lockoutSeconds = ref(0)
+
 let timer: ReturnType<typeof setInterval> | null = null
 
 const isLockedOut = computed(() => lockoutSeconds.value > 0)
+const canSubmit = computed(() => username.value.trim() && password.value && !isSubmitting.value && !isLockedOut.value)
 
-const { post } = useApi()
+const getLockoutSecondsFromError = (error: any) => {
+  const data = error?.data || error?.response?._data
+  const retryAfter = Number(error?.response?.headers?.get?.('retry-after'))
+  const candidates = [
+    data?.lockoutSeconds,
+    data?.retryAfter,
+    data?.retryAfterSeconds,
+    data?.remainingSeconds,
+    retryAfter
+  ]
+
+  return candidates.map(Number).find(value => Number.isFinite(value) && value > 0) || 0
+}
+
+const getFallbackLockout = () => {
+  if (localFailedAttempts.value === 4) return 30
+  if (localFailedAttempts.value === 5) return 60
+  if (localFailedAttempts.value === 6) return 300
+  if (localFailedAttempts.value >= 7) return 900
+  return 0
+}
+
+const startLockout = (seconds: number) => {
+  if (timer) clearInterval(timer)
+  lockoutSeconds.value = seconds
+  errorMsg.value = ''
+
+  timer = setInterval(() => {
+    lockoutSeconds.value -= 1
+
+    if (lockoutSeconds.value <= 0) {
+      if (timer) clearInterval(timer)
+      timer = null
+      lockoutSeconds.value = 0
+    }
+  }, 1000)
+}
 
 const handleLogin = async () => {
-  if (!username.value || !password.value) {
-    errorMsg.value = 'Username dan Password wajib diisi.'
+  if (!username.value.trim() || !password.value) {
+    errorMsg.value = 'Username dan password wajib diisi.'
     return
   }
 
   isSubmitting.value = true
   errorMsg.value = ''
 
-  const { data, error } = await post<{ success: boolean, message: string }>('/auth/login', {
-    username: username.value,
+  const { data, error } = await post<{ status?: boolean, success?: boolean, message?: string }>('/auth/login', {
+    username: username.value.trim(),
     password: password.value
   }, { showErrorToast: false })
 
   isSubmitting.value = false
 
   if (error) {
-    failedAttempts.value++
-    errorMsg.value = 'Username atau password salah.'
+    localFailedAttempts.value += 1
+    const lockout = getLockoutSecondsFromError(error) || getFallbackLockout()
 
-    if (failedAttempts.value === 4) startLockout(30)
-    else if (failedAttempts.value === 5) startLockout(60)
-    else if (failedAttempts.value === 6) startLockout(300)
-    else if (failedAttempts.value >= 7) startLockout(900)
+    if (lockout > 0) {
+      startLockout(lockout)
+      return
+    }
+
+    if (!error?.response?.status && !error?.statusCode) {
+      errorMsg.value = 'Login belum bisa terhubung ke server. Periksa konfigurasi CORS kredensial di backend.'
+      return
+    }
+
+    errorMsg.value = error?.data?.message || error?.statusMessage || 'Username atau password salah.'
     return
   }
 
-  if (data?.success) {
-    failedAttempts.value = 0
-    router.push('/admin/pendaftaran')
-  } else {
-    errorMsg.value = 'Terjadi kesalahan sistem.'
+  if (data?.status || data?.success) {
+    localFailedAttempts.value = 0
+    await router.push('/admin/pendaftaran')
+    return
   }
+
+  errorMsg.value = data?.message || 'Login belum berhasil. Periksa kembali kredensial admin.'
 }
 
-const startLockout = (seconds: number) => {
-  lockoutSeconds.value = seconds
-  errorMsg.value = ''
+const formatTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
 
-  timer = setInterval(() => {
-    lockoutSeconds.value--
-    if (lockoutSeconds.value <= 0) {
-      if (timer) clearInterval(timer)
-      lockoutSeconds.value = 0
-    }
-  }, 1000)
+  if (minutes > 0) return `${minutes} menit ${remainingSeconds} detik`
+  return `${remainingSeconds} detik`
 }
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
-
-const formatTime = (seconds: number) => {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  if (m > 0) return `${m} menit ${s} detik`
-  return `${s} detik`
-}
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-bg-surface border border-border shadow-xl rounded-2xl overflow-hidden transition-all duration-300">
-
-      <div v-if="isLockedOut" class="p-10 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
-        <div class="w-20 h-20 bg-warning/10 text-warning rounded-full flex items-center justify-center mb-6">
-          <AlertTriangle class="w-10 h-10" />
-        </div>
-        <h2 class="text-2xl font-heading font-bold text-text-primary mb-2">Terlalu Banyak Percobaan Login</h2>
-        <p class="text-text-secondary mb-8">Sistem mendeteksi aktivitas login yang tidak wajar. Demi keamanan, fitur login dinonaktifkan sementara.</p>
-
-        <div class="bg-bg-base w-full py-4 rounded-xl border border-border mb-6">
-          <p class="text-sm font-medium text-text-secondary mb-1">Coba lagi dalam</p>
-          <p class="text-2xl font-heading font-bold text-warning">{{ formatTime(lockoutSeconds) }}</p>
-        </div>
-
-        <AppButton variant="primary" disabled class="w-full cursor-not-allowed">
+  <div class="flex min-h-screen min-w-5xl items-center justify-center bg-bg-base p-10">
+    <section class="w-100 rounded-2xl border border-border bg-bg-surface p-10 shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0]">
+      <div v-if="isLockedOut" class="flex flex-col items-center text-center">
+        <AlertTriangle class="mb-6 h-10 w-10 text-error" />
+        <h1 class="mb-3 text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
+          Terlalu Banyak Percobaan Login
+        </h1>
+        <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">Coba lagi dalam</p>
+        <p class="mb-8 mt-3 text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-brand">
+          {{ formatTime(lockoutSeconds) }}
+        </p>
+        <AppButton variant="primary" disabled class="w-full">
           Login
         </AppButton>
       </div>
 
-      <div v-else class="p-8 md:p-10 animate-in fade-in zoom-in-95 duration-300">
-        <div class="flex flex-col items-center mb-8">
-          <h1 class="text-2xl font-heading font-bold text-text-primary">Admin Login</h1>
-          <p class="text-sm text-text-secondary mt-1">Masuk untuk mengelola sistem PPDB</p>
+      <div v-else>
+        <div class="mb-8 text-center">
+          <img
+            src="/images/logo-mds-main.png"
+            alt="Logo MDS Cendekia"
+            class="mx-auto mb-5 h-16 w-16 rounded-2xl object-contain"
+          >
+          <h1 class="text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-text-primary">Login Admin</h1>
+          <p class="mt-2 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+            Masuk untuk mengelola PPDB MDS Cendekia
+          </p>
         </div>
 
-        <form @submit.prevent="handleLogin" class="flex flex-col gap-5">
+        <form class="flex flex-col gap-4" @submit.prevent="handleLogin">
           <AppInput
             v-model="username"
             label="Username"
-            placeholder="Ketikkan username"
+            placeholder="Masukkan username admin"
             required
-            :disabled="isSubmitting"
-          />
-          <AppInput
-            v-model="password"
-            type="password"
-            label="Password"
-            placeholder="••••••••"
-            required
+            autocomplete="username"
             :disabled="isSubmitting"
           />
 
-          <div v-if="errorMsg" class="p-3 bg-error/10 border border-error rounded-xl text-error text-sm font-medium text-center animate-in slide-in-from-top-2">
-            {{ errorMsg }}
+          <div class="flex w-full flex-col gap-1.5">
+            <label for="admin-password" class="text-sm font-medium text-text-primary">Password</label>
+            <div class="relative">
+              <input
+                id="admin-password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Masukkan password"
+                autocomplete="current-password"
+                :disabled="isSubmitting"
+                class="h-11 w-full rounded-lg border border-border bg-bg-surface px-4 pr-12 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand focus:ring-[3px] focus:ring-brand/12 disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+              >
+              <button
+                type="button"
+                class="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-50 hover:text-text-primary"
+                :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                :disabled="isSubmitting"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOff v-if="showPassword" class="h-4 w-4" />
+                <Eye v-else class="h-4 w-4" />
+              </button>
+            </div>
           </div>
+
+          <p v-if="errorMsg" class="text-xs leading-[1.4] tracking-[-0.08px] text-error">
+            {{ errorMsg }}
+          </p>
 
           <AppButton
             type="submit"
             variant="primary"
-            :disabled="!username || !password || isSubmitting"
+            :disabled="!canSubmit"
             :loading="isSubmitting"
-            class="w-full shadow-md mt-2"
+            class="mt-2 w-full"
           >
             Masuk
           </AppButton>
         </form>
       </div>
-
-    </div>
+    </section>
   </div>
 </template>

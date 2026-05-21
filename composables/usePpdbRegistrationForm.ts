@@ -15,6 +15,7 @@ export const PPDB_ORANG_TUA_ROLE_CONFIG = {
 
 export type PpdbBiodataForm = {
   nama: string
+  nisn: string
   nik: string
   email: string
   no_telepon: string
@@ -72,6 +73,18 @@ export type PpdbWilayahLabels = Partial<{
   kelurahan: string
 }>
 
+const normalizeGaji = (value: string) => {
+  const gajiMap: Record<string, string> = {
+    '<1M': '1000000',
+    '1M-2M': '2000000',
+    '2M-5M': '5000000',
+    '5M-10M': '10000000',
+    '>10M': '10000001'
+  }
+
+  return gajiMap[value] || value
+}
+
 export const createEmptyOrangTua = (
   type: keyof typeof PPDB_ORANG_TUA_ROLE_CONFIG
 ): PpdbOrangTuaForm => ({
@@ -92,6 +105,7 @@ export const usePpdbRegistrationForm = () => {
   const storageKey = 'ppdb-registration-form'
   const biodata = useState<PpdbBiodataForm>('ppdb:biodata', () => ({
     nama: '',
+    nisn: '',
     nik: '',
     email: '',
     no_telepon: '',
@@ -162,13 +176,14 @@ export const usePpdbRegistrationForm = () => {
         agama: item.agama,
         pendidikan: item.pendidikan,
         pekerjaan: item.pekerjaan,
-        gaji: item.gaji,
+        gaji: normalizeGaji(item.gaji),
         no_telepon: item.no_telepon,
         email: item.email
       }))
   })
 
   const buildPayload = (wilayahLabels: PpdbWilayahLabels = {}) => ({
+    nisn: biodata.value.nisn,
     biodata: {
       nama: biodata.value.nama,
       nik: biodata.value.nik,
@@ -192,13 +207,14 @@ export const usePpdbRegistrationForm = () => {
     riwayat_pendidikan: sekolah.value,
     orang_tua: payloadOrangTua.value,
     id_program: Number(biodata.value.id_program || useRuntimeConfig().public.ppdbProgramId || 1),
-    id_gelombang: Number(biodata.value.id_gelombang || useRuntimeConfig().public.ppdbGelombangId || 2)
+    id_gelombang: Number(biodata.value.id_gelombang || useRuntimeConfig().public.ppdbGelombangId || 3)
   })
 
   const buildMultipartPayload = (files: PpdbRegistrationFiles, wilayahLabels: PpdbWilayahLabels = {}) => {
     const payload = buildPayload(wilayahLabels)
     const formData = new FormData()
 
+    formData.append('nisn', payload.nisn)
     formData.append('biodata', JSON.stringify(payload.biodata))
     formData.append('alamat', JSON.stringify(payload.alamat))
     formData.append('riwayat_pendidikan', JSON.stringify(payload.riwayat_pendidikan))
@@ -269,6 +285,7 @@ export const usePpdbRegistrationForm = () => {
   const resetForm = () => {
     Object.assign(biodata.value, {
       nama: '',
+      nisn: '',
       nik: '',
       email: '',
       no_telepon: '',

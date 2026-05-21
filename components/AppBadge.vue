@@ -10,18 +10,18 @@ const statusConfig = computed(() => {
   switch (props.status) {
     case 'pending':
       return {
-        class: 'bg-status-pending text-text-primary',
-        defaultText: 'Menunggu Persetujuan'
+        class: 'bg-status-pending-bg text-status-pending-text',
+        defaultText: 'Menunggu'
       }
     case 'approved':
       return {
-        class: 'bg-status-approved text-white',
-        defaultText: 'Pendaftaran Diterima'
+        class: 'bg-status-approved-bg text-status-approved-text',
+        defaultText: 'Diterima'
       }
     case 'rejected':
       return {
-        class: 'bg-status-rejected text-white',
-        defaultText: 'Pendaftaran Ditolak'
+        class: 'bg-status-rejected-bg text-status-rejected-text',
+        defaultText: 'Ditolak'
       }
     default:
       return {
@@ -35,7 +35,7 @@ const statusConfig = computed(() => {
 <template>
   <span
     :class="[
-      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+      'inline-flex items-center rounded-full px-2.5 py-0.75 text-xs font-semibold',
       statusConfig.class
     ]"
   >

@@ -27,6 +27,7 @@
 
   --color-bg-base: #f9fafb;
   --color-bg-surface: #ffffff;
+  --color-bg-parchment: #f5f5f7;
   
   --color-brand: #a7221b;
   --color-brand-hover: #bb221a;
@@ -35,18 +36,23 @@
   --color-cta-hover: #fad74f;
   --color-cta-text: #81201b;
   
-  --color-text-primary: #1a1a1a;
+  --color-text-primary: #1d1d1f;
   --color-text-secondary: #6b7280;
+  --color-text-muted: #86868b;
   
-  --color-border: #e5e7eb;
+  --color-border: #fee3e2;
+  --color-border-soft: rgba(0, 0, 0, 0.06);
   
   --color-success: #16a34a;
   --color-error: #dc2626;
   --color-warning: #d97706;
   
-  --color-status-pending: #fbe579;
-  --color-status-approved: #16a34a;
-  --color-status-rejected: #dc2626;
+  --color-status-pending-bg: #fef9c3;
+  --color-status-pending-text: #854d0e;
+  --color-status-approved-bg: #dcfce7;
+  --color-status-approved-text: #166534;
+  --color-status-rejected-bg: #fee2e2;
+  --color-status-rejected-text: #991b1b;
 
   --font-heading: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', sans-serif;
