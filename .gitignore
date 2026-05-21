@@ -17,8 +17,18 @@ logs
 .DS_Store
 .fleet
 .idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 
 # Local env files
 .env
 .env.*
 !.env.example
+
+# Internal product/design notes
+context/
+DESIGN.md
+
+# Source favicon export folder; production-ready assets live in public/
+favicon_mds/

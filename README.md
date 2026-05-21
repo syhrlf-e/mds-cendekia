@@ -37,7 +37,6 @@ Project ini berisi frontend PPDB MDS Cendekia dengan dua area utama:
 assets/css/main.css              Global style dan Tailwind entry
 components/                      Reusable UI components
 composables/                     Logic reusable untuk API, form PPDB, wilayah, toast
-context/                         PRD dan dokumen kebutuhan produk
 email-templates/                 Template email .hbs dan dokumentasi untuk backend
 layouts/admin.vue                Layout khusus admin
 middleware/admin-auth.ts         Guard halaman admin
@@ -46,6 +45,8 @@ public/                          Asset publik, logo, favicon, manifest
 server/api/register/             Bridge endpoint registrasi ke backend
 server/utils/upstream-api.ts     Helper request ke API backend
 ```
+
+Dokumen PRD, catatan desain eksploratif, dan source export favicon disimpan sebagai dokumen internal lokal dan tidak ikut dipublikasikan ke repository.
 
 ## Asset Publik
 
@@ -194,6 +195,6 @@ npm run build
 ## Catatan Development
 
 - Project ini desktop focused untuk halaman admin.
-- UI mengikuti design language yang terdokumentasi di folder `context`.
+- UI mengikuti design language internal MDS Cendekia yang dijaga konsisten di komponen aplikasi.
 - Jangan mengubah nama field request backend tanpa mengecek API docs terbaru.
 - Untuk perubahan alur pendaftaran, sinkronkan dengan backend karena sebagian proses final seperti PDF dan email berada di sisi backend.
