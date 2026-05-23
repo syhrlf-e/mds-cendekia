@@ -3,6 +3,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineNuxtConfig({
   srcDir: '.',
   compatibilityDate: '2024-11-01',
+  ignore: ['REFERENSI/**'],
+  typescript: {
+    tsConfig: {
+      exclude: ['../REFERENSI/**']
+    }
+  },
   app: {
     head: {
       title: 'MDS Cendekia',
