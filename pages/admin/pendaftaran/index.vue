@@ -163,10 +163,28 @@ const isDetailModalOpen = ref(false)
 const isApproveModalOpen = ref(false)
 const isRejectModalOpen = ref(false)
 const isRejectGuardOpen = ref(false)
+const isRejectBerkasModalOpen = ref(false)
 const rejectReason = ref('')
+const rejectBerkasReason = ref('')
 const isProcessingApprove = ref(false)
 const isProcessingReject = ref(false)
 const isProcessingVerifyBerkas = ref(false)
+
+const rejectionReasons = [
+  'Anda tidak memenuhi kriteria pendaftaran',
+  'Kuota pendaftaran sudah terpenuhi',
+  'Tidak lolos seleksi administrasi',
+  'Program atau paket yang dipilih tidak tersedia',
+  'Keputusan panitia penerimaan peserta didik baru'
+]
+
+const berkasRejectionReasons = [
+  'Berkas tidak valid',
+  'Berkas pendaftaran belum lengkap',
+  'Berkas tidak terbaca dengan jelas',
+  'Data pada berkas tidak sesuai',
+  'Format berkas tidak sesuai ketentuan'
+]
 
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -185,6 +203,8 @@ const normalizeStatus = (status: string): RegistrationStatus => {
 }
 
 const normalizeActionId = (id: string) => id.replace(/[^a-zA-Z0-9]/g, '')
+const getAdminActionId = (id: string) => id.trim()
+const getBerkasActionId = (id: string) => normalizeActionId(id)
 
 const readPublicStatusText = (response?: PublicCheckStatusResponse | null) => {
   return response?.data?.status_pendaftaran || response?.data?.status || ''
@@ -331,8 +351,45 @@ const loadPendaftar = async () => {
 
 const isBerkasVerified = computed(() => {
   const status = selectedItem.value?.statusBerkas.toLowerCase() || ''
-  return (status.includes('verifikasi') && !status.includes('menunggu')) || status.includes('terverifikasi')
+  return (
+    (status.includes('verifikasi') && !status.includes('menunggu')) ||
+    status.includes('terverifikasi') ||
+    status.includes('diterima') ||
+    status.includes('disetujui') ||
+    status.includes('approved') ||
+    (status.includes('valid') && !status.includes('tidak valid'))
+  )
 })
+
+const isBerkasRejected = computed(() => {
+  const status = selectedItem.value?.statusBerkas.toLowerCase() || ''
+  return status.includes('tolak') || status.includes('ditolak') || status.includes('rejected') || status.includes('tidak valid')
+})
+
+const isBerkasFinal = computed(() => isBerkasVerified.value || isBerkasRejected.value)
+
+const getBerkasStatusClass = (status: string) => {
+  const normalized = status.toLowerCase()
+
+  if (normalized.includes('tolak') || normalized.includes('ditolak') || normalized.includes('rejected') || normalized.includes('tidak valid')) {
+    return 'bg-status-rejected-bg text-status-rejected-text'
+  }
+
+  if ((normalized.includes('verifikasi') && !normalized.includes('menunggu')) || normalized.includes('terverifikasi')) {
+    return 'bg-status-approved-bg text-status-approved-text'
+  }
+
+  if (
+    normalized.includes('diterima') ||
+    normalized.includes('disetujui') ||
+    normalized.includes('approved') ||
+    (normalized.includes('valid') && !normalized.includes('tidak valid'))
+  ) {
+    return 'bg-status-approved-bg text-status-approved-text'
+  }
+
+  return 'bg-status-pending-bg text-status-pending-text'
+}
 
 const fieldSections = computed(() => {
   if (!selectedItem.value) return []
@@ -511,7 +568,7 @@ const handleApprove = async () => {
   if (!selectedItem.value) return
 
   isProcessingApprove.value = true
-  const actionId = normalizeActionId(selectedItem.value.id)
+  const actionId = getAdminActionId(selectedItem.value.id)
 
   const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/status', {
     id: actionId,
@@ -554,14 +611,20 @@ const handleApprove = async () => {
 
 const handleReject = async () => {
   if (!selectedItem.value) return
+  const selectedReason = rejectReason.value.trim()
+
+  if (!selectedReason) {
+    useToast().addToast('Pilih alasan penolakan terlebih dahulu.', 'error')
+    return
+  }
 
   isProcessingReject.value = true
-  const actionId = normalizeActionId(selectedItem.value.id)
+  const actionId = getAdminActionId(selectedItem.value.id)
 
   const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/status', {
     id: actionId,
     accept: false,
-    notes: rejectReason.value.trim()
+    notes: selectedReason
   }, { showErrorToast: false })
 
   isProcessingReject.value = false
@@ -597,16 +660,22 @@ const handleReject = async () => {
   useToast().addToast(message || 'Pendaftar berhasil ditolak', 'success')
 }
 
-const handleVerifyBerkas = async () => {
+const handleVerifyBerkas = async (accept: boolean) => {
   if (!selectedItem.value) return
+  const selectedReason = rejectBerkasReason.value.trim()
+
+  if (!accept && !selectedReason) {
+    useToast().addToast('Pilih alasan penolakan berkas terlebih dahulu.', 'error')
+    return
+  }
 
   isProcessingVerifyBerkas.value = true
-  const actionId = normalizeActionId(selectedItem.value.id)
+  const actionId = getBerkasActionId(selectedItem.value.id)
 
   const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/berkas', {
     id: actionId,
-    accept: true,
-    notes: ''
+    accept,
+    notes: accept ? 'Berkas valid' : selectedReason
   }, { showErrorToast: false })
 
   isProcessingVerifyBerkas.value = false
@@ -620,8 +689,11 @@ const handleVerifyBerkas = async () => {
     return
   }
 
-  selectedItem.value.statusBerkas = 'Terverifikasi'
-  useToast().addToast(message || 'Berkas pendaftar berhasil diverifikasi', 'success')
+  selectedItem.value.statusBerkas = accept ? 'Terverifikasi' : 'Ditolak'
+  isRejectBerkasModalOpen.value = false
+  rejectBerkasReason.value = ''
+  await loadPendaftar()
+  useToast().addToast(message || (accept ? 'Berkas pendaftar berhasil diverifikasi' : 'Berkas pendaftar berhasil ditolak'), 'success')
 }
 
 onMounted(loadPendaftar)
@@ -832,6 +904,12 @@ watch(totalPages, value => {
                         {{ selectedItem.nama }}
                       </h2>
                       <AppBadge :status="selectedItem.status" :text="selectedItem.statusText" />
+                      <span
+                        class="rounded-full px-2.5 py-0.75 text-xs font-semibold"
+                        :class="getBerkasStatusClass(selectedItem.statusBerkas)"
+                      >
+                        Berkas: {{ selectedItem.statusBerkas }}
+                      </span>
                     </div>
                     <p class="mt-3 text-[17px] font-medium leading-[1.47] tracking-[-0.2px] text-text-secondary">
                       {{ selectedItem.id }}
@@ -900,16 +978,26 @@ watch(totalPages, value => {
                     </p>
                   </div>
                   <div class="flex shrink-0 items-center gap-3">
-                    <span class="rounded-full bg-status-pending-bg px-2.5 py-0.75 text-xs font-semibold text-status-pending-text">
+                    <span
+                      class="rounded-full px-2.5 py-0.75 text-xs font-semibold"
+                      :class="getBerkasStatusClass(selectedItem.statusBerkas)"
+                    >
                       {{ selectedItem.statusBerkas }}
                     </span>
                     <AppButton
+                      variant="danger"
+                      :disabled="isBerkasFinal || isProcessingVerifyBerkas"
+                      @click="rejectBerkasReason = ''; isRejectBerkasModalOpen = true"
+                    >
+                      Tolak Berkas
+                    </AppButton>
+                    <AppButton
                       variant="success"
                       :loading="isProcessingVerifyBerkas"
-                      :disabled="isBerkasVerified || isProcessingVerifyBerkas"
-                      @click="handleVerifyBerkas"
+                      :disabled="isBerkasFinal || isProcessingVerifyBerkas"
+                      @click="handleVerifyBerkas(true)"
                     >
-                      {{ isBerkasVerified ? 'Sudah Diverifikasi' : 'Verifikasi Berkas' }}
+                      {{ isBerkasVerified ? 'Berkas Disetujui' : isBerkasRejected ? 'Berkas Ditolak' : 'Setujui Berkas' }}
                     </AppButton>
                   </div>
                 </div>
@@ -933,12 +1021,24 @@ watch(totalPages, value => {
 
           <footer class="shrink-0 border-t border-border bg-bg-surface px-8 py-4">
             <template v-if="selectedItem.status === 'pending'">
-              <div class="flex items-center justify-between gap-6">
+              <div v-if="isBerkasVerified" class="flex items-center justify-between gap-6">
                 <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
                 <div class="flex items-center gap-3">
-                  <AppButton variant="danger" @click="promptReject">Tolak</AppButton>
-                  <AppButton variant="success" @click="isApproveModalOpen = true">Terima</AppButton>
+                  <AppButton variant="danger" @click="promptReject">Tolak Pendaftar</AppButton>
+                  <AppButton variant="success" @click="isApproveModalOpen = true">Terima Pendaftar</AppButton>
                 </div>
+              </div>
+              <div v-else-if="isBerkasRejected" class="flex items-center justify-between gap-6">
+                <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
+                <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+                  Berkas sudah ditolak. Alasan penolakan telah dikirim ke pendaftar.
+                </p>
+              </div>
+              <div v-else class="flex items-center justify-between gap-6">
+                <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
+                <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+                  Verifikasi berkas terlebih dahulu sebelum mengambil keputusan final.
+                </p>
               </div>
             </template>
             <div v-else class="flex items-center justify-between gap-6">
@@ -966,18 +1066,30 @@ watch(totalPages, value => {
 
   <AppModal
     :model-value="isRejectModalOpen"
-    title="Alasan Penolakan"
+    title="Alasan Penolakan Pendaftar"
     width="max-w-[480px]"
     :z-index="60"
     @update:model-value="attemptCancelReject"
   >
-    <AppTextarea
-      v-model="rejectReason"
-      placeholder="Tuliskan alasan penolakan..."
-      required
-      :rows="5"
-      :disabled="isProcessingReject"
-    />
+    <div class="space-y-4">
+      <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+        Pilih alasan keputusan akhir yang akan dikirim sebagai catatan ke sistem.
+      </p>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="reason in rejectionReasons"
+          :key="reason"
+          type="button"
+          :disabled="isProcessingReject"
+          class="rounded-full border px-4 py-2 text-sm font-medium leading-none transition-colors disabled:pointer-events-none disabled:opacity-50"
+          :class="rejectReason === reason ? 'border-error bg-status-rejected-bg text-error' : 'border-border-soft bg-bg-base text-text-secondary hover:border-error/40 hover:bg-status-rejected-bg hover:text-error'"
+          @click="rejectReason = reason"
+        >
+          {{ reason }}
+        </button>
+      </div>
+    </div>
 
     <template #footer>
       <AppButton variant="ghost" :disabled="isProcessingReject" @click="attemptCancelReject(false)">Batal</AppButton>
@@ -995,6 +1107,46 @@ watch(totalPages, value => {
       <AppButton variant="danger" @click="confirmCancelReject">
         <XCircle class="mr-2 h-4 w-4" />
         Ya, Keluar
+      </AppButton>
+    </template>
+  </AppModal>
+
+  <AppModal v-model="isRejectBerkasModalOpen" title="Alasan Penolakan Berkas" width="max-w-[480px]" :z-index="60">
+    <div class="space-y-4">
+      <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+        Pilih alasan penolakan berkas yang akan dikirim sebagai catatan ke sistem.
+      </p>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="reason in berkasRejectionReasons"
+          :key="reason"
+          type="button"
+          :disabled="isProcessingVerifyBerkas"
+          class="rounded-full border px-4 py-2 text-sm font-medium leading-none transition-colors disabled:pointer-events-none disabled:opacity-50"
+          :class="rejectBerkasReason === reason ? 'border-error bg-status-rejected-bg text-error' : 'border-border-soft bg-bg-base text-text-secondary hover:border-error/40 hover:bg-status-rejected-bg hover:text-error'"
+          @click="rejectBerkasReason = reason"
+        >
+          {{ reason }}
+        </button>
+      </div>
+    </div>
+
+    <template #footer>
+      <AppButton
+        variant="ghost"
+        :disabled="isProcessingVerifyBerkas"
+        @click="isRejectBerkasModalOpen = false"
+      >
+        Batal
+      </AppButton>
+      <AppButton
+        variant="danger"
+        :disabled="!rejectBerkasReason.trim() || isProcessingVerifyBerkas"
+        :loading="isProcessingVerifyBerkas"
+        @click="handleVerifyBerkas(false)"
+      >
+        Kirim
       </AppButton>
     </template>
   </AppModal>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AlertTriangle, Eye, EyeOff } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 definePageMeta({
@@ -11,12 +11,6 @@ useHead({ title: 'Login Admin | MDS Cendekia' })
 
 const router = useRouter()
 const { post } = useApi()
-
-onMounted(() => {
-  if (import.meta.dev) {
-    router.replace('/admin/dashboard')
-  }
-})
 
 const username = ref('')
 const password = ref('')

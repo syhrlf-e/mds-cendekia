@@ -24,9 +24,11 @@ type CheckStatusResponse = {
   success?: boolean
   message?: string
   data?: {
-    id: number
-    kode: string
-    status: string
+    id: number | string
+    kode?: string
+    status?: string
+    status_pendaftaran?: string
+    status_berkas?: string
     created_at: string
     biodata?: {
       nama?: string
@@ -77,6 +79,10 @@ const mapRegistrationStatus = (status?: string): StatusResult['status'] => {
   return 'pending'
 }
 
+const normalizeNomorPendaftaran = (value: string) => {
+  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-'
 
@@ -98,7 +104,7 @@ const handleCheck = async () => {
   state.value = 'loading'
   resultData.value = null
 
-  const normalizedNumber = nomorPendaftaran.value.trim().toUpperCase()
+  const normalizedNumber = normalizeNomorPendaftaran(nomorPendaftaran.value)
   const normalizedNisn = nisn.value.trim()
 
   const { data, error } = await post<CheckStatusResponse>('/register/cek-status', {
@@ -115,7 +121,7 @@ const handleCheck = async () => {
   const tanggalLahir = formatDate(biodata.tanggal_lahir)
 
   resultData.value = {
-    nomor: data.data.kode || normalizedNumber,
+    nomor: String(data.data.kode || data.data.id || normalizedNumber),
     nisn: normalizedNisn,
     tanggal: formatDate(data.data.created_at),
     nama: biodata.nama || '-',
@@ -124,7 +130,7 @@ const handleCheck = async () => {
     sekolah: data.data.riwayat_pendidikan?.nama_sekolah_asal || '-',
     email: biodata.email || '-',
     noHp: biodata.no_telepon || '-',
-    status: mapRegistrationStatus(data.data.status),
+    status: mapRegistrationStatus(data.data.status_pendaftaran || data.data.status),
     alasanPenolakan: data.message || ''
   }
 

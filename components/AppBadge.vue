@@ -35,7 +35,7 @@ const statusConfig = computed(() => {
 <template>
   <span
     :class="[
-      'inline-flex items-center rounded-full px-2.5 py-0.75 text-xs font-semibold',
+      'inline-flex items-center whitespace-nowrap rounded-full px-3 py-0.75 text-xs font-semibold',
       statusConfig.class
     ]"
   >

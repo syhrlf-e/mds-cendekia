@@ -29,6 +29,7 @@ logs
 # Internal product/design notes
 context/
 DESIGN.md
+REFERENSI/
 
 # Source favicon export folder; production-ready assets live in public/
 favicon_mds/

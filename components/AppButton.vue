@@ -26,7 +26,7 @@ const variantClasses = computed(() => {
     case 'danger':
       return 'rounded-full bg-error px-[22px] py-[11px] text-[15px] text-white hover:bg-red-700 focus:ring-error'
     case 'success':
-      return 'rounded-lg bg-success px-4 py-2 text-[14px] text-white hover:bg-green-700 focus:ring-success'
+      return 'rounded-full bg-success px-[22px] py-[11px] text-[15px] text-white hover:bg-green-700 focus:ring-success'
     default:
       return ''
   }
