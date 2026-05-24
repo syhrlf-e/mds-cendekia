@@ -5,6 +5,7 @@ import { Copy, Check } from 'lucide-vue-next'
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 const router = useRouter()
+const config = useRuntimeConfig()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -19,8 +20,7 @@ const {
   findLabel
 } = useWilayahIndonesia()
 
-const berkasJenis = {
-  foto: 'Foto',
+const berkasPersyaratanJenis = {
   rapor: 'Rapor',
   skRapor: 'SK Rapor',
   ijazah: 'Ijazah',
@@ -54,6 +54,14 @@ const pendingRegistration = ref<{ id: number, kode: string } | null>(null)
 
 const isMobile = ref(true)
 const isCopied = ref(false)
+
+const apiBaseUrl = computed(() => {
+  return String(config.public.apiBaseUrl || 'https://cendekia.sekata.my.id').replace(/\/$/, '')
+})
+
+const berkasUploadEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/berkas`
+})
 
 const updateDeviceType = () => {
   isMobile.value = window.innerWidth < 768
@@ -186,7 +194,11 @@ const buildBerkasFormData = (idPendaftaran: number) => {
 
   formData.append('id_pendaftaran', String(idPendaftaran))
 
-  Object.entries(berkasJenis).forEach(([key, jenis]) => {
+  if (berkas.foto) {
+    formData.append('pass_photo', berkas.foto)
+  }
+
+  Object.entries(berkasPersyaratanJenis).forEach(([key, jenis]) => {
     const file = berkas[key as keyof typeof berkas]
     if (!file) return
 
@@ -325,7 +337,7 @@ const submitForm = async () => {
     success?: boolean
     status?: boolean
     message: string
-  }>('/api/register/berkas', buildBerkasFormData(registration.id), 30000)
+  }>(berkasUploadEndpoint.value, buildBerkasFormData(registration.id), 30000)
 
   isSubmitting.value = false
 

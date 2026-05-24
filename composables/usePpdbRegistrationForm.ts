@@ -213,6 +213,13 @@ export const usePpdbRegistrationForm = () => {
   const buildMultipartPayload = (files: PpdbRegistrationFiles, wilayahLabels: PpdbWilayahLabels = {}) => {
     const payload = buildPayload(wilayahLabels)
     const formData = new FormData()
+    const berkasPersyaratan = [
+      { jenis: 'Rapor', file: files.rapor },
+      { jenis: 'SK Rapor', file: files.skRapor },
+      { jenis: 'Ijazah', file: files.ijazah },
+      { jenis: 'Akta', file: files.akta },
+      { jenis: 'KK', file: files.kk }
+    ]
 
     formData.append('nisn', payload.nisn)
     formData.append('biodata', JSON.stringify(payload.biodata))
@@ -221,9 +228,11 @@ export const usePpdbRegistrationForm = () => {
     formData.append('orang_tua', JSON.stringify(payload.orang_tua))
     formData.append('id_program', String(payload.id_program))
     formData.append('id_gelombang', String(payload.id_gelombang))
+    formData.append('pass_photo', files.foto)
 
-    Object.values(files).forEach((file) => {
-      formData.append('berkas_persyaratan', file)
+    berkasPersyaratan.forEach((item) => {
+      formData.append('jenis_berkas', item.jenis)
+      formData.append('berkas_persyaratan', item.file)
     })
 
     return formData

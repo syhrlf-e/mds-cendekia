@@ -62,6 +62,23 @@ const waliHubunganOptions = [
   { label: 'Lainnya', value: 'Lainnya' }
 ]
 
+type ProgramOption = {
+  label: string
+  value: string
+  description: string
+}
+
+const config = useRuntimeConfig()
+const isLoadingPrograms = ref(false)
+const defaultProgramOptions: ProgramOption[] = [
+  {
+    label: 'Paket C',
+    value: String(config.public.ppdbProgramId || 1),
+    description: 'Setara SMA'
+  }
+]
+const programOptions = ref<ProgramOption[]>([...defaultProgramOptions])
+
 const maxBirthYear = new Date().getFullYear() - 1
 
 type StringRecord = Record<string, string>
@@ -199,8 +216,45 @@ const loadSelectedRegions = async () => {
   if (form.kecamatan) await loadKelurahan(form.kecamatan)
 }
 
+const loadPrograms = async () => {
+  isLoadingPrograms.value = true
+
+  if (import.meta.client) {
+    try {
+      const rawPackages = localStorage.getItem('mds-admin-mock-paket-sekolah')
+      const parsedPackages = rawPackages ? JSON.parse(rawPackages) : []
+      const rows = Array.isArray(parsedPackages)
+        ? parsedPackages.filter((item: Record<string, any>) => item.status === 'aktif' && item.tampil_publik !== false)
+        : []
+
+      if (rows.length) {
+        programOptions.value = rows.map((item: Record<string, any>) => ({
+          label: String(item.nama || item.nama_paket || item.label || 'Paket'),
+          value: String(item.id || item.id_program || item.value || ''),
+          description: String(item.jenjang || item.deskripsi || '')
+        })).filter((item: ProgramOption) => item.value)
+      }
+    } catch {
+      programOptions.value = [...defaultProgramOptions]
+    }
+  }
+
+  if (!programOptions.value.length) {
+    programOptions.value = [...defaultProgramOptions]
+  }
+
+  if (!form.id_program && programOptions.value.length === 1) {
+    form.id_program = programOptions.value[0]?.value || ''
+  }
+
+  isLoadingPrograms.value = false
+}
+
 onMounted(async () => {
-  await loadSelectedRegions()
+  await Promise.all([
+    loadSelectedRegions(),
+    loadPrograms()
+  ])
 })
 
 watch(isRestoringDraft, async (isRestoring) => {
@@ -309,6 +363,7 @@ const validateField = (field: string) => {
 
       case 'jenis_kelamin':
       case 'agama':
+      case 'id_program':
       case 'provinsi':
       case 'kabupaten_kota':
       case 'kecamatan':
@@ -449,7 +504,7 @@ const toggleAccordion = (target: 1 | 2 | 3) => {
 const isAcc1Valid = computed(() => {
   const reqFields: (keyof typeof form)[] = [
     'nama', 'nisn', 'nik', 'email', 'no_telepon', 'tanggal_lahir',
-    'tempat_lahir', 'jenis_kelamin', 'agama', 'alamat',
+    'tempat_lahir', 'jenis_kelamin', 'agama', 'id_program', 'alamat',
     'rt', 'rw', 'provinsi', 'kabupaten_kota', 'kecamatan', 'kelurahan', 'kode_pos'
   ]
   return reqFields.every(f => form[f] !== '' && !errors[f])
@@ -578,6 +633,16 @@ const proceedNext = () => {
           <AppDateInput v-model="form.tanggal_lahir" label="Tanggal Lahir" required :max-year="maxBirthYear" :error="errors.tanggal_lahir" @blur="validateField('tanggal_lahir')" />
 
           <AppSelect v-model="form.agama" label="Agama" required :options="agamaOptions" :error="errors.agama" @blur="validateField('agama')" placeholder="Pilih agama kamu" />
+          <AppSelect
+            v-model="form.id_program"
+            label="Paket Sekolah"
+            required
+            :options="programOptions"
+            :disabled="isLoadingPrograms"
+            :error="errors.id_program"
+            :placeholder="isLoadingPrograms ? 'Memuat paket...' : 'Pilih paket sekolah'"
+            @blur="validateField('id_program')"
+          />
 
           <div class="flex w-full flex-col gap-1.5">
             <label class="text-sm font-medium text-text-primary">Jenis Kelamin</label>

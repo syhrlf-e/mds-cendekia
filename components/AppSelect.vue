@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Check, ChevronDown } from 'lucide-vue-next'
 import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -44,6 +45,18 @@ const chooseOption = (value: string | number) => {
   closeSelect()
 }
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeSelect()
+    return
+  }
+
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    toggleSelect()
+  }
+}
+
 const handleClickOutside = (event: MouseEvent) => {
   if (!selectRoot.value?.contains(event.target as Node)) {
     closeSelect()
@@ -60,7 +73,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="selectRoot" class="relative flex flex-col gap-1.5 w-full" :class="{ 'z-50': isOpen }">
+  <div ref="selectRoot" class="relative flex w-full flex-col gap-1.5" :class="{ 'z-50': isOpen }">
     <label v-if="label" :for="selectId" class="text-sm font-medium text-text-primary">
       {{ label }}
       <span v-if="!required" class="font-normal text-text-secondary">(Opsional)</span>
@@ -74,24 +87,28 @@ onBeforeUnmount(() => {
       :aria-expanded="isOpen"
       :aria-controls="`${selectId}-listbox`"
       :class="[
-        'flex h-12 w-full items-center justify-between rounded-xl border bg-bg-surface px-4 text-left outline-none transition-colors',
+        'flex h-11 w-full items-center justify-between rounded-lg border bg-bg-surface px-4 text-left outline-none transition-colors',
         error 
-          ? 'border-error focus:border-error focus:ring-1 focus:ring-error' 
-          : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
-        disabled ? 'cursor-not-allowed opacity-60 bg-bg-base' : 'cursor-pointer',
+          ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10' 
+          : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
+        disabled ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100' : 'cursor-pointer hover:bg-bg-base',
         selectedOption ? 'text-text-primary' : 'text-text-secondary'
       ]"
       @click.stop="toggleSelect"
+      @keydown="handleKeydown"
     >
-      <span class="truncate">{{ selectedOption?.label || placeholder }}</span>
-      <span class="pointer-events-none text-text-secondary">⌄</span>
+      <span class="truncate text-[17px] leading-[1.47] tracking-[-0.2px]">{{ selectedOption?.label || placeholder }}</span>
+      <ChevronDown
+        class="pointer-events-none h-4 w-4 shrink-0 text-text-secondary transition-transform duration-200"
+        :class="isOpen ? 'rotate-180' : ''"
+      />
     </button>
 
     <div
       v-if="isOpen && !disabled"
       :id="`${selectId}-listbox`"
       role="listbox"
-      class="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-border bg-bg-surface py-1 shadow-lg"
+      class="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-bg-surface p-1 shadow-[0_18px_50px_rgba(15,23,42,0.14)]"
     >
       <button
         v-for="opt in options"
@@ -100,12 +117,16 @@ onBeforeUnmount(() => {
         role="option"
         :aria-selected="String(opt.value) === selectedValue"
         :class="[
-          'w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-bg-base',
-          String(opt.value) === selectedValue ? 'font-medium text-brand bg-bg-base' : 'text-text-primary'
+          'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
+          String(opt.value) === selectedValue ? 'bg-primary-50 font-medium text-brand' : 'text-text-primary hover:bg-bg-base'
         ]"
         @click.stop="chooseOption(opt.value)"
       >
-        {{ opt.label }}
+        <span class="truncate">{{ opt.label }}</span>
+        <Check
+          v-if="String(opt.value) === selectedValue"
+          class="h-4 w-4 shrink-0"
+        />
       </button>
     </div>
 

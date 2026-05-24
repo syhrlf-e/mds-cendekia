@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, ChevronDown, LayoutDashboard, LogOut, MonitorX, Settings, Users } from 'lucide-vue-next'
+import { Bell, CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, MonitorX, Newspaper, PackageOpen, School, Settings, Users } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -9,6 +9,12 @@ const isAdminMenuOpen = ref(false)
 const menu = [
   { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Pendaftaran', path: '/admin/pendaftaran', icon: Users, pageTitle: 'Data Pendaftar PPDB' },
+  { name: 'Siswa', path: '/admin/siswa', icon: GraduationCap, pageTitle: 'Data Siswa' },
+  { name: 'Berita', path: '/admin/berita', icon: Newspaper, pageTitle: 'Kelola Berita' },
+  { name: 'Timeline PPDB', path: '/admin/timeline-ppdb', icon: CalendarDays, pageTitle: 'Timeline PPDB' },
+  { name: 'Profil Sekolah', path: '/admin/profil-sekolah', icon: School, pageTitle: 'Profil Sekolah' },
+  { name: 'Galeri', path: '/admin/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
+  { name: 'Paket Sekolah', path: '/admin/paket-sekolah', icon: PackageOpen, pageTitle: 'Paket Sekolah' },
 ]
 const settingsMenu = { name: 'Pengaturan', path: '/admin/pengaturan', icon: Settings, pageTitle: 'Pengaturan' }
 
@@ -46,7 +52,7 @@ const handleLogout = async () => {
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
-          class="h-10 w-10 rounded-xl object-contain"
+          class="h-10 w-10 object-contain"
         >
         <div>
           <div class="text-[18px] font-extrabold leading-tight tracking-[-0.15px] text-text-primary">
