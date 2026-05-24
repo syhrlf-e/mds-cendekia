@@ -393,7 +393,7 @@ const validateOrangTuaField = (index: number, field: string) => {
 
   const value = item[field as keyof typeof item]
   const val = String(value ?? '').trim()
-  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran']
+  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran', 'no_telepon']
   const isRequired = index === 2
     ? requiredFields.includes(field) || (field === 'hubungan_lainnya' && item.hubungan === 'Lainnya')
     : requiredFields.includes(field)
@@ -463,7 +463,7 @@ const isAcc2Valid = computed(() => {
 })
 
 const isAcc3Valid = computed(() => {
-  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran'] as const
+  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran', 'no_telepon'] as const
 
   const parentValid = [0, 1].every((index) => requiredFields.every((field) => {
     const item = orangTua.value[index]
@@ -687,7 +687,7 @@ const proceedNext = () => {
               <AppSelect v-model="ayah.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.0.pendidikan']" @blur="validateOrangTuaField(0, 'pendidikan')" />
               <AppInput v-model="ayah.pekerjaan" label="Pekerjaan" :error="errors['orangTua.0.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(0, 'pekerjaan')" />
               <AppSelect v-model="ayah.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.0.gaji']" @blur="validateOrangTuaField(0, 'gaji')" />
-              <AppInput v-model="ayah.no_telepon" label="No. HP Ayah" :error="errors['orangTua.0.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(0, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="ayah.no_telepon" label="No. HP Ayah" required :error="errors['orangTua.0.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(0, 'no_telepon')" placeholder="08xxxxxxxxxx" />
               <AppInput v-model="ayah.email" type="email" label="Email Ayah" :error="errors['orangTua.0.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(0, 'email')" />
             </div>
           </div>
@@ -702,7 +702,7 @@ const proceedNext = () => {
               <AppSelect v-model="ibu.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.1.pendidikan']" @blur="validateOrangTuaField(1, 'pendidikan')" />
               <AppInput v-model="ibu.pekerjaan" label="Pekerjaan" :error="errors['orangTua.1.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(1, 'pekerjaan')" />
               <AppSelect v-model="ibu.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.1.gaji']" @blur="validateOrangTuaField(1, 'gaji')" />
-              <AppInput v-model="ibu.no_telepon" label="No. HP Ibu" :error="errors['orangTua.1.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(1, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="ibu.no_telepon" label="No. HP Ibu" required :error="errors['orangTua.1.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(1, 'no_telepon')" placeholder="08xxxxxxxxxx" />
               <AppInput v-model="ibu.email" type="email" label="Email Ibu" :error="errors['orangTua.1.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(1, 'email')" />
             </div>
           </div>
@@ -727,7 +727,7 @@ const proceedNext = () => {
               <AppSelect v-model="wali.pendidikan" label="Pendidikan Terakhir" :options="pendidikanOptions" :error="errors['orangTua.2.pendidikan']" @blur="validateOrangTuaField(2, 'pendidikan')" />
               <AppInput v-model="wali.pekerjaan" label="Pekerjaan" :error="errors['orangTua.2.pekerjaan']" :sanitizer="(value) => sanitizeSafeText(value, 80)" :maxlength="80" @blur="validateOrangTuaField(2, 'pekerjaan')" />
               <AppSelect v-model="wali.gaji" label="Gaji Per Bulan" :options="gajiOptions" :error="errors['orangTua.2.gaji']" @blur="validateOrangTuaField(2, 'gaji')" />
-              <AppInput v-model="wali.no_telepon" label="No. HP Wali" :error="errors['orangTua.2.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(2, 'no_telepon')" placeholder="08xxxxxxxxxx" />
+              <AppInput v-model="wali.no_telepon" label="No. HP Wali" required :error="errors['orangTua.2.no_telepon']" :sanitizer="sanitizeIndonesianMobile" inputmode="tel" :maxlength="13" @blur="validateOrangTuaField(2, 'no_telepon')" placeholder="08xxxxxxxxxx" />
               <AppInput v-model="wali.email" type="email" label="Email Wali" :error="errors['orangTua.2.email']" :sanitizer="sanitizeEmail" inputmode="email" :maxlength="120" @blur="validateOrangTuaField(2, 'email')" />
             </div>
           </div>

@@ -4,6 +4,7 @@ import {
   ChevronUp,
   ChevronsUpDown,
   Eye,
+  ExternalLink,
   FileText,
   Filter,
   Search,
@@ -11,12 +12,33 @@ import {
   Users,
   XCircle
 } from 'lucide-vue-next'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 type RegistrationStatus = 'pending' | 'approved' | 'rejected'
 type SortKey = 'nama' | 'tanggal' | ''
 type SortOrder = 'asc' | 'desc'
 type TabKey = 'diri' | 'ortu' | 'berkas'
+
+type RegistrationFile = {
+  id: string
+  name: string
+  url: string
+}
+
+type ParentData = {
+  id: string
+  title: string
+  nama: string
+  nik: string
+  agama: string
+  hubungan: string
+  peran: string
+  hp: string
+  email: string
+  pendidikan: string
+  pekerjaan: string
+  penghasilan: string
+}
 
 type Registration = {
   id: string
@@ -43,6 +65,8 @@ type Registration = {
   kecamatan: string
   kelurahan: string
   gelombang: number | null
+  orangTua: ParentData[]
+  berkasFiles: RegistrationFile[]
   program?: string
   program_paket?: string
 }
@@ -95,6 +119,9 @@ type AdminPendaftarDto = {
   gelombang: number
   program?: string
   program_paket?: string
+  orang_tua?: AdminOrangTuaDto[] | AdminOrangTuaDto
+  orangtua?: AdminOrangTuaDto[] | AdminOrangTuaDto
+  wali?: AdminOrangTuaDto[] | AdminOrangTuaDto
 }
 
 type AdminBerkasDto = {
@@ -116,6 +143,23 @@ type AdminBerkasDto = {
     lokasi_file?: string
     data?: AdminBerkasDto
     file_data?: AdminBerkasDto
+}
+
+type AdminOrangTuaDto = {
+  nama?: string
+  nik?: string
+  agama?: string
+  no_telepon?: string
+  telepon?: string
+  phone?: string
+  email?: string
+  hubungan?: string
+  hubungan_lainnya?: string
+  peran?: string
+  pekerjaan?: string
+  pendidikan?: string
+  gaji?: string
+  penghasilan?: string
 }
 
 type PublicCheckStatusResponse = {
@@ -141,13 +185,13 @@ const registrations = ref<Registration[]>([])
 const isLoading = ref(true)
 const loadError = ref('')
 
-const berkas = [
-  { id: 1, name: 'Foto Siswa (3x4 berwarna)', url: '#' },
-  { id: 2, name: 'Buku Rapor SMP', url: '#' },
-  { id: 3, name: 'Surat Keterangan Nilai Rapor Semester I-V', url: '#' },
-  { id: 4, name: 'Ijazah / SKL', url: '#' },
-  { id: 5, name: 'Akta Kelahiran', url: '#' },
-  { id: 6, name: 'Kartu Keluarga', url: '#' }
+const defaultBerkas: RegistrationFile[] = [
+  { id: 'foto', name: 'Foto Siswa (3x4 berwarna)', url: '' },
+  { id: 'rapor', name: 'Buku Rapor SMP', url: '' },
+  { id: 'surat-nilai', name: 'Surat Keterangan Nilai Rapor Semester I-V', url: '' },
+  { id: 'ijazah', name: 'Ijazah / SKL', url: '' },
+  { id: 'akta', name: 'Akta Kelahiran', url: '' },
+  { id: 'kk', name: 'Kartu Keluarga', url: '' }
 ]
 
 const searchQuery = ref('')
@@ -164,6 +208,11 @@ const isApproveModalOpen = ref(false)
 const isRejectModalOpen = ref(false)
 const isRejectGuardOpen = ref(false)
 const isRejectBerkasModalOpen = ref(false)
+const isFilePreviewOpen = ref(false)
+const previewFile = ref<RegistrationFile | null>(null)
+const pdfCanvasRef = ref<HTMLCanvasElement | null>(null)
+const isPdfRendering = ref(false)
+const pdfRenderError = ref('')
 const rejectReason = ref('')
 const rejectBerkasReason = ref('')
 const isProcessingApprove = ref(false)
@@ -203,7 +252,7 @@ const normalizeStatus = (status: string): RegistrationStatus => {
 }
 
 const normalizeActionId = (id: string) => id.replace(/[^a-zA-Z0-9]/g, '')
-const getAdminActionId = (id: string) => id.trim()
+const getAdminActionId = (id: string) => normalizeActionId(id)
 const getBerkasActionId = (id: string) => normalizeActionId(id)
 
 const readPublicStatusText = (response?: PublicCheckStatusResponse | null) => {
@@ -253,6 +302,11 @@ const asBerkasArray = (value?: AdminBerkasDto[] | AdminBerkasDto) => {
   return Array.isArray(value) ? value : [value]
 }
 
+const asOrangTuaArray = (value?: AdminOrangTuaDto[] | AdminOrangTuaDto) => {
+  if (!value) return []
+  return Array.isArray(value) ? value : [value]
+}
+
 const getBerkasLabel = (file: AdminBerkasDto) => {
   return [
     file.jenis_berkas,
@@ -263,6 +317,17 @@ const getBerkasLabel = (file: AdminBerkasDto) => {
     file.nama_berkas,
     file.nama_file
   ].filter(Boolean).join(' ').toLowerCase()
+}
+
+const getBerkasDisplayName = (file: AdminBerkasDto, index: number) => {
+  return file.jenis_berkas ||
+    file.jenis ||
+    file.tipe ||
+    file.kategori ||
+    file.nama ||
+    file.nama_berkas ||
+    file.nama_file ||
+    `Berkas ${index + 1}`
 }
 
 const getBerkasUrl = (file?: AdminBerkasDto): string => {
@@ -302,6 +367,58 @@ const getFotoUrl = (item: AdminPendaftarDto) => {
   return getBerkasUrl(fotoBerkas)
 }
 
+const getPendaftarBerkasFiles = (item: AdminPendaftarDto): RegistrationFile[] => {
+  const berkasList = [
+    ...asBerkasArray(item.berkas),
+    ...asBerkasArray(item.berkas_pendaftaran),
+    ...asBerkasArray(item.berkas_persyaratan),
+    ...asBerkasArray(item.dokumen),
+    ...asBerkasArray(item.files)
+  ]
+
+  const uploadedFiles = berkasList
+    .map((file, index) => ({
+      id: `${getBerkasDisplayName(file, index)}-${index}`,
+      name: getBerkasDisplayName(file, index),
+      url: getBerkasUrl(file)
+    }))
+    .filter(file => file.url)
+
+  return uploadedFiles.length ? uploadedFiles : defaultBerkas
+}
+
+const getParentTitle = (parent: AdminOrangTuaDto, index: number) => {
+  const relation = `${parent.hubungan || ''} ${parent.peran || ''}`.toLowerCase()
+
+  if (relation.includes('ayah')) return 'Ayah'
+  if (relation.includes('ibu')) return 'Ibu'
+  if (relation.includes('wali')) return 'Wali'
+  return `Orang Tua ${index + 1}`
+}
+
+const getPendaftarOrangTua = (item: AdminPendaftarDto): ParentData[] => {
+  return [
+    ...asOrangTuaArray(item.orang_tua),
+    ...asOrangTuaArray(item.orangtua),
+    ...asOrangTuaArray(item.wali)
+  ]
+    .filter(parent => Object.values(parent).some(Boolean))
+    .map((parent, index) => ({
+      id: `${parent.peran || 'orang-tua'}-${parent.hubungan || index}`,
+      title: getParentTitle(parent, index),
+      nama: parent.nama || '-',
+      nik: parent.nik || '-',
+      agama: parent.agama || '-',
+      hubungan: parent.hubungan_lainnya || parent.hubungan || '-',
+      peran: parent.peran || '-',
+      hp: parent.no_telepon || parent.telepon || parent.phone || '-',
+      email: parent.email || '-',
+      pendidikan: parent.pendidikan || '-',
+      pekerjaan: parent.pekerjaan || '-',
+      penghasilan: parent.penghasilan || parent.gaji || '-'
+    }))
+}
+
 const mapPendaftar = (item: AdminPendaftarDto): Registration => ({
   id: item.id,
   nama: item.nama,
@@ -327,6 +444,8 @@ const mapPendaftar = (item: AdminPendaftarDto): Registration => ({
   kecamatan: item.kecamatan,
   kelurahan: item.kelurahan,
   gelombang: item.gelombang ?? null,
+  orangTua: getPendaftarOrangTua(item),
+  berkasFiles: getPendaftarBerkasFiles(item),
   program: item.program_paket || item.program || '-'
 })
 
@@ -367,6 +486,63 @@ const isBerkasRejected = computed(() => {
 })
 
 const isBerkasFinal = computed(() => isBerkasVerified.value || isBerkasRejected.value)
+
+const selectedBerkasFiles = computed(() => {
+  return selectedItem.value?.berkasFiles?.length ? selectedItem.value.berkasFiles : defaultBerkas
+})
+
+const previewFileType = computed(() => {
+  const url = previewFile.value?.url.toLowerCase() || ''
+  const name = previewFile.value?.name.toLowerCase() || ''
+  const source = `${url} ${name}`
+
+  if (/\.(png|jpe?g|webp|gif|bmp)(\?|#|$)/i.test(source)) return 'image'
+  if (/\.pdf(\?|#|$)/i.test(source)) return 'pdf'
+  return 'file'
+})
+
+const renderPdfPreview = async () => {
+  if (!import.meta.client || !previewFile.value?.url || previewFileType.value !== 'pdf') return
+
+  await nextTick()
+  const canvas = pdfCanvasRef.value
+  if (!canvas) return
+
+  isPdfRendering.value = true
+  pdfRenderError.value = ''
+
+  try {
+    const pdfjs = await import('pdfjs-dist')
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString()
+
+    const loadingTask = pdfjs.getDocument(previewFile.value.url)
+    const pdf = await loadingTask.promise
+    const page = await pdf.getPage(1)
+    const baseViewport = page.getViewport({ scale: 1 })
+    const containerWidth = Math.min(760, Math.max(320, canvas.parentElement?.clientWidth || 760))
+    const scale = containerWidth / baseViewport.width
+    const viewport = page.getViewport({ scale })
+    const context = canvas.getContext('2d')
+
+    if (!context) throw new Error('Canvas context is not available')
+
+    canvas.width = Math.floor(viewport.width)
+    canvas.height = Math.floor(viewport.height)
+    canvas.style.width = `${Math.floor(viewport.width)}px`
+    canvas.style.height = `${Math.floor(viewport.height)}px`
+
+    await page.render({
+      canvas,
+      canvasContext: context,
+      viewport
+    }).promise
+  } catch (error) {
+    console.error('Failed to render PDF preview:', error)
+    pdfRenderError.value = 'PDF belum bisa ditampilkan di preview internal.'
+  } finally {
+    isPdfRendering.value = false
+  }
+}
 
 const getBerkasStatusClass = (status: string) => {
   const normalized = status.toLowerCase()
@@ -430,6 +606,26 @@ const fieldSections = computed(() => {
       ]
     }
   ]
+})
+
+const parentSections = computed(() => {
+  if (!selectedItem.value) return []
+
+  return selectedItem.value.orangTua.map(parent => ({
+    title: parent.title,
+    fields: [
+      ['Nama Lengkap', parent.nama],
+      ['NIK', parent.nik],
+      ['Agama', parent.agama],
+      ['Hubungan', parent.hubungan],
+      ['Peran', parent.peran],
+      ['No. HP', parent.hp],
+      ['Email', parent.email],
+      ['Pendidikan Terakhir', parent.pendidikan],
+      ['Pekerjaan', parent.pekerjaan],
+      ['Penghasilan Per Bulan', parent.penghasilan]
+    ]
+  }))
 })
 
 const filteredAndSortedData = computed(() => {
@@ -538,9 +734,32 @@ const closeDetail = () => {
   isDetailModalOpen.value = false
 }
 
-const openFile = (url: string) => {
+const openFile = (file: RegistrationFile) => {
   if (!import.meta.client) return
-  window.open(url, '_blank', 'noopener,noreferrer')
+  const url = file.url
+
+  if (!url || url === '#') {
+    useToast().addToast('File berkas belum tersedia dari server.', 'error')
+    return
+  }
+
+  previewFile.value = file
+  isFilePreviewOpen.value = true
+
+  if (previewFileType.value === 'pdf') {
+    renderPdfPreview()
+  }
+}
+
+const openPreviewInNewTab = () => {
+  if (!import.meta.client || !previewFile.value?.url) return
+  window.open(previewFile.value.url, '_blank', 'noopener,noreferrer')
+}
+
+const closeFilePreview = () => {
+  isFilePreviewOpen.value = false
+  previewFile.value = null
+  pdfRenderError.value = ''
 }
 
 const promptReject = () => {
@@ -879,10 +1098,10 @@ watch(totalPages, value => {
         @click.self="closeDetail"
       >
         <aside class="ml-[320px] flex h-full w-[calc(100%-320px)] flex-col border-l border-border bg-bg-base">
-          <header class="shrink-0 border-b border-border bg-bg-surface px-8 py-6">
-            <div class="mb-6 ml-[max(0px,calc((100%-1024px)/2))] flex items-center justify-between gap-6">
-              <div class="flex min-w-0 items-center gap-6">
-                <div class="h-[208px] w-[156px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
+          <header class="shrink-0 border-b border-border bg-bg-surface px-8 py-5">
+            <div class="mx-auto flex max-w-5xl items-start justify-between gap-6">
+              <div class="flex min-w-0 items-start gap-4">
+                <div class="h-28 w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
                   <img
                     v-if="selectedItem.fotoUrl"
                     :src="selectedItem.fotoUrl"
@@ -891,47 +1110,68 @@ watch(totalPages, value => {
                   >
                   <div
                     v-else
-                    class="flex h-full w-full items-center justify-center px-4 text-center text-sm font-medium leading-[1.29] text-text-secondary"
+                    class="flex h-full w-full items-center justify-center px-3 text-center text-xs font-medium leading-[1.35] text-text-secondary"
                   >
                     Foto belum tersedia
                   </div>
                 </div>
 
-                <div class="min-w-0">
+                <div class="min-w-0 pt-1">
                   <div>
-                    <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-                      <h2 class="truncate font-heading text-[36px] font-semibold leading-[1.1] tracking-[-0.2px] text-text-primary">
-                        {{ selectedItem.nama }}
-                      </h2>
-                      <AppBadge :status="selectedItem.status" :text="selectedItem.statusText" />
-                      <span
-                        class="rounded-full px-2.5 py-0.75 text-xs font-semibold"
-                        :class="getBerkasStatusClass(selectedItem.statusBerkas)"
-                      >
-                        Berkas: {{ selectedItem.statusBerkas }}
-                      </span>
-                    </div>
-                    <p class="mt-3 text-[17px] font-medium leading-[1.47] tracking-[-0.2px] text-text-secondary">
-                      {{ selectedItem.id }}
+                    <h2 class="truncate font-heading text-[28px] font-semibold leading-[1.14] text-text-primary">
+                      {{ selectedItem.nama }}
+                    </h2>
+                    <p class="mt-1 text-sm font-medium leading-[1.43] text-text-secondary">
+                      {{ selectedItem.id }} • {{ selectedItem.sekolah }}
                     </p>
-                  </div>
 
-                  <nav class="mt-6 inline-flex rounded-full border border-border bg-bg-base p-1">
-                    <button
-                      v-for="tab in detailTabs"
-                      :key="tab.key"
-                      type="button"
-                      class="rounded-full px-5 py-2 text-sm font-medium leading-none text-text-secondary transition-colors hover:text-text-primary"
-                      :class="activeTab === tab.key ? 'bg-brand text-white hover:text-white' : ''"
-                      @click="activeTab = tab.key"
-                    >
-                      {{ tab.label }}
-                    </button>
-                  </nav>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                      <div class="rounded-xl border border-border-soft bg-bg-base px-3 py-2">
+                        <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Pendaftaran</p>
+                        <AppBadge :status="selectedItem.status" :text="selectedItem.statusText" />
+                      </div>
+                      <div class="rounded-xl border border-border-soft bg-bg-base px-3 py-2">
+                        <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Berkas</p>
+                        <span
+                          class="inline-flex items-center whitespace-nowrap rounded-full px-3 py-0.75 text-xs font-semibold"
+                          :class="getBerkasStatusClass(selectedItem.statusBerkas)"
+                        >
+                          {{ selectedItem.statusBerkas }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <nav class="inline-flex shrink-0 rounded-full border border-border bg-bg-base p-1">
+                <button
+                  v-for="tab in detailTabs"
+                  :key="tab.key"
+                  type="button"
+                  class="h-9 rounded-full px-4 text-sm font-medium leading-none text-text-secondary transition-colors hover:text-text-primary"
+                  :class="activeTab === tab.key ? 'bg-brand text-white hover:text-white' : ''"
+                  @click="activeTab = tab.key"
+                >
+                  {{ tab.label }}
+                </button>
+              </nav>
             </div>
 
+            <div class="mx-auto mt-4 max-w-5xl rounded-2xl border border-border-soft bg-bg-base px-4 py-3">
+              <p v-if="selectedItem.status !== 'pending'" class="text-sm leading-[1.43] text-text-secondary">
+                Pendaftaran sudah diputuskan. Detail tetap dapat dilihat sebagai arsip proses.
+              </p>
+              <p v-else-if="isBerkasVerified" class="text-sm leading-[1.43] text-text-secondary">
+                Berkas sudah disetujui. Admin dapat mengambil keputusan akhir untuk pendaftar ini.
+              </p>
+              <p v-else-if="isBerkasRejected" class="text-sm leading-[1.43] text-text-secondary">
+                Berkas sudah ditolak. Keputusan final tidak tersedia karena alasan berkas sudah dikirim ke pendaftar.
+              </p>
+              <p v-else class="text-sm leading-[1.43] text-text-secondary">
+                Mulai dari tab Berkas untuk menyetujui atau menolak dokumen sebelum mengambil keputusan final.
+              </p>
+            </div>
           </header>
 
           <main class="min-h-0 grow overflow-y-auto px-8 py-6">
@@ -957,10 +1197,31 @@ watch(totalPages, value => {
               </section>
             </div>
 
+            <div v-else-if="activeTab === 'ortu' && parentSections.length" class="mx-auto max-w-5xl space-y-4">
+              <section
+                v-for="section in parentSections"
+                :key="section.title"
+                class="rounded-2xl border border-border bg-bg-surface p-6"
+              >
+                <h3 class="mb-5 border-b border-border pb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                  {{ section.title }}
+                </h3>
+                <div class="grid grid-cols-2 gap-x-10 gap-y-4">
+                  <div
+                    v-for="field in section.fields"
+                    :key="field[0]"
+                  >
+                    <p class="mb-1 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">{{ field[0] }}</p>
+                    <p class="text-[17px] font-medium leading-[1.47] tracking-[-0.2px] text-text-primary">{{ field[1] }}</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+
             <div v-else-if="activeTab === 'ortu'" class="mx-auto flex min-h-[420px] max-w-5xl items-center justify-center rounded-2xl border border-border bg-bg-surface">
               <AppEmptyState
                 title="Data orang tua belum tersedia"
-                description="Data orang tua akan ditampilkan setelah endpoint backend tersedia."
+                description="Data orang tua belum dikirim oleh endpoint admin."
               >
                 <template #icon>
                   <UserRound />
@@ -970,20 +1231,29 @@ watch(totalPages, value => {
 
             <div v-else class="mx-auto max-w-5xl space-y-4">
               <section class="rounded-2xl border border-border bg-bg-surface p-6">
-                <div class="mb-6 flex items-start justify-between gap-6">
+                <div class="mb-5 flex items-start justify-between gap-6">
                   <div>
                     <h3 class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">Berkas Pendaftaran</h3>
                     <p class="mt-1 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
-                      Dokumen pendukung yang diunggah calon siswa.
+                      Periksa seluruh dokumen sebelum menyetujui atau menolak berkas.
+                    </p>
+                  </div>
+                  <span
+                    class="shrink-0 rounded-full px-2.5 py-0.75 text-xs font-semibold"
+                    :class="getBerkasStatusClass(selectedItem.statusBerkas)"
+                  >
+                    {{ selectedItem.statusBerkas }}
+                  </span>
+                </div>
+
+                <div class="mb-5 grid grid-cols-[1fr_auto] items-center gap-4 rounded-2xl border border-border-soft bg-bg-base px-4 py-3">
+                  <div>
+                    <p class="text-sm font-semibold text-text-primary">Validasi paket berkas</p>
+                    <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+                      {{ selectedBerkasFiles.length }} dokumen dicek sebagai satu paket sesuai endpoint backend saat ini.
                     </p>
                   </div>
                   <div class="flex shrink-0 items-center gap-3">
-                    <span
-                      class="rounded-full px-2.5 py-0.75 text-xs font-semibold"
-                      :class="getBerkasStatusClass(selectedItem.statusBerkas)"
-                    >
-                      {{ selectedItem.statusBerkas }}
-                    </span>
                     <AppButton
                       variant="danger"
                       :disabled="isBerkasFinal || isProcessingVerifyBerkas"
@@ -1004,14 +1274,23 @@ watch(totalPages, value => {
 
                 <div class="overflow-hidden rounded-2xl border border-border bg-bg-surface">
                   <div
-                    v-for="file in berkas"
+                    v-for="file in selectedBerkasFiles"
                     :key="file.id"
-                    class="flex h-14 items-center border-b border-primary-50 px-4 last:border-b-0"
+                    class="flex min-h-14 items-center border-b border-primary-50 px-4 py-2 last:border-b-0"
                   >
-                    <FileText class="mr-3 h-4 w-4 text-brand" />
-                    <span class="grow text-sm leading-[1.43] tracking-[-0.15px] text-text-primary">{{ file.name }}</span>
-                    <AppButton variant="ghost" @click="openFile(file.url)">
-                      Lihat
+                    <div class="mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-50">
+                      <FileText class="h-4 w-4 text-brand" />
+                    </div>
+                    <div class="min-w-0 grow">
+                      <p class="truncate text-sm font-medium leading-[1.43] tracking-[-0.15px] text-text-primary">{{ file.name }}</p>
+                      <p class="text-xs leading-[1.33] text-text-secondary">Dokumen persyaratan PPDB</p>
+                    </div>
+                    <AppButton
+                      variant="ghost"
+                      :disabled="!file.url"
+                      @click="openFile(file)"
+                    >
+                      {{ file.url ? 'Lihat' : 'Belum Ada' }}
                     </AppButton>
                   </div>
                 </div>
@@ -1021,31 +1300,48 @@ watch(totalPages, value => {
 
           <footer class="shrink-0 border-t border-border bg-bg-surface px-8 py-4">
             <template v-if="selectedItem.status === 'pending'">
-              <div v-if="isBerkasVerified" class="flex items-center justify-between gap-6">
-                <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
-                <div class="flex items-center gap-3">
+              <div v-if="isBerkasVerified" class="mx-auto flex max-w-5xl items-center justify-between gap-6">
+                <div>
+                  <p class="text-sm font-semibold text-text-primary">Berkas sudah disetujui</p>
+                  <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+                    Ambil keputusan akhir untuk pendaftaran ini.
+                  </p>
+                </div>
+                <div class="flex shrink-0 items-center gap-3">
+                  <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
                   <AppButton variant="danger" @click="promptReject">Tolak Pendaftar</AppButton>
                   <AppButton variant="success" @click="isApproveModalOpen = true">Terima Pendaftar</AppButton>
                 </div>
               </div>
-              <div v-else-if="isBerkasRejected" class="flex items-center justify-between gap-6">
+              <div v-else-if="isBerkasRejected" class="mx-auto flex max-w-5xl items-center justify-between gap-6">
+                <div>
+                  <p class="text-sm font-semibold text-text-primary">Berkas sudah ditolak</p>
+                  <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+                    Alasan penolakan berkas telah dikirim ke pendaftar.
+                  </p>
+                </div>
                 <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
-                <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
-                  Berkas sudah ditolak. Alasan penolakan telah dikirim ke pendaftar.
-                </p>
               </div>
-              <div v-else class="flex items-center justify-between gap-6">
+              <div v-else class="mx-auto flex max-w-5xl items-center justify-between gap-6">
+                <div>
+                  <p class="text-sm font-semibold text-text-primary">Menunggu verifikasi berkas</p>
+                  <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+                    Setujui atau tolak berkas terlebih dahulu sebelum mengambil keputusan final.
+                  </p>
+                </div>
                 <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
-                <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
-                  Verifikasi berkas terlebih dahulu sebelum mengambil keputusan final.
-                </p>
               </div>
             </template>
-            <div v-else class="flex items-center justify-between gap-6">
+            <div v-else class="mx-auto flex max-w-5xl items-center justify-between gap-6">
+              <div>
+                <p class="text-sm font-semibold text-text-primary">
+                  Pendaftaran sudah {{ selectedItem.status === 'approved' ? 'diterima' : 'ditolak' }}
+                </p>
+                <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+                  Tindakan lanjutan tidak tersedia untuk pendaftaran yang sudah diputuskan.
+                </p>
+              </div>
               <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>
-              <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
-                Tindakan tidak tersedia karena pendaftar sudah {{ selectedItem.status === 'approved' ? 'diterima' : 'ditolak' }}.
-              </p>
             </div>
           </footer>
         </aside>
@@ -1107,6 +1403,60 @@ watch(totalPages, value => {
       <AppButton variant="danger" @click="confirmCancelReject">
         <XCircle class="mr-2 h-4 w-4" />
         Ya, Keluar
+      </AppButton>
+    </template>
+  </AppModal>
+
+  <AppModal
+    v-model="isFilePreviewOpen"
+    :title="previewFile?.name || 'Preview Berkas'"
+    width="max-w-5xl"
+    :z-index="70"
+  >
+    <div class="overflow-hidden rounded-2xl border border-border bg-bg-base">
+      <div class="flex h-[70vh] min-h-[420px] items-center justify-center overflow-auto bg-bg-parchment p-6">
+        <img
+          v-if="previewFile && previewFileType === 'image'"
+          :src="previewFile.url"
+          :alt="previewFile.name"
+          class="h-full w-full object-contain"
+        >
+        <div v-else-if="previewFile && previewFileType === 'pdf'" class="flex min-h-full w-full items-start justify-center">
+          <div v-if="isPdfRendering" class="mt-24 flex flex-col items-center gap-3 text-text-secondary">
+            <div class="dot-wave">
+              <span class="bg-brand"></span>
+              <span class="bg-brand"></span>
+              <span class="bg-brand"></span>
+            </div>
+            <p class="text-sm font-medium">Memuat preview PDF...</p>
+          </div>
+          <div v-else-if="pdfRenderError" class="mt-24 flex max-w-md flex-col items-center px-6 text-center">
+            <FileText class="mb-4 h-10 w-10 text-brand" />
+            <p class="text-sm font-medium text-text-primary">{{ pdfRenderError }}</p>
+            <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
+              Gunakan tombol buka di tab baru jika dokumen berasal dari server yang membatasi preview.
+            </p>
+          </div>
+          <canvas
+            v-show="!isPdfRendering && !pdfRenderError"
+            ref="pdfCanvasRef"
+            class="bg-white shadow-lg"
+          />
+        </div>
+        <iframe
+          v-else-if="previewFile"
+          :src="previewFile.url"
+          :title="previewFile.name"
+          class="h-full w-full bg-white"
+        />
+      </div>
+    </div>
+
+    <template #footer>
+      <AppButton variant="ghost" @click="closeFilePreview">Tutup</AppButton>
+      <AppButton variant="secondary" :disabled="!previewFile?.url" @click="openPreviewInNewTab">
+        <ExternalLink class="mr-2 h-4 w-4" />
+        Buka di Tab Baru
       </AppButton>
     </template>
   </AppModal>
