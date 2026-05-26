@@ -35,7 +35,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'https://cendekia.sekata.my.id',
+      apiBaseUrl: 'https://api.oirul.com',
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3'

@@ -8,23 +8,8 @@ import {
   XCircle
 } from 'lucide-vue-next'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-
-type PaketStatus = 'aktif' | 'nonaktif'
-
-type PaketSekolah = {
-  id: number
-  kode: string
-  nama: string
-  jenjang: string
-  status: PaketStatus
-  kuota: number
-  biayaPendaftaran: number
-  deskripsi: string
-  totalPendaftar: number
-  totalDiterima: number
-}
-
-type PaketDto = Record<string, any>
+import { buildPaketPayload, buildPaketStatusPayload, useAdminPaketSekolahService } from '~/services/useAdminPaketSekolahService'
+import type { PaketSekolah, PaketStatus } from '~/types/adminPaketSekolah'
 
 definePageMeta({
   layout: 'admin',
@@ -33,7 +18,7 @@ definePageMeta({
 
 useHead({ title: 'Paket Sekolah | MDS Cendekia' })
 
-const { get, post, put } = useApi()
+const { listPackages, savePackage, updatePackageStatus } = useAdminPaketSekolahService()
 const { addToast } = useToast()
 const isLoading = ref(true)
 const isSaving = ref(false)
@@ -66,93 +51,14 @@ const jenjangOptions = [
   { label: 'Setara SMA', value: 'Setara SMA' }
 ]
 
-const fallbackPackages: PaketSekolah[] = [
-  {
-    id: 1,
-    kode: 'paket-a',
-    nama: 'Paket A',
-    jenjang: 'Setara SD',
-    status: 'nonaktif',
-    kuota: 0,
-    biayaPendaftaran: 0,
-    deskripsi: 'Program pendidikan kesetaraan setara SD.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  },
-  {
-    id: 2,
-    kode: 'paket-b',
-    nama: 'Paket B',
-    jenjang: 'Setara SMP',
-    status: 'nonaktif',
-    kuota: 0,
-    biayaPendaftaran: 0,
-    deskripsi: 'Program pendidikan kesetaraan setara SMP.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  },
-  {
-    id: 3,
-    kode: 'paket-c',
-    nama: 'Paket C',
-    jenjang: 'Setara SMA',
-    status: 'aktif',
-    kuota: 120,
-    biayaPendaftaran: 150000,
-    deskripsi: 'Program pendidikan kesetaraan setara SMA.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  }
-]
-
-const normalizeText = (value: unknown) => String(value || '').trim()
-const normalizeNumber = (value: unknown) => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-const createKode = (name: string) => name
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-|-$/g, '') || `paket-${Date.now()}`
-
-const readArrayPayload = (payload: any): PaketDto[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.data?.data)) return payload.data.data
-  if (Array.isArray(payload?.paket)) return payload.paket
-  if (Array.isArray(payload?.data?.paket)) return payload.data.paket
-  return []
-}
-
-const mapPackage = (item: PaketDto): PaketSekolah => ({
-  id: normalizeNumber(item.id),
-  kode: normalizeText(item.kode || item.slug || createKode(item.nama)),
-  nama: normalizeText(item.nama || item.nama_paket),
-  jenjang: normalizeText(item.jenjang),
-  status: normalizeText(item.status).toLowerCase() === 'aktif' ? 'aktif' : 'nonaktif',
-  kuota: normalizeNumber(item.kuota),
-  biayaPendaftaran: normalizeNumber(item.biaya_pendaftaran || item.biayaPendaftaran),
-  deskripsi: normalizeText(item.deskripsi),
-  totalPendaftar: normalizeNumber(item.total_pendaftar || item.pendaftar),
-  totalDiterima: normalizeNumber(item.total_diterima || item.diterima)
-})
-
 const loadPackages = async () => {
   isLoading.value = true
   loadError.value = ''
 
-  const { data, error } = await get<any>('/api/paket-sekolah', { showErrorToast: false })
-  const rows = readArrayPayload(data)
+  const { data, usingFallback } = await listPackages()
 
-  if (error && !rows.length) {
-    packages.value = fallbackPackages
-    loadError.value = 'Endpoint paket sekolah belum tersedia, sementara memakai data lokal.'
-    isLoading.value = false
-    return
-  }
-
-  packages.value = rows.length ? rows.map(mapPackage) : fallbackPackages
+  packages.value = data
+  loadError.value = usingFallback ? 'Endpoint paket sekolah belum tersedia, sementara memakai data lokal.' : ''
   isLoading.value = false
 }
 
@@ -218,17 +124,6 @@ const validateForm = () => {
   return ''
 }
 
-const buildPayload = () => ({
-  id: form.id,
-  kode: createKode(form.nama),
-  nama: form.nama.trim(),
-  jenjang: form.jenjang,
-  status: form.status,
-  kuota: Number(form.kuota || 0),
-  biaya_pendaftaran: Number(form.biayaPendaftaran || 0),
-  deskripsi: form.deskripsi.trim()
-})
-
 const handleSave = async () => {
   const errorMessage = validateForm()
   if (errorMessage) {
@@ -237,11 +132,8 @@ const handleSave = async () => {
   }
 
   isSaving.value = true
-  const payload = buildPayload()
-  const request = editingPackage.value
-    ? put<{ status?: boolean, success?: boolean, message?: string }>('/api/paket-sekolah', payload, { showErrorToast: false })
-    : post<{ status?: boolean, success?: boolean, message?: string }>('/api/paket-sekolah', payload, { showErrorToast: false })
-  const { data, error } = await request
+  const payload = buildPaketPayload(form)
+  const { data, error } = await savePackage(payload, Boolean(editingPackage.value))
   isSaving.value = false
 
   if (error || data?.status === false || data?.success === false) {
@@ -257,16 +149,7 @@ const handleSave = async () => {
 const toggleStatus = async (item: PaketSekolah) => {
   const nextStatus: PaketStatus = item.status === 'aktif' ? 'nonaktif' : 'aktif'
   isSaving.value = true
-  const { data, error } = await put<{ status?: boolean, success?: boolean, message?: string }>('/api/paket-sekolah', {
-    id: item.id,
-    kode: item.kode,
-    nama: item.nama,
-    jenjang: item.jenjang,
-    status: nextStatus,
-    kuota: item.kuota,
-    biaya_pendaftaran: item.biayaPendaftaran,
-    deskripsi: item.deskripsi
-  }, { showErrorToast: false })
+  const { data, error } = await updatePackageStatus(buildPaketStatusPayload(item, nextStatus))
   isSaving.value = false
 
   if (error || data?.status === false || data?.success === false) {

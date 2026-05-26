@@ -218,29 +218,10 @@ const loadSelectedRegions = async () => {
 
 const loadPrograms = async () => {
   isLoadingPrograms.value = true
+  programOptions.value = [...defaultProgramOptions]
 
-  if (import.meta.client) {
-    try {
-      const rawPackages = localStorage.getItem('mds-admin-mock-paket-sekolah')
-      const parsedPackages = rawPackages ? JSON.parse(rawPackages) : []
-      const rows = Array.isArray(parsedPackages)
-        ? parsedPackages.filter((item: Record<string, any>) => item.status === 'aktif' && item.tampil_publik !== false)
-        : []
-
-      if (rows.length) {
-        programOptions.value = rows.map((item: Record<string, any>) => ({
-          label: String(item.nama || item.nama_paket || item.label || 'Paket'),
-          value: String(item.id || item.id_program || item.value || ''),
-          description: String(item.jenjang || item.deskripsi || '')
-        })).filter((item: ProgramOption) => item.value)
-      }
-    } catch {
-      programOptions.value = [...defaultProgramOptions]
-    }
-  }
-
-  if (!programOptions.value.length) {
-    programOptions.value = [...defaultProgramOptions]
+  if (form.id_program && !programOptions.value.some(item => item.value === form.id_program)) {
+    form.id_program = ''
   }
 
   if (!form.id_program && programOptions.value.length === 1) {

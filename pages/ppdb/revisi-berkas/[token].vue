@@ -34,13 +34,13 @@ const state = ref<MagicUrlState>('loading')
 const errorMessage = ref('')
 const documentTypes = ref<RevisionDocumentType[]>([])
 const nisn = ref('')
-const idPendaftaran = ref<number | null>(null)
+const idPendaftaran = ref('')
 const selectedDocumentName = ref('')
 const selectedFile = ref<File | null>(null)
 const isSubmitting = ref(false)
 
 const apiBaseUrl = computed(() => {
-  return String(config.public.apiBaseUrl || 'https://cendekia.sekata.my.id').replace(/\/$/, '')
+  return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
 })
 
 const berkasUploadEndpoint = computed(() => {
@@ -62,7 +62,7 @@ const canSubmit = computed(() => {
 const postRevisionApi = async <T,>(endpoint: string, body: FormData, timeout: number) => {
   try {
     const data = await $fetch<T>(endpoint, {
-      method: 'PUT',
+      method: 'POST',
       body,
       timeout
     })
@@ -85,11 +85,8 @@ const isPassPhotoDocument = (value: string) => {
 const buildRevisionFormData = () => {
   const formData = new FormData()
 
-  formData.append('nisn', nisn.value.trim())
-  formData.append('token', token.value)
-
   if (idPendaftaran.value) {
-    formData.append('id_pendaftaran', String(idPendaftaran.value))
+    formData.append('id_pendaftaran', idPendaftaran.value)
   }
 
   if (selectedFile.value) {
@@ -133,7 +130,7 @@ const validateMagicUrl = async () => {
   errorMessage.value = ''
 
   if (token.value.toLowerCase() === 'preview') {
-    idPendaftaran.value = 1
+    idPendaftaran.value = 'MDS202601814'
     documentTypes.value = [
       { nama: 'Ijazah', format: 'pdf,jpg,png,jpeg' },
       { nama: 'Kartu Keluarga', format: 'pdf,jpg,png,jpeg' },
@@ -154,8 +151,7 @@ const validateMagicUrl = async () => {
     return
   }
 
-  const parsedIdPendaftaran = Number(data.data.id_pendaftaran || data.data.pendaftaran?.id_pendaftaran || data.data.pendaftaran?.id || 0)
-  idPendaftaran.value = Number.isFinite(parsedIdPendaftaran) && parsedIdPendaftaran > 0 ? parsedIdPendaftaran : null
+  idPendaftaran.value = String(data.data.id_pendaftaran || data.data.pendaftaran?.id_pendaftaran || data.data.pendaftaran?.id || '').trim()
   documentTypes.value = data.data.jenis_berkas || []
   selectedDocumentName.value = documentTypes.value[0]?.nama || ''
 

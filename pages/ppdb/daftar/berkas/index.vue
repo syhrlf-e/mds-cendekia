@@ -56,11 +56,19 @@ const isMobile = ref(true)
 const isCopied = ref(false)
 
 const apiBaseUrl = computed(() => {
-  return String(config.public.apiBaseUrl || 'https://cendekia.sekata.my.id').replace(/\/$/, '')
+  return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
 })
 
 const berkasUploadEndpoint = computed(() => {
   return `${apiBaseUrl.value}/register/berkas`
+})
+
+const registrationSubmitEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/siswa`
+})
+
+const registrationStatusEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/cek-status`
 })
 
 const updateDeviceType = () => {
@@ -73,12 +81,15 @@ onMounted(() => {
     const rawPendingRegistration = localStorage.getItem(pendingRegistrationStorageKey)
     if (rawPendingRegistration) {
       try {
-        const parsed = JSON.parse(rawPendingRegistration) as { id?: number, kode?: string }
-        if (parsed.id) {
+        const parsed = JSON.parse(rawPendingRegistration) as { id?: number | string, kode?: string }
+        const parsedId = toPositiveNumber(parsed.id)
+        if (parsedId) {
           pendingRegistration.value = {
-            id: parsed.id,
-            kode: parsed.kode || String(parsed.id)
+            id: parsedId,
+            kode: parsed.kode || String(parsedId)
           }
+        } else {
+          localStorage.removeItem(pendingRegistrationStorageKey)
         }
       } catch {
         localStorage.removeItem(pendingRegistrationStorageKey)
@@ -156,8 +167,10 @@ const getSubmitErrorMessage = (error: any, fallbackMessage?: string) => {
   }
 
   const status = error?.response?.status
+  const serverMessage = error?.data?.message || error?.response?._data?.message || error?.response?._data?.error || error?.statusMessage
+
   if (status >= 400 && status < 500) {
-    return error?.response?._data?.message || 'Data pendaftaran belum sesuai dengan ketentuan server. Periksa kembali data dan berkas kamu.'
+    return serverMessage || 'Data pendaftaran belum sesuai dengan ketentuan server. Periksa kembali data dan berkas kamu.'
   }
 
   const rawMessage = String(error?.message || error?.cause?.message || '').toLowerCase()
@@ -185,12 +198,109 @@ const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: num
 
     return { data, error: null }
   } catch (error: any) {
+    if (import.meta.dev && endpoint.includes('/register/siswa')) {
+      console.error('Register siswa gagal:', {
+        status: error?.response?.status,
+        message: error?.data?.message || error?.response?._data?.message || error?.message,
+        payloadSummary: {
+          nisnLength: String(body?.nisn || '').length,
+          biodataKeys: Object.keys(body?.biodata || {}),
+          alamatKeys: Object.keys(body?.alamat || {}),
+          riwayatPendidikanKeys: Object.keys(body?.riwayat_pendidikan || {}),
+          orangTuaCount: Array.isArray(body?.orang_tua) ? body.orang_tua.length : 0,
+          id_program: body?.id_program,
+          id_gelombang: body?.id_gelombang
+        }
+      })
+    }
+
     return { data: null, error }
   }
 }
 
+const logBerkasUploadError = (registrationId: number, error: any, data: any, formData: FormData) => {
+  if (!import.meta.dev) return
+
+  const jenisBerkas = formData.getAll('jenis_berkas').map(String)
+  const berkasFiles = formData.getAll('berkas_persyaratan')
+
+  console.error('Upload berkas gagal:', {
+    status: error?.response?.status,
+    message: data?.message || error?.data?.message || error?.response?._data?.message || error?.message,
+    payloadSummary: {
+      id_pendaftaran: registrationId,
+      hasPassPhoto: formData.has('pass_photo'),
+      jenis_berkas: jenisBerkas,
+      berkasCount: berkasFiles.length
+    }
+  })
+}
+
+const getMissingRegistrationFields = (payload: any) => {
+  const requiredChecks = [
+    ['NISN', payload.nisn],
+    ['Nama lengkap', payload.biodata?.nama],
+    ['NIK', payload.biodata?.nik],
+    ['Agama', payload.biodata?.agama],
+    ['Tempat lahir', payload.biodata?.tempat_lahir],
+    ['Tanggal lahir', payload.biodata?.tanggal_lahir],
+    ['Jenis kelamin', payload.biodata?.jenis_kelamin],
+    ['No. telepon', payload.biodata?.no_telepon],
+    ['Email', payload.biodata?.email],
+    ['Alamat', payload.alamat?.alamat],
+    ['RT', payload.alamat?.rt],
+    ['RW', payload.alamat?.rw],
+    ['Provinsi', payload.alamat?.provinsi],
+    ['Kota/Kabupaten', payload.alamat?.kabupaten_kota],
+    ['Kecamatan', payload.alamat?.kecamatan],
+    ['Kelurahan', payload.alamat?.kelurahan],
+    ['Kode pos', payload.alamat?.kode_pos],
+    ['Nama sekolah asal', payload.riwayat_pendidikan?.nama_sekolah_asal],
+    ['NPSN sekolah asal', payload.riwayat_pendidikan?.npsn_sekolah_asal],
+    ['Alamat sekolah asal', payload.riwayat_pendidikan?.alamat_sekolah_asal],
+    ['Tahun lulus', payload.riwayat_pendidikan?.tahun_lulus],
+    ['No. ijazah', payload.riwayat_pendidikan?.no_ijazah],
+    ['Program paket', payload.id_program],
+    ['Gelombang', payload.id_gelombang]
+  ]
+
+  const missing = requiredChecks
+    .filter(([, value]) => String(value ?? '').trim() === '')
+    .map(([label]) => label)
+
+  if (!Array.isArray(payload.orang_tua) || payload.orang_tua.length < 2) {
+    missing.push('Data orang tua')
+  } else {
+    payload.orang_tua.slice(0, 2).forEach((parent: any, index: number) => {
+      const title = index === 0 ? 'ayah' : 'ibu'
+      const parentChecks: [string, string][] = [
+        ['nama', `Nama ${title}`],
+        ['nik', `NIK ${title}`],
+        ['agama', `Agama ${title}`],
+        ['hubungan', `Hubungan ${title}`],
+        ['peran', `Peran ${title}`],
+        ['no_telepon', `No. telepon ${title}`]
+      ]
+
+      parentChecks.forEach(([key, label]) => {
+        if (!String(parent?.[key] ?? '').trim()) missing.push(label)
+      })
+    })
+  }
+
+  return missing
+}
+
 const buildBerkasFormData = (idPendaftaran: number) => {
   const formData = new FormData()
+  const selectedBerkas: { jenis: string, file: File }[] = []
+
+  Object.entries(berkasPersyaratanJenis).forEach(([key, jenis]) => {
+    const file = berkas[key as keyof typeof berkas]
+    if (file) {
+      selectedBerkas.push({ jenis, file })
+    }
+  })
 
   formData.append('id_pendaftaran', String(idPendaftaran))
 
@@ -198,12 +308,9 @@ const buildBerkasFormData = (idPendaftaran: number) => {
     formData.append('pass_photo', berkas.foto)
   }
 
-  Object.entries(berkasPersyaratanJenis).forEach(([key, jenis]) => {
-    const file = berkas[key as keyof typeof berkas]
-    if (!file) return
-
-    formData.append('jenis_berkas', jenis)
-    formData.append('berkas_persyaratan', file)
+  selectedBerkas.forEach((item) => {
+    formData.append('jenis_berkas', item.jenis)
+    formData.append('berkas_persyaratan', item.file)
   })
 
   return formData
@@ -214,8 +321,8 @@ type RegistrationSubmitResponse = {
   status?: boolean
   message?: string
   data?: {
-    id?: number
-    id_pendaftaran?: number
+    id?: number | string
+    id_pendaftaran?: number | string
     kode?: string
     kode_pendaftaran?: string
     nomor_pendaftaran?: string
@@ -241,18 +348,26 @@ const isFailedResponse = (response?: { success?: boolean, status?: boolean } | n
   return response?.success === false || response?.status === false
 }
 
+const toPositiveNumber = (value: unknown) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+}
+
 const getRegistrationId = (response?: RegistrationSubmitResponse | null) => {
-  return response?.data?.id_pendaftaran || response?.data?.id || 0
+  return toPositiveNumber(response?.data?.id) || toPositiveNumber(response?.data?.id_pendaftaran)
 }
 
 const getRegistrationCode = (response?: RegistrationSubmitResponse | null) => {
-  return response?.data?.nomor_pendaftaran || response?.data?.kode_pendaftaran || response?.data?.kode || ''
+  const idPendaftaran = String(response?.data?.id_pendaftaran || '').trim()
+  const idPendaftaranCode = toPositiveNumber(idPendaftaran) ? '' : idPendaftaran
+
+  return response?.data?.nomor_pendaftaran || response?.data?.kode_pendaftaran || response?.data?.kode || idPendaftaranCode
 }
 
 const lookupRegistrationId = async (nomorPendaftaran: string) => {
   if (!nomorPendaftaran || !biodata.value.nisn) return 0
 
-  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>('/api/register/cek-status', {
+  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>(registrationStatusEndpoint.value, {
     kode_pendaftaran: nomorPendaftaran,
     nisn: biodata.value.nisn
   }, 15000)
@@ -291,8 +406,13 @@ const submitRegistrationData = async () => {
     kecamatan: findLabel(kecamatanOptions.value, form.kecamatan),
     kelurahan: findLabel(kelurahanOptions.value, form.kelurahan)
   })
+  const missingFields = getMissingRegistrationFields(registrationPayload)
 
-  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>('/api/register/siswa', registrationPayload, 15000)
+  if (missingFields.length) {
+    throw new Error(`Data pendaftaran belum lengkap: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ', dan lainnya' : ''}. Silakan kembali ke form pendaftaran.`)
+  }
+
+  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint.value, registrationPayload, 15000)
 
   const registrationCode = getRegistrationCode(data)
   const registrationId = getRegistrationId(data) || await lookupRegistrationId(registrationCode)
@@ -333,22 +453,24 @@ const submitForm = async () => {
     return
   }
 
+  const berkasFormData = buildBerkasFormData(registration.id)
   const { data: berkasData, error: berkasError } = await postRegistrationApi<{
     success?: boolean
     status?: boolean
     message: string
-  }>(berkasUploadEndpoint.value, buildBerkasFormData(registration.id), 30000)
+  }>(berkasUploadEndpoint.value, berkasFormData, 30000)
 
   isSubmitting.value = false
 
   const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
 
   if (berkasError || !isBerkasUploaded) {
+    logBerkasUploadError(registration.id, berkasError, berkasData, berkasFormData)
     const failedMessage = berkasData?.success === false || berkasData?.status === false
       ? berkasData.message
       : undefined
-    submitErrorMessage.value = getSubmitErrorMessage(berkasError, failedMessage)
-    addToast('Pendaftaran belum terkirim.', 'error')
+    submitErrorMessage.value = getSubmitErrorMessage(berkasError, failedMessage) || 'Berkas pendaftaran belum berhasil diunggah.'
+    addToast('Berkas belum terkirim.', 'error')
     return
   }
 

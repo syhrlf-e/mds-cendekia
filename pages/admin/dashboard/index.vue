@@ -12,52 +12,9 @@ import {
   XCircle
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
-
-type RegistrationStatus = 'pending' | 'approved' | 'rejected'
-
-type AdminPendaftarDto = Record<string, any>
-type AdminSummaryDto = {
-  total_pendaftar?: number
-  total?: number
-  diterima?: number
-  ditolak?: number
-  menunggu?: number
-  berkas_terverifikasi?: number
-  berkas_disetujui?: number
-  siswa?: number
-  total_siswa?: number
-}
-
-type DashboardRegistration = {
-  id: string
-  nama: string
-  nisn: string
-  sekolah: string
-  program: string
-  status: RegistrationStatus
-  statusText: string
-  statusBerkas: string
-  tanggal: string
-}
-
-type DashboardActivity = {
-  id: string
-  title: string
-  description: string
-  date: string
-  tone: 'pending' | 'approved' | 'rejected'
-}
-
-type DashboardTimeline = {
-  id: number
-  judul: string
-  deskripsi: string
-  tanggalMulai: string
-  tanggalSelesai: string
-  urutan: number
-  status: 'aktif' | 'nonaktif'
-  tampilPublik: boolean
-}
+import { isDashboardBerkasVerifiedText, useAdminDashboardService } from '~/services/useAdminDashboardService'
+import type { AdminSummaryDto, DashboardActivity, DashboardRegistration, DashboardTimeline } from '~/types/adminDashboard'
+import type { RegistrationStatus } from '~/types/adminPendaftaran'
 
 definePageMeta({
   layout: 'admin',
@@ -66,7 +23,8 @@ definePageMeta({
 
 useHead({ title: 'Dashboard | MDS Cendekia' })
 
-const { get } = useApi()
+const { getDashboardData } = useAdminDashboardService()
+const { prefetchAdminData } = useAdminDataCache()
 const isLoading = ref(true)
 const loadError = ref('')
 const registrations = ref<DashboardRegistration[]>([])
@@ -74,51 +32,8 @@ const timelineItems = ref<DashboardTimeline[]>([])
 const totalStudents = ref(0)
 const summary = ref<AdminSummaryDto | null>(null)
 
-const normalizeText = (value: unknown) => String(value || '').trim()
-
-const readArrayPayload = (payload: any): AdminPendaftarDto[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.data?.data)) return payload.data.data
-  if (Array.isArray(payload?.pendaftar)) return payload.pendaftar
-  if (Array.isArray(payload?.data?.pendaftar)) return payload.data.pendaftar
-  if (Array.isArray(payload?.siswa)) return payload.siswa
-  if (Array.isArray(payload?.data?.siswa)) return payload.data.siswa
-  return []
-}
-
-const readSummaryPayload = (payload: any): AdminSummaryDto | null => {
-  if (!payload) return null
-  return payload.data || payload
-}
-
-const mapTimelineItem = (item: Record<string, any>): DashboardTimeline => ({
-  id: Number(item.id || 0),
-  judul: normalizeText(item.judul || item.title || item.nama),
-  deskripsi: normalizeText(item.deskripsi || item.description),
-  tanggalMulai: normalizeText(item.tanggal_mulai || item.start_date || item.tanggalMulai),
-  tanggalSelesai: normalizeText(item.tanggal_selesai || item.end_date || item.tanggalSelesai),
-  urutan: Number(item.urutan || item.order || 0),
-  status: normalizeText(item.status).toLowerCase() === 'nonaktif' ? 'nonaktif' : 'aktif',
-  tampilPublik: Boolean(item.tampil_publik ?? item.is_public ?? item.tampilPublik)
-})
-
-const normalizeStatus = (status: string): RegistrationStatus => {
-  const normalized = status.toLowerCase()
-  if (normalized.includes('terima') || normalized.includes('approved')) return 'approved'
-  if (normalized.includes('tolak') || normalized.includes('rejected')) return 'rejected'
-  return 'pending'
-}
-
 const isBerkasVerifiedText = (status: string) => {
-  const normalized = status.toLowerCase()
-  return (
-    normalized.includes('terverifikasi') ||
-    normalized.includes('disetujui') ||
-    normalized.includes('diterima') ||
-    normalized.includes('approved') ||
-    ((normalized.includes('verifikasi') || normalized.includes('valid')) && !normalized.includes('menunggu') && !normalized.includes('tidak'))
-  )
+  return isDashboardBerkasVerifiedText(status)
 }
 
 const isBerkasRejectedText = (status: string) => {
@@ -126,57 +41,18 @@ const isBerkasRejectedText = (status: string) => {
   return normalized.includes('tolak') || normalized.includes('rejected') || normalized.includes('tidak valid')
 }
 
-const mapRegistration = (item: AdminPendaftarDto): DashboardRegistration => {
-  const sekolah = normalizeText(
-    item.asal_sekolah ||
-    item.sekolah_asal ||
-    item.nama_sekolah_asal ||
-    item.riwayat_pendidikan?.nama_sekolah_asal ||
-    item.riwayat_pendidikan?.asal_sekolah ||
-    item.riwayat_pendidikan?.sekolah_asal
-  )
-
-  const statusText = normalizeText(item.status_pendaftaran || item.status) || 'Menunggu verifikasi'
-
-  return {
-    id: normalizeText(item.kode_pendaftaran || item.nomor_pendaftaran || item.kode || item.id),
-    nama: normalizeText(item.nama),
-    nisn: normalizeText(item.nisn),
-    sekolah,
-    program: normalizeText(item.program || item.program_paket || item.paket) || 'Paket C',
-    status: normalizeStatus(statusText),
-    statusText,
-    statusBerkas: normalizeText(item.status_berkas) || 'Menunggu verifikasi',
-    tanggal: normalizeText(item.created_at || item.tanggal_daftar || item.createdAt)
-  }
-}
-
 const loadDashboard = async () => {
   isLoading.value = true
   loadError.value = ''
 
-  const [
-    summaryResponse,
-    pendaftarResponse,
-    siswaResponse,
-    timelineResponse
-  ] = await Promise.all([
-    get<any>('/api/summary', { showErrorToast: false }),
-    get<any>('/api/pendaftar/data', { showErrorToast: false }),
-    get<any>('/api/siswa/data', { showErrorToast: false }),
-    get<any>('/api/timeline-ppdb', { showErrorToast: false })
-  ])
+  const dashboardData = await getDashboardData()
 
-  const pendaftarRows = readArrayPayload(pendaftarResponse.data)
-  const siswaRows = readArrayPayload(siswaResponse.data)
-  const timelineRows = readArrayPayload(timelineResponse.data)
+  registrations.value = dashboardData.registrations
+  timelineItems.value = dashboardData.timelineItems
+  totalStudents.value = dashboardData.totalStudents
+  summary.value = dashboardData.summary
 
-  registrations.value = pendaftarRows.map(mapRegistration)
-  timelineItems.value = timelineRows.map(mapTimelineItem)
-  totalStudents.value = siswaRows.length || registrations.value.filter(item => item.status === 'approved').length
-  summary.value = readSummaryPayload(summaryResponse.data)
-
-  if (pendaftarResponse.error && !summary.value) {
+  if (dashboardData.hasCriticalError) {
     loadError.value = 'Ringkasan dashboard belum bisa diambil dari server.'
   }
 
@@ -354,7 +230,10 @@ const activityToneClass = (tone: DashboardActivity['tone']) => {
   return 'bg-status-pending-bg text-status-pending-text'
 }
 
-onMounted(loadDashboard)
+onMounted(() => {
+  void prefetchAdminData()
+  loadDashboard()
+})
 </script>
 
 <template>

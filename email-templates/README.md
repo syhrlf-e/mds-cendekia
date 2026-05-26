@@ -64,8 +64,8 @@ Contoh `.env` backend:
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxx
 MAIL_FROM=MDS Cendekia <noreply@domain-terverifikasi.com>
 FRONTEND_URL=http://127.0.0.1:3000
-APP_URL=https://cendekia.sekata.my.id
-API_URL=https://cendekia.sekata.my.id
+APP_URL=https://api.oirul.com
+API_URL=https://api.oirul.com
 ```
 
 Catatan:
@@ -196,7 +196,7 @@ Gunakan data ini ketika mengetes template di HBS editor.
 
 ```json
 {
-  "url_logo": "https://cendekia.sekata.my.id/images/logo-yayasan.png",
+  "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
   "nama_siswa": "Syahrul Efendi",
   "nomor_pendaftaran": "PPDB-2026-00125",
@@ -204,7 +204,7 @@ Gunakan data ini ketika mengetes template di HBS editor.
   "nama_lengkap": "Syahrul Efendi",
   "asal_sekolah": "SMP Negeri 1 Jawilan",
   "tanggal_daftar": "21 Mei 2026",
-  "url_cek_status": "https://cendekia.sekata.my.id/ppdb/status/00125",
+  "url_cek_status": "https://api.oirul.com/ppdb/status/00125",
   "tahun": "2026"
 }
 ```
@@ -213,12 +213,12 @@ Gunakan data ini ketika mengetes template di HBS editor.
 
 ```json
 {
-  "url_logo": "https://cendekia.sekata.my.id/images/logo-yayasan.png",
+  "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
   "nama_siswa": "Syahrul Efendi",
   "tahun_ajaran": "2026/2027",
   "nomor_pendaftaran": "PPDB-2026-00125",
-  "url_download_pdf": "https://cendekia.sekata.my.id/api/ppdb/download-kartu/00125",
+  "url_download_pdf": "https://api.oirul.com/api/ppdb/download-kartu/00125",
   "tahun": "2026"
 }
 ```
@@ -227,7 +227,7 @@ Gunakan data ini ketika mengetes template di HBS editor.
 
 ```json
 {
-  "url_logo": "https://cendekia.sekata.my.id/images/logo-yayasan.png",
+  "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
   "nama_siswa": "Syahrul Efendi",
   "tahun_ajaran": "2026/2027",

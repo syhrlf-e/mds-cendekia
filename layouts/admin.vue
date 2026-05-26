@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { clearAdminDataCache } = useAdminDataCache()
 const isAdminMenuOpen = ref(false)
 
 const menu = [
@@ -30,6 +31,7 @@ const handleLogout = async () => {
   const localCendekiaToken = useCookie('cendekia_token')
   legacyAdminToken.value = null
   localCendekiaToken.value = null
+  clearAdminDataCache()
 
   router.push('/admin/login')
 }
@@ -48,7 +50,7 @@ const handleLogout = async () => {
     </div>
 
     <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-bg-surface shadow-sm lg:flex">
-      <div class="flex h-[70px] shrink-0 items-center gap-3 border-b border-primary-50 px-6">
+      <div class="flex h-17.5 shrink-0 items-center gap-3 border-b border-primary-50 px-6">
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
@@ -87,7 +89,7 @@ const handleLogout = async () => {
     </aside>
 
     <main class="relative hidden h-full min-w-0 grow flex-col overflow-hidden bg-bg-base lg:flex">
-      <header class="relative z-30 mb-0 mt-4 flex h-[70px] shrink-0 items-center justify-between rounded-2xl border border-border/80 bg-bg-surface px-6 shadow-sm transition-colors">
+      <header class="relative z-30 mb-0 mt-4 flex h-17.5 shrink-0 items-center justify-between rounded-2xl border border-border/80 bg-bg-surface px-6 shadow-sm transition-colors">
         <div>
           <h1 class="text-lg font-bold leading-[1.24] tracking-[-0.2px] text-text-primary">
             {{ pageTitle }}
@@ -132,7 +134,7 @@ const handleLogout = async () => {
 
             <div
               v-if="isAdminMenuOpen"
-              class="absolute right-0 top-[calc(100%+10px)] z-20 w-56 overflow-hidden rounded-[1.5rem] border border-border bg-bg-surface p-2 shadow-2xl shadow-text-primary/10"
+              class="absolute right-0 top-[calc(100%+10px)] z-20 w-56 overflow-hidden rounded-3xl border border-border bg-bg-surface p-2 shadow-2xl shadow-text-primary/10"
             >
               <div class="mb-1 border-b border-primary-50 px-4 py-3">
                 <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-text-muted">Sesi Aktif</p>

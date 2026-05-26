@@ -10,7 +10,7 @@ export const useApi = () => {
     const rawUrl = String(url || '').trim()
     const markdownUrlMatch = rawUrl.match(/\((https?:\/\/[^)]+)\)/)
 
-    return markdownUrlMatch?.[1] || rawUrl || 'https://cendekia.sekata.my.id'
+    return markdownUrlMatch?.[1] || rawUrl || 'https://api.oirul.com'
   }
 
   const baseURL = normalizeBaseUrl(config.public.apiBaseUrl)

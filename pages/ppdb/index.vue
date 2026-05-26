@@ -74,28 +74,28 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
 <template>
   <div class="min-h-screen bg-bg-base font-sans">
+    <PublicNavbar />
 
-    <section class="relative min-h-[60vh] overflow-hidden pt-20 pb-16 flex items-center">
-      <div class="absolute inset-0 bg-brand opacity-5"></div>
-
-      <div class="relative z-10 w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
-        <div class="max-w-2xl">
-          <h1 class="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold text-text-primary mb-6 leading-tight">
-            Penerimaan Peserta Didik Baru <br/>
-            <span class="text-brand">{{ academicYear }}</span>
+    <section class="relative flex min-h-screen items-center overflow-hidden pb-16 pt-32">
+      <div class="public-navbar-container relative z-10">
+        <div class="max-w-5xl">
+          <h1 class="mb-4 font-heading text-4xl font-extrabold leading-[1.08] text-text-primary md:text-6xl lg:whitespace-nowrap lg:text-7xl">
+            Penerimaan Peserta Didik Baru
           </h1>
+          <p class="mb-8 font-heading text-3xl font-bold leading-tight text-brand md:text-5xl">
+            {{ academicYear }}
+          </p>
 
-          <p class="text-lg md:text-xl text-text-secondary mb-10 leading-relaxed font-medium">
-            Selamat Datang di PPDB MDS Cendekia.<br />
+          <p class="mb-10 max-w-2xl text-base font-medium leading-[1.8] text-text-secondary md:text-lg">
             Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.
           </p>
 
-          <div class="flex flex-col sm:flex-row gap-4 w-full">
+          <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <AppButton
               variant="primary"
               :disabled="isDaftarDisabled"
               @click="$router.push('/ppdb/daftar')"
-              class="flex-1 text-base py-4 shadow-xl shadow-brand/20 font-bold"
+              class="min-w-44 px-6 py-3.5 text-sm font-semibold shadow-xl shadow-brand/20"
             >
               {{ daftarLabel }}
             </AppButton>
@@ -103,7 +103,7 @@ const formatDateRange = (startDate: string, endDate: string) => {
             <AppButton
               variant="secondary"
               @click="$router.push('/ppdb/cek-status')"
-              class="flex-1 text-base py-4 border-2 font-bold bg-bg-surface hover:bg-bg-base hover:text-brand transition-colors"
+              class="min-w-52 border-2 bg-bg-surface px-6 py-3.5 text-sm font-semibold transition-colors hover:bg-bg-base hover:text-brand"
             >
               Cek Status Pendaftaran
             </AppButton>

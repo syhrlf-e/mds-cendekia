@@ -2,6 +2,7 @@
 import { AlertTriangle, Eye, EyeOff } from 'lucide-vue-next'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAdminAuthService } from '~/services/useAdminAuthService'
 
 definePageMeta({
   layout: false
@@ -10,7 +11,8 @@ definePageMeta({
 useHead({ title: 'Login Admin | MDS Cendekia' })
 
 const router = useRouter()
-const { post } = useApi()
+const { login } = useAdminAuthService()
+const { prefetchAdminData } = useAdminDataCache()
 
 const username = ref('')
 const password = ref('')
@@ -72,10 +74,10 @@ const handleLogin = async () => {
   isSubmitting.value = true
   errorMsg.value = ''
 
-  const { data, error } = await post<{ status?: boolean, success?: boolean, message?: string }>('/auth/login', {
+  const { data, error } = await login({
     username: username.value.trim(),
     password: password.value
-  }, { showErrorToast: false })
+  })
 
   isSubmitting.value = false
 
@@ -99,7 +101,8 @@ const handleLogin = async () => {
 
   if (data?.status || data?.success) {
     localFailedAttempts.value = 0
-    await router.push('/admin/pendaftaran')
+    void prefetchAdminData()
+    await router.push('/admin/dashboard')
     return
   }
 

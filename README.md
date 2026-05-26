@@ -19,7 +19,7 @@ Project ini berisi frontend PPDB MDS Cendekia dengan dua area utama:
 - Area publik untuk pendaftaran, upload berkas, cek status, dan kartu peserta.
 - Area admin untuk login, dashboard, pengelolaan pendaftar, dan pengaturan.
 - Template email Handlebars untuk kebutuhan backend NestJS + Resend.
-- Nuxt server route bridge untuk endpoint registrasi yang membutuhkan proxy dari frontend.
+- Integrasi API langsung dari browser ke backend melalui `NUXT_PUBLIC_API_BASE_URL`.
 
 ## Tech Stack
 
@@ -42,8 +42,6 @@ layouts/admin.vue                Layout khusus admin
 middleware/admin-auth.ts         Guard halaman admin
 pages/                           Route Nuxt untuk publik dan admin
 public/                          Asset publik, logo, favicon, manifest
-server/api/register/             Bridge endpoint registrasi ke backend
-server/utils/upstream-api.ts     Helper request ke API backend
 ```
 
 Dokumen PRD, catatan desain eksploratif, dan source export favicon disimpan sebagai dokumen internal lokal dan tidak ikut dipublikasikan ke repository.
@@ -92,7 +90,7 @@ Konfigurasi publik saat ini berada di `nuxt.config.ts`:
 ```ts
 runtimeConfig: {
   public: {
-    apiBaseUrl: 'https://cendekia.sekata.my.id',
+    apiBaseUrl: 'https://api.oirul.com',
     apiTimeoutMs: '15000',
     ppdbProgramId: '1',
     ppdbGelombangId: '3'
@@ -102,9 +100,9 @@ runtimeConfig: {
 
 Catatan untuk backend:
 
-- Base API production saat ini memakai `https://cendekia.sekata.my.id`.
-- Endpoint registrasi publik dipanggil melalui server route Nuxt di `/api/register/*`.
-- Bridge ini digunakan agar request multipart dan registrasi lebih stabil dari sisi browser.
+- Base API production saat ini memakai `https://api.oirul.com`.
+- Endpoint backend dipanggil langsung dari browser melalui `NUXT_PUBLIC_API_BASE_URL`.
+- Endpoint registrasi siswa, cek status, upload berkas, dan revisi berkas langsung dikirim ke backend `/register/*`.
 - PDF kartu peserta digenerate oleh backend, bukan frontend.
 
 ## Script
@@ -151,7 +149,7 @@ POST /register/berkas
 Untuk dokumentasi detail backend, gunakan API docs backend:
 
 ```text
-https://cendekia.sekata.my.id/api-docs
+https://api.oirul.com/api-docs
 ```
 
 ## Admin

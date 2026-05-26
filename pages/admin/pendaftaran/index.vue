@@ -13,164 +13,13 @@ import {
   XCircle
 } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { defaultBerkas, normalizeActionId, normalizeStatus } from '~/mappers/adminPendaftarMapper'
+import { useAdminPendaftaranService } from '~/services/useAdminPendaftaranService'
+import type { PublicCheckStatusResponse, Registration, RegistrationFile, RegistrationStatus } from '~/types/adminPendaftaran'
 
-type RegistrationStatus = 'pending' | 'approved' | 'rejected'
 type SortKey = 'nama' | 'tanggal' | ''
 type SortOrder = 'asc' | 'desc'
 type TabKey = 'diri' | 'ortu' | 'berkas'
-
-type RegistrationFile = {
-  id: string
-  name: string
-  url: string
-}
-
-type ParentData = {
-  id: string
-  title: string
-  nama: string
-  nik: string
-  agama: string
-  hubungan: string
-  peran: string
-  hp: string
-  email: string
-  pendidikan: string
-  pekerjaan: string
-  penghasilan: string
-}
-
-type Registration = {
-  id: string
-  nama: string
-  fotoUrl: string
-  nisn: string
-  sekolah: string
-  tanggal: string
-  status: RegistrationStatus
-  statusText: string
-  statusBerkas: string
-  nik: string
-  email: string
-  hp: string
-  tempatLahir: string
-  tanggalLahir: string
-  jenisKelamin: string
-  agama: string
-  alamat: string
-  rtRw: string
-  kodePos: string
-  provinsi: string
-  kota: string
-  kecamatan: string
-  kelurahan: string
-  gelombang: number | null
-  orangTua: ParentData[]
-  berkasFiles: RegistrationFile[]
-  program?: string
-  program_paket?: string
-}
-
-type AdminPendaftarDto = {
-  id: string
-  nama: string
-  foto?: string
-  foto_url?: string
-  url_foto?: string
-  pas_foto?: string
-  file_foto?: string
-  path_foto?: string
-  berkas?: AdminBerkasDto[] | AdminBerkasDto
-  berkas_pendaftaran?: AdminBerkasDto[] | AdminBerkasDto
-  berkas_persyaratan?: AdminBerkasDto[] | AdminBerkasDto
-  dokumen?: AdminBerkasDto[] | AdminBerkasDto
-  files?: AdminBerkasDto[] | AdminBerkasDto
-  nik: string
-  nisn: string
-  status_berkas: string
-  status_pendaftaran: string
-  created_at: string
-  no_telepon: string
-  email: string
-  asal_sekolah?: string
-  sekolah_asal?: string
-  nama_sekolah_asal?: string
-  riwayat_pendidikan?: {
-    nama_sekolah_asal?: string
-    asal_sekolah?: string
-    sekolah_asal?: string
-  }
-  tempat_lahir: string
-  tanggal_lahir: string
-  jenis_kelamin: string
-  agama?: string
-  alamat: string
-  rt: string
-  rw: string
-  kelurahan: string
-  kecamatan: string
-  kota?: string
-  kabupaten?: string
-  kota_kabupaten?: string
-  kabupaten_kota?: string
-  kota_kab?: string
-  provinsi: string
-  kode_pos: string
-  gelombang: number
-  program?: string
-  program_paket?: string
-  orang_tua?: AdminOrangTuaDto[] | AdminOrangTuaDto
-  orangtua?: AdminOrangTuaDto[] | AdminOrangTuaDto
-  wali?: AdminOrangTuaDto[] | AdminOrangTuaDto
-}
-
-type AdminBerkasDto = {
-    jenis_berkas?: string
-    jenis?: string
-    tipe?: string
-    kategori?: string
-    nama?: string
-    nama_berkas?: string
-    nama_file?: string
-    url?: string
-    url_file?: string
-    file_url?: string
-    file?: string
-    berkas?: string
-    path?: string
-    path_file?: string
-    file_path?: string
-    lokasi_file?: string
-    data?: AdminBerkasDto
-    file_data?: AdminBerkasDto
-}
-
-type AdminOrangTuaDto = {
-  nama?: string
-  nik?: string
-  agama?: string
-  no_telepon?: string
-  telepon?: string
-  phone?: string
-  email?: string
-  hubungan?: string
-  hubungan_lainnya?: string
-  peran?: string
-  pekerjaan?: string
-  pendidikan?: string
-  gaji?: string
-  penghasilan?: string
-}
-
-type PublicCheckStatusResponse = {
-  status?: boolean
-  success?: boolean
-  message?: string
-  data?: {
-    status?: string
-    status_pendaftaran?: string
-  }
-}
 
 definePageMeta({
   layout: 'admin',
@@ -179,22 +28,18 @@ definePageMeta({
 
 useHead({ title: 'Pendaftaran | MDS Cendekia' })
 
-const config = useRuntimeConfig()
-const { get, post } = useApi()
-const registrations = ref<Registration[]>([])
-const isLoading = ref(true)
-const loadError = ref('')
-
-const defaultBerkas: RegistrationFile[] = [
-  { id: 'foto', name: 'Foto Siswa (3x4 berwarna)', url: '' },
-  { id: 'rapor', name: 'Buku Rapor SMP', url: '' },
-  { id: 'surat-nilai', name: 'Surat Keterangan Nilai Rapor Semester I-V', url: '' },
-  { id: 'ijazah', name: 'Ijazah / SKL', url: '' },
-  { id: 'akta', name: 'Akta Kelahiran', url: '' },
-  { id: 'kk', name: 'Kartu Keluarga', url: '' }
-]
-
-const defaultPersyaratanBerkas = defaultBerkas.slice(1)
+const {
+  checkPublicStatus,
+  updatePendaftarStatus,
+  verifyBerkas
+} = useAdminPendaftaranService()
+const {
+  pendaftar: registrations,
+  pendaftarLoading: isLoading,
+  pendaftarError: loadError,
+  loadPendaftar: loadCachedPendaftar,
+  refreshPendaftar
+} = useAdminDataCache()
 
 const searchQuery = ref('')
 const debouncedSearch = ref('')
@@ -282,15 +127,6 @@ const perPageOptions = [
   { label: '50 / halaman', value: 50 }
 ]
 
-const normalizeStatus = (status: string): RegistrationStatus => {
-  const normalized = status.toLowerCase()
-
-  if (normalized.includes('terima') || normalized.includes('diterima') || normalized.includes('approved')) return 'approved'
-  if (normalized.includes('tolak') || normalized.includes('ditolak') || normalized.includes('rejected')) return 'rejected'
-  return 'pending'
-}
-
-const normalizeActionId = (id: string) => id.replace(/[^a-zA-Z0-9]/g, '')
 const getAdminActionId = (id: string) => normalizeActionId(id)
 const getBerkasActionId = (id: string) => normalizeActionId(id)
 
@@ -299,225 +135,16 @@ const readPublicStatusText = (response?: PublicCheckStatusResponse | null) => {
 }
 
 const verifyPublicRegistrationStatus = async (item: Registration) => {
-  const { data, error } = await post<PublicCheckStatusResponse>('/register/cek-status', {
-    kode_pendaftaran: normalizeActionId(item.id),
+  const { data, error } = await checkPublicStatus({
+    kode_pendaftaran: item.id,
     nisn: item.nisn
-  }, { showErrorToast: false })
+  })
 
   if (error || !data?.status || !data.data) return ''
   return readPublicStatusText(data)
 }
 
-const ensureArray = (response: unknown): AdminPendaftarDto[] => {
-  if (Array.isArray(response)) return response as AdminPendaftarDto[]
-
-  const data = response as {
-    data?: AdminPendaftarDto | AdminPendaftarDto[]
-    result?: AdminPendaftarDto | AdminPendaftarDto[]
-    items?: AdminPendaftarDto[]
-  } | null
-
-  if (Array.isArray(data?.data)) return data.data
-  if (data?.data) return [data.data]
-  if (Array.isArray(data?.result)) return data.result
-  if (data?.result) return [data.result]
-  if (Array.isArray(data?.items)) return data.items
-  if (data && typeof data === 'object' && 'id' in data) return [data as AdminPendaftarDto]
-  return []
-}
-
-const normalizeAssetUrl = (url?: string) => {
-  const rawUrl = String(url || '').trim()
-  if (!rawUrl) return ''
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
-
-  const baseUrl = String(config.public.apiBaseUrl || '').replace(/\/$/, '')
-  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
-  return `${baseUrl}${path}`
-}
-
-const asBerkasArray = (value?: AdminBerkasDto[] | AdminBerkasDto) => {
-  if (!value) return []
-  return Array.isArray(value) ? value : [value]
-}
-
-const asOrangTuaArray = (value?: AdminOrangTuaDto[] | AdminOrangTuaDto) => {
-  if (!value) return []
-  return Array.isArray(value) ? value : [value]
-}
-
-const getBerkasLabel = (file: AdminBerkasDto) => {
-  return [
-    file.jenis_berkas,
-    file.jenis,
-    file.tipe,
-    file.kategori,
-    file.nama,
-    file.nama_berkas,
-    file.nama_file
-  ].filter(Boolean).join(' ').toLowerCase()
-}
-
-const getBerkasDisplayName = (file: AdminBerkasDto, index: number) => {
-  return file.jenis_berkas ||
-    file.jenis ||
-    file.tipe ||
-    file.kategori ||
-    file.nama ||
-    file.nama_berkas ||
-    file.nama_file ||
-    `Berkas ${index + 1}`
-}
-
-const getBerkasUrl = (file?: AdminBerkasDto): string => {
-  if (!file) return ''
-
-  return normalizeAssetUrl(
-    file.url ||
-    file.url_file ||
-    file.file_url ||
-    file.file ||
-    file.berkas ||
-    file.path ||
-    file.path_file ||
-    file.file_path ||
-    file.lokasi_file ||
-    getBerkasUrl(file.data) ||
-    getBerkasUrl(file.file_data)
-  )
-}
-
-const getFotoUrl = (item: AdminPendaftarDto) => {
-  const directUrl = item.foto_url || item.url_foto || item.foto || item.pas_foto || item.file_foto || item.path_foto
-  if (directUrl) return normalizeAssetUrl(directUrl)
-
-  const berkasList = [
-    ...asBerkasArray(item.berkas),
-    ...asBerkasArray(item.berkas_pendaftaran),
-    ...asBerkasArray(item.berkas_persyaratan),
-    ...asBerkasArray(item.dokumen),
-    ...asBerkasArray(item.files)
-  ]
-  const fotoBerkas = berkasList.find(file => {
-    const label = getBerkasLabel(file)
-    return label.includes('foto') || label.includes('photo') || label.includes('pas')
-  })
-
-  return getBerkasUrl(fotoBerkas)
-}
-
-const getPendaftarBerkasFiles = (item: AdminPendaftarDto): RegistrationFile[] => {
-  const berkasList = [
-    ...asBerkasArray(item.berkas),
-    ...asBerkasArray(item.berkas_pendaftaran),
-    ...asBerkasArray(item.berkas_persyaratan),
-    ...asBerkasArray(item.dokumen),
-    ...asBerkasArray(item.files)
-  ]
-
-  const uploadedFiles = berkasList
-    .map((file, index) => ({
-      id: `${getBerkasDisplayName(file, index)}-${index}`,
-      name: getBerkasDisplayName(file, index),
-      url: getBerkasUrl(file)
-    }))
-    .filter(file => file.url)
-
-  const hasJsonStringIndexedLabels = uploadedFiles.length > 1 &&
-    uploadedFiles.every(file => file.name.length <= 1) &&
-    (uploadedFiles[0]?.name === '[' || uploadedFiles[1]?.name === '"')
-
-  if (hasJsonStringIndexedLabels) {
-    return uploadedFiles.map((file, index) => ({
-      ...file,
-      id: defaultPersyaratanBerkas[index]?.id || file.id,
-      name: defaultPersyaratanBerkas[index]?.name || file.name
-    }))
-  }
-
-  return uploadedFiles.length ? uploadedFiles : defaultBerkas
-}
-
-const getParentTitle = (parent: AdminOrangTuaDto, index: number) => {
-  const relation = `${parent.hubungan || ''} ${parent.peran || ''}`.toLowerCase()
-
-  if (relation.includes('ayah')) return 'Ayah'
-  if (relation.includes('ibu')) return 'Ibu'
-  if (relation.includes('wali')) return 'Wali'
-  return `Orang Tua ${index + 1}`
-}
-
-const getPendaftarOrangTua = (item: AdminPendaftarDto): ParentData[] => {
-  return [
-    ...asOrangTuaArray(item.orang_tua),
-    ...asOrangTuaArray(item.orangtua),
-    ...asOrangTuaArray(item.wali)
-  ]
-    .filter(parent => Object.values(parent).some(Boolean))
-    .map((parent, index) => ({
-      id: `${parent.peran || 'orang-tua'}-${parent.hubungan || index}`,
-      title: getParentTitle(parent, index),
-      nama: parent.nama || '-',
-      nik: parent.nik || '-',
-      agama: parent.agama || '-',
-      hubungan: parent.hubungan_lainnya || parent.hubungan || '-',
-      peran: parent.peran || '-',
-      hp: parent.no_telepon || parent.telepon || parent.phone || '-',
-      email: parent.email || '-',
-      pendidikan: parent.pendidikan || '-',
-      pekerjaan: parent.pekerjaan || '-',
-      penghasilan: parent.penghasilan || parent.gaji || '-'
-    }))
-}
-
-const mapPendaftar = (item: AdminPendaftarDto): Registration => ({
-  id: item.id,
-  nama: item.nama,
-  fotoUrl: getFotoUrl(item),
-  nisn: item.nisn,
-  sekolah: item.asal_sekolah || item.nama_sekolah_asal || item.sekolah_asal || item.riwayat_pendidikan?.nama_sekolah_asal || item.riwayat_pendidikan?.asal_sekolah || item.riwayat_pendidikan?.sekolah_asal || '-',
-  tanggal: item.created_at,
-  status: normalizeStatus(item.status_pendaftaran),
-  statusText: item.status_pendaftaran || 'Menunggu verifikasi',
-  statusBerkas: item.status_berkas || 'Menunggu verifikasi',
-  nik: item.nik,
-  email: item.email,
-  hp: item.no_telepon,
-  tempatLahir: item.tempat_lahir,
-  tanggalLahir: item.tanggal_lahir,
-  jenisKelamin: item.jenis_kelamin,
-  agama: item.agama || '-',
-  alamat: item.alamat,
-  rtRw: `${item.rt || '-'} / ${item.rw || '-'}`,
-  kodePos: item.kode_pos,
-  provinsi: item.provinsi,
-  kota: item.kota || item.kabupaten || item.kota_kabupaten || item.kabupaten_kota || item.kota_kab || '-',
-  kecamatan: item.kecamatan,
-  kelurahan: item.kelurahan,
-  gelombang: item.gelombang ?? null,
-  orangTua: getPendaftarOrangTua(item),
-  berkasFiles: getPendaftarBerkasFiles(item),
-  program: item.program_paket || item.program || '-'
-})
-
-const loadPendaftar = async () => {
-  isLoading.value = true
-  loadError.value = ''
-
-  const { data, error } = await get<AdminPendaftarDto | AdminPendaftarDto[] | { data?: AdminPendaftarDto | AdminPendaftarDto[] }>('/api/pendaftar/data', {
-    showErrorToast: false
-  })
-
-  isLoading.value = false
-
-  if (error) {
-    loadError.value = error?.data?.message || error?.response?._data?.message || 'Data pendaftar belum bisa diambil.'
-    registrations.value = []
-    return
-  }
-
-  registrations.value = ensureArray(data).map(mapPendaftar)
-}
+const loadPendaftar = (force = false) => force ? refreshPendaftar() : loadCachedPendaftar()
 
 const isBerkasVerified = computed(() => {
   const status = selectedItem.value?.statusBerkas.toLowerCase() || ''
@@ -879,11 +506,11 @@ const handleApprove = async () => {
   isProcessingApprove.value = true
   const actionId = getAdminActionId(selectedItem.value.id)
 
-  const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/status', {
+  const { data, error } = await updatePendaftarStatus({
     id: actionId,
     accept: true,
     notes: ''
-  }, { showErrorToast: false })
+  })
 
   isProcessingApprove.value = false
 
@@ -900,7 +527,7 @@ const handleApprove = async () => {
   const publicStatus = normalizeStatus(publicStatusText)
 
   if (publicStatus !== 'approved') {
-    await loadPendaftar()
+    await loadPendaftar(true)
     useToast().addToast(
       publicStatusText
         ? `Server menerima aksi, tapi status cek pendaftaran masih "${publicStatusText}".`
@@ -915,7 +542,7 @@ const handleApprove = async () => {
   isApproveModalOpen.value = false
   closeFilePreview()
   isDetailModalOpen.value = false
-  await loadPendaftar()
+  await loadPendaftar(true)
   useToast().addToast(message || 'Pendaftar berhasil diterima', 'success')
 }
 
@@ -931,11 +558,11 @@ const handleReject = async () => {
   isProcessingReject.value = true
   const actionId = getAdminActionId(selectedItem.value.id)
 
-  const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/status', {
+  const { data, error } = await updatePendaftarStatus({
     id: actionId,
     accept: false,
     notes: selectedReason
-  }, { showErrorToast: false })
+  })
 
   isProcessingReject.value = false
 
@@ -952,7 +579,7 @@ const handleReject = async () => {
   const publicStatus = normalizeStatus(publicStatusText)
 
   if (publicStatus !== 'rejected') {
-    await loadPendaftar()
+    await loadPendaftar(true)
     useToast().addToast(
       publicStatusText
         ? `Server menerima aksi, tapi status cek pendaftaran masih "${publicStatusText}".`
@@ -967,7 +594,7 @@ const handleReject = async () => {
   isRejectModalOpen.value = false
   closeFilePreview()
   isDetailModalOpen.value = false
-  await loadPendaftar()
+  await loadPendaftar(true)
   useToast().addToast(message || 'Pendaftar berhasil ditolak', 'success')
 }
 
@@ -984,11 +611,11 @@ const handleVerifyBerkas = async (decision: 'reject' | 'revision' | 'valid') => 
   isProcessingVerifyBerkas.value = true
   const actionId = getBerkasActionId(selectedItem.value.id)
 
-  const { data, error } = await post<{ success?: boolean, status?: boolean, message?: string }>('/api/pendaftar/berkas', {
+  const { data, error } = await verifyBerkas({
     id: actionId,
     accept: acceptValue,
     notes: acceptValue === 1 ? 'Berkas lengkap dan sesuai' : selectedReason
-  }, { showErrorToast: false })
+  })
 
   isProcessingVerifyBerkas.value = false
 
@@ -1004,7 +631,7 @@ const handleVerifyBerkas = async (decision: 'reject' | 'revision' | 'valid') => 
   selectedItem.value.statusBerkas = acceptValue === 1 ? 'Berkas sesuai' : berkasDecisionCopy.value.successStatus
   isRejectBerkasModalOpen.value = false
   rejectBerkasReason.value = ''
-  await loadPendaftar()
+  await loadPendaftar(true)
   useToast().addToast(message || (acceptValue === 1 ? 'Berkas pendaftar lengkap dan sesuai' : berkasDecisionCopy.value.successToast), 'success')
 }
 
@@ -1025,7 +652,7 @@ watch(totalPages, value => {
       <section class="shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
         <div class="grid grid-cols-[minmax(360px,1fr)_220px_140px] gap-4">
           <div class="relative">
-            <Search class="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-text-muted" />
+            <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-text-muted" />
             <input
               v-model="searchQuery"
               type="search"
@@ -1080,7 +707,7 @@ watch(totalPages, value => {
           <tbody class="divide-y divide-primary-50">
             <tr v-if="isLoading">
               <td colspan="8">
-                <div class="flex min-h-[420px] items-center justify-center">
+                <div class="flex min-h-105 items-center justify-center">
                   <AppEmptyState
                     title="Memuat data pendaftar"
                     description="Sebentar, data sedang diambil dari server."
@@ -1094,7 +721,7 @@ watch(totalPages, value => {
             </tr>
             <tr v-else-if="loadError">
               <td colspan="8">
-                <div class="flex min-h-[420px] items-center justify-center">
+                <div class="flex min-h-105 items-center justify-center">
                   <AppEmptyState
                     title="Data pendaftar belum bisa dimuat"
                     :description="loadError"
@@ -1114,7 +741,7 @@ watch(totalPages, value => {
             <tr
               v-for="(item, index) in isLoading || loadError ? [] : paginatedData"
               :key="item.id"
-              class="h-[60px] text-sm text-text-primary transition-colors hover:bg-bg-base"
+              class="h-15 text-sm text-text-primary transition-colors hover:bg-bg-base"
             >
               <td class="px-4 text-text-secondary">{{ paginationStart + index }}</td>
               <td class="px-4 font-medium text-text-primary">{{ item.id }}</td>

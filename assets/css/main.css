@@ -74,6 +74,25 @@
 }
 
 @layer components {
+  .public-navbar-container {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (min-width: 768px) {
+    .public-navbar-container {
+      width: 85%;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .public-navbar-container {
+      width: 80%;
+      max-width: calc(100vw - 480px);
+    }
+  }
+
   .dot-wave {
     @apply inline-flex items-center space-x-1;
   }

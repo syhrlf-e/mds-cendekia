@@ -85,6 +85,11 @@ const normalizeGaji = (value: string) => {
   return gajiMap[value] || value
 }
 
+const toRequiredNumber = (value: unknown, fallback: unknown) => {
+  const parsed = Number(value || fallback)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
+}
+
 export const createEmptyOrangTua = (
   type: keyof typeof PPDB_ORANG_TUA_ROLE_CONFIG
 ): PpdbOrangTuaForm => ({
@@ -206,8 +211,8 @@ export const usePpdbRegistrationForm = () => {
     },
     riwayat_pendidikan: sekolah.value,
     orang_tua: payloadOrangTua.value,
-    id_program: Number(biodata.value.id_program || useRuntimeConfig().public.ppdbProgramId || 1),
-    id_gelombang: Number(biodata.value.id_gelombang || useRuntimeConfig().public.ppdbGelombangId || 3)
+    id_program: toRequiredNumber(biodata.value.id_program, useRuntimeConfig().public.ppdbProgramId),
+    id_gelombang: toRequiredNumber(biodata.value.id_gelombang, useRuntimeConfig().public.ppdbGelombangId || 3)
   })
 
   const buildMultipartPayload = (files: PpdbRegistrationFiles, wilayahLabels: PpdbWilayahLabels = {}) => {
