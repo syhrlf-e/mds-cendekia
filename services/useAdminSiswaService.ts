@@ -1,28 +1,11 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
-import type { Student, StudentDto, StudentEndpoint } from '~/types/adminSiswa'
+import type { Student, StudentDto } from '~/types/adminSiswa'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
 const normalizeNumber = (value: unknown) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
-}
-
-const isAcceptedStatus = (value: unknown) => {
-  const status = normalizeText(value).toLowerCase()
-  return status.includes('terima') || status.includes('diterima') || status.includes('approved')
-}
-
-const createDisplayNis = (item: StudentDto) => {
-  const acceptedAt = normalizeText(item.tanggal_diterima || item.diterima_at || item.accepted_at || item.created_at)
-  const date = acceptedAt ? new Date(acceptedAt) : new Date('2026-05-23T00:00:00.000Z')
-  const year = Number.isNaN(date.getTime()) ? '26' : String(date.getFullYear()).slice(-2)
-  const month = Number.isNaN(date.getTime()) ? '05' : String(date.getMonth() + 1).padStart(2, '0')
-  const gelombang = normalizeText(item.gelombang || 1)
-  const sourceId = normalizeText(item.id_pendaftaran || item.kode_pendaftaran || item.nomor_pendaftaran || item.id || item.nisn)
-  const randomPart = sourceId.replace(/[^a-zA-Z0-9]/g, '').slice(-4).padStart(4, '0')
-
-  return `${year}${month}${gelombang}${randomPart}`
 }
 
 const readArrayPayload = (payload: any): StudentDto[] => {
@@ -34,11 +17,9 @@ const readArrayPayload = (payload: any): StudentDto[] => {
   return []
 }
 
-const mapStudent = (item: StudentDto, fallbackFromPendaftar = false): Student | null => {
-  if (fallbackFromPendaftar && !isAcceptedStatus(item.status_pendaftaran || item.status)) return null
-
+const mapStudent = (item: StudentDto): Student | null => {
   const kodePendaftaran = normalizeText(item.id_pendaftaran || item.kode_pendaftaran || item.nomor_pendaftaran || item.kode || item.id)
-  const nis = normalizeText(item.nis || item.nomor_induk || item.nomor_induk_siswa || item.no_induk) || createDisplayNis(item)
+  const nis = normalizeText(item.nis || item.nomor_induk || item.nomor_induk_siswa || item.no_induk)
   const sekolah = normalizeText(
     item.asal_sekolah ||
     item.sekolah_asal ||
@@ -58,7 +39,7 @@ const mapStudent = (item: StudentDto, fallbackFromPendaftar = false): Student | 
     nama: normalizeText(item.nama),
     nik: normalizeText(item.nik),
     sekolah,
-    program: normalizeText(item.program || item.program_paket || item.paket) || 'Paket C',
+    program: normalizeText(item.program || item.program_paket || item.paket) || '-',
     gelombang: normalizeNumber(item.gelombang),
     tanggalDiterima: normalizeText(item.tanggal_diterima || item.diterima_at || item.accepted_at || item.created_at),
     jenisKelamin: normalizeText(item.jenis_kelamin),
@@ -71,30 +52,20 @@ const mapStudent = (item: StudentDto, fallbackFromPendaftar = false): Student | 
 export const useAdminSiswaService = () => {
   const { get } = useApi()
 
-  const endpoints: StudentEndpoint[] = [
-    { url: adminApiEndpoints.siswa.list, fallbackFromPendaftar: false },
-    { url: adminApiEndpoints.pendaftar.list, fallbackFromPendaftar: true }
-  ]
-
   const listStudents = async () => {
-    for (const endpoint of endpoints) {
-      const { data, error } = await get<any>(endpoint.url, { showErrorToast: false })
-      const rows = readArrayPayload(data)
-      const mapped = rows
-        .map(item => mapStudent(item, endpoint.fallbackFromPendaftar))
-        .filter((item): item is Student => Boolean(item))
+    const { data, error } = await get<any>(adminApiEndpoints.siswa.list, { showErrorToast: false })
+    const rows = readArrayPayload(data)
 
-      if (!error && rows.length) {
-        return {
-          data: mapped,
-          error: null
-        }
+    if (error) {
+      return {
+        data: [],
+        error
       }
     }
 
     return {
-      data: [],
-      error: new Error('Data siswa belum bisa diambil dari server.')
+      data: rows.map(mapStudent).filter((item): item is Student => Boolean(item)),
+      error: null
     }
   }
 

@@ -2,45 +2,6 @@ import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { ApiMutationResponse } from '~/types/adminPendaftaran'
 import type { PaketSekolah, PaketSekolahDto, PaketSekolahPayload, PaketStatus } from '~/types/adminPaketSekolah'
 
-export const fallbackPackages: PaketSekolah[] = [
-  {
-    id: 1,
-    kode: 'paket-a',
-    nama: 'Paket A',
-    jenjang: 'Setara SD',
-    status: 'nonaktif',
-    kuota: 0,
-    biayaPendaftaran: 0,
-    deskripsi: 'Program pendidikan kesetaraan setara SD.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  },
-  {
-    id: 2,
-    kode: 'paket-b',
-    nama: 'Paket B',
-    jenjang: 'Setara SMP',
-    status: 'nonaktif',
-    kuota: 0,
-    biayaPendaftaran: 0,
-    deskripsi: 'Program pendidikan kesetaraan setara SMP.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  },
-  {
-    id: 3,
-    kode: 'paket-c',
-    nama: 'Paket C',
-    jenjang: 'Setara SMA',
-    status: 'aktif',
-    kuota: 120,
-    biayaPendaftaran: 150000,
-    deskripsi: 'Program pendidikan kesetaraan setara SMA.',
-    totalPendaftar: 0,
-    totalDiterima: 0
-  }
-]
-
 const normalizeText = (value: unknown) => String(value || '').trim()
 
 const normalizeNumber = (value: unknown) => {
@@ -114,16 +75,16 @@ export const useAdminPaketSekolahService = () => {
     })
     const rows = readArrayPayload(data)
 
-    if (error && !rows.length) {
+    if (error) {
       return {
-        data: fallbackPackages,
+        data: [],
         error,
-        usingFallback: true
+        usingFallback: false
       }
     }
 
     return {
-      data: rows.length ? rows.map(mapPackage) : fallbackPackages,
+      data: rows.map(mapPackage),
       error: null,
       usingFallback: false
     }

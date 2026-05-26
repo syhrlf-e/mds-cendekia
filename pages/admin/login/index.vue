@@ -8,7 +8,7 @@ definePageMeta({
   layout: false
 })
 
-useHead({ title: 'Login Admin | MDS Cendekia' })
+useHead({ title: 'MDS Panel | MDS Cendekia' })
 
 const router = useRouter()
 const { login } = useAdminAuthService()
@@ -144,11 +144,11 @@ onUnmounted(() => {
           <img
             src="/images/logo-mds-main.png"
             alt="Logo MDS Cendekia"
-            class="mx-auto mb-5 h-16 w-16 rounded-2xl object-contain"
+            class="mx-auto mb-5 h-16 w-16 object-contain"
           >
-          <h1 class="text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-text-primary">Login Admin</h1>
+          <h1 class="text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-text-primary">MDS Panel</h1>
           <p class="mt-2 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
-            Masuk untuk mengelola PPDB MDS Cendekia
+            Masuk untuk mengelola halaman admin
           </p>
         </div>
 

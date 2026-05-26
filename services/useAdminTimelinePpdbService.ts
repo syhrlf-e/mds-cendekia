@@ -2,59 +2,6 @@ import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { ApiMutationResponse } from '~/types/adminPendaftaran'
 import type { TimelineDto, TimelineItem, TimelinePayload, TimelineStatus } from '~/types/adminTimelinePpdb'
 
-export const fallbackTimeline: TimelineItem[] = [
-  {
-    id: 1,
-    judul: 'Pendaftaran Online',
-    deskripsi: 'Calon siswa mengisi formulir pendaftaran dan melengkapi data diri.',
-    tanggalMulai: '2026-07-01',
-    tanggalSelesai: '2026-07-31',
-    urutan: 1,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 2,
-    judul: 'Upload Berkas',
-    deskripsi: 'Calon siswa mengunggah dokumen persyaratan PPDB.',
-    tanggalMulai: '2026-07-01',
-    tanggalSelesai: '2026-08-05',
-    urutan: 2,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 3,
-    judul: 'Verifikasi Berkas',
-    deskripsi: 'Panitia memeriksa kelengkapan dan validitas dokumen pendaftar.',
-    tanggalMulai: '2026-08-06',
-    tanggalSelesai: '2026-08-15',
-    urutan: 3,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 4,
-    judul: 'Pengumuman Hasil',
-    deskripsi: 'Hasil seleksi PPDB diumumkan kepada calon siswa.',
-    tanggalMulai: '2026-08-20',
-    tanggalSelesai: '2026-08-20',
-    urutan: 4,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 5,
-    judul: 'Daftar Ulang',
-    deskripsi: 'Siswa yang diterima menyelesaikan proses daftar ulang.',
-    tanggalMulai: '2026-08-21',
-    tanggalSelesai: '2026-08-31',
-    urutan: 5,
-    status: 'aktif',
-    tampilPublik: true
-  }
-]
-
 const normalizeText = (value: unknown) => String(value || '').trim()
 
 const normalizeNumber = (value: unknown) => {
@@ -126,16 +73,16 @@ export const useAdminTimelinePpdbService = () => {
     })
     const rows = readArrayPayload(data)
 
-    if (error && !rows.length) {
+    if (error) {
       return {
-        data: fallbackTimeline,
+        data: [],
         error,
-        usingFallback: true
+        usingFallback: false
       }
     }
 
     return {
-      data: rows.length ? rows.map(mapTimelineItem) : fallbackTimeline,
+      data: rows.map(mapTimelineItem),
       error: null,
       usingFallback: false
     }

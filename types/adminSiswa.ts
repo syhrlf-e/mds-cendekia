@@ -16,8 +16,3 @@ export type Student = {
 }
 
 export type StudentDto = Record<string, any>
-
-export type StudentEndpoint = {
-  url: string
-  fallbackFromPendaftar: boolean
-}

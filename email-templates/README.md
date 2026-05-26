@@ -24,7 +24,7 @@ email-templates/
 
 File `.hbs` dipakai backend production.
 
-File `preview/*.html` hanya untuk melihat tampilan di browser. File preview memakai dummy data dan tidak perlu dipakai oleh backend.
+File `preview/*.html` hanya untuk melihat tampilan di browser. File preview tidak dipakai oleh backend.
 
 ## Template Dan Trigger
 
@@ -190,7 +190,7 @@ export class EmailService {
 ```
 ## Variabel Yang Dapat Digunakan
 
-Gunakan data ini ketika mengetes template di HBS editor.
+Gunakan struktur data ini ketika mengetes template di HBS editor.
 
 ### Konfirmasi Pendaftaran
 
@@ -198,14 +198,14 @@ Gunakan data ini ketika mengetes template di HBS editor.
 {
   "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
-  "nama_siswa": "Syahrul Efendi",
-  "nomor_pendaftaran": "PPDB-2026-00125",
-  "nisn": "0045678912",
-  "nama_lengkap": "Syahrul Efendi",
-  "asal_sekolah": "SMP Negeri 1 Jawilan",
-  "tanggal_daftar": "21 Mei 2026",
-  "url_cek_status": "https://api.oirul.com/ppdb/status/00125",
-  "tahun": "2026"
+  "nama_siswa": "{{nama_siswa}}",
+  "nomor_pendaftaran": "{{nomor_pendaftaran}}",
+  "nisn": "{{nisn}}",
+  "nama_lengkap": "{{nama_lengkap}}",
+  "asal_sekolah": "{{asal_sekolah}}",
+  "tanggal_daftar": "{{tanggal_daftar}}",
+  "url_cek_status": "{{url_cek_status}}",
+  "tahun": "{{tahun}}"
 }
 ```
 
@@ -215,11 +215,11 @@ Gunakan data ini ketika mengetes template di HBS editor.
 {
   "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
-  "nama_siswa": "Syahrul Efendi",
-  "tahun_ajaran": "2026/2027",
-  "nomor_pendaftaran": "PPDB-2026-00125",
-  "url_download_pdf": "https://api.oirul.com/api/ppdb/download-kartu/00125",
-  "tahun": "2026"
+  "nama_siswa": "{{nama_siswa}}",
+  "tahun_ajaran": "{{tahun_ajaran}}",
+  "nomor_pendaftaran": "{{nomor_pendaftaran}}",
+  "url_download_pdf": "{{url_download_pdf}}",
+  "tahun": "{{tahun}}"
 }
 ```
 
@@ -229,12 +229,12 @@ Gunakan data ini ketika mengetes template di HBS editor.
 {
   "url_logo": "https://api.oirul.com/images/logo-yayasan.png",
   "nama_yayasan": "Yayasan Mukti Daris Sasmita Cendekia",
-  "nama_siswa": "Syahrul Efendi",
-  "tahun_ajaran": "2026/2027",
-  "nomor_pendaftaran": "PPDB-2026-00125",
-  "alasan_penolakan": "Dokumen Kartu Keluarga (KK) yang diunggah tidak mencantumkan nama calon peserta didik baru atau masa berlaku dokumen tidak sesuai ketentuan.",
-  "kontak_yayasan": "+62 812-3456-7890 (Helpdesk)",
-  "tahun": "2026"
+  "nama_siswa": "{{nama_siswa}}",
+  "tahun_ajaran": "{{tahun_ajaran}}",
+  "nomor_pendaftaran": "{{nomor_pendaftaran}}",
+  "alasan_penolakan": "{{alasan_penolakan}}",
+  "kontak_yayasan": "{{kontak_yayasan}}",
+  "tahun": "{{tahun}}"
 }
 ```
 

@@ -129,18 +129,6 @@ const validateMagicUrl = async () => {
   state.value = 'loading'
   errorMessage.value = ''
 
-  if (token.value.toLowerCase() === 'preview') {
-    idPendaftaran.value = 'MDS202601814'
-    documentTypes.value = [
-      { nama: 'Ijazah', format: 'pdf,jpg,png,jpeg' },
-      { nama: 'Kartu Keluarga', format: 'pdf,jpg,png,jpeg' },
-      { nama: 'Akta Kelahiran', format: 'pdf,jpg,png,jpeg' }
-    ]
-    selectedDocumentName.value = documentTypes.value[0]?.nama || ''
-    state.value = 'valid'
-    return
-  }
-
   const { data, error } = await get<MagicUrlValidateResponse>(`/api/url/validate/${encodeURIComponent(token.value)}`, {
     showErrorToast: false
   })

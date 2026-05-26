@@ -66,7 +66,7 @@ const mapRegistration = (item: DashboardRawDto): DashboardRegistration => {
     nama: normalizeText(item.nama),
     nisn: normalizeText(item.nisn),
     sekolah,
-    program: normalizeText(item.program || item.program_paket || item.paket) || 'Paket C',
+    program: normalizeText(item.program || item.program_paket || item.paket) || '-',
     status: normalizeStatus(statusText),
     statusText,
     statusBerkas: normalizeText(item.status_berkas) || 'Menunggu verifikasi',

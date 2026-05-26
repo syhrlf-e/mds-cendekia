@@ -61,59 +61,6 @@ const timelineStatusOptions = [
   { label: 'Nonaktif', value: 'nonaktif' }
 ]
 
-const fallbackTimeline: TimelineItem[] = [
-  {
-    id: 1,
-    judul: 'Pendaftaran Online',
-    deskripsi: 'Calon siswa mengisi formulir pendaftaran dan melengkapi data diri.',
-    tanggalMulai: '2026-07-01',
-    tanggalSelesai: '2026-07-31',
-    urutan: 1,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 2,
-    judul: 'Upload Berkas',
-    deskripsi: 'Calon siswa mengunggah dokumen persyaratan PPDB.',
-    tanggalMulai: '2026-07-01',
-    tanggalSelesai: '2026-08-05',
-    urutan: 2,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 3,
-    judul: 'Verifikasi Berkas',
-    deskripsi: 'Panitia memeriksa kelengkapan dan validitas dokumen pendaftar.',
-    tanggalMulai: '2026-08-06',
-    tanggalSelesai: '2026-08-15',
-    urutan: 3,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 4,
-    judul: 'Pengumuman Hasil',
-    deskripsi: 'Hasil seleksi PPDB diumumkan kepada calon siswa.',
-    tanggalMulai: '2026-08-20',
-    tanggalSelesai: '2026-08-20',
-    urutan: 4,
-    status: 'aktif',
-    tampilPublik: true
-  },
-  {
-    id: 5,
-    judul: 'Daftar Ulang',
-    deskripsi: 'Siswa yang diterima menyelesaikan proses daftar ulang.',
-    tanggalMulai: '2026-08-21',
-    tanggalSelesai: '2026-08-31',
-    urutan: 5,
-    status: 'aktif',
-    tampilPublik: true
-  }
-]
-
 const normalizeText = (value: unknown) => String(value || '').trim()
 const normalizeNumber = (value: unknown) => {
   const parsed = Number(value)
@@ -184,14 +131,14 @@ const loadTimeline = async () => {
   const { data, error } = await get<any>('/api/timeline-ppdb', { showErrorToast: false })
   const rows = readArrayPayload(data)
 
-  if (error && !rows.length) {
-    timelineItems.value = fallbackTimeline
-    loadError.value = 'Endpoint timeline PPDB belum tersedia, sementara memakai data lokal.'
+  if (error) {
+    timelineItems.value = []
+    loadError.value = 'Data timeline PPDB belum bisa diambil dari server.'
     isLoading.value = false
     return
   }
 
-  timelineItems.value = rows.length ? rows.map(mapTimelineItem) : fallbackTimeline
+  timelineItems.value = rows.map(mapTimelineItem)
   isLoading.value = false
 }
 

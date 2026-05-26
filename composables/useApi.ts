@@ -1,6 +1,5 @@
 import { useRuntimeConfig, useRequestHeaders } from '#app'
 import { useToast } from './useToast'
-import { getAdminMockResponse, shouldUseAdminMockFallback } from './useAdminMockApi'
 
 export const useApi = () => {
   const config = useRuntimeConfig()
@@ -19,7 +18,6 @@ export const useApi = () => {
   const customFetch = async <T>(endpoint: string, options: any = {}) => {
     const { showErrorToast = true, ...fetchOptions } = options
     const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {}
-    const method = String(fetchOptions.method || 'GET').toUpperCase() as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
     const headers = {
       ...reqHeaders,
@@ -34,9 +32,7 @@ export const useApi = () => {
         ...fetchOptions,
         headers,
         onResponseError({ response }) {
-          const willUseMock = response.status >= 500 && shouldUseAdminMockFallback(endpoint, { response })
-
-          if (import.meta.client && showErrorToast && !willUseMock) {
+          if (import.meta.client && showErrorToast) {
             const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
 
             if (response.status === 401) {
@@ -50,14 +46,6 @@ export const useApi = () => {
 
       return { data: response, error: null }
     } catch (err: any) {
-      if (shouldUseAdminMockFallback(endpoint, err)) {
-        const mockResponse = getAdminMockResponse<T>(endpoint, method, fetchOptions.body)
-
-        if (mockResponse) {
-          return { data: mockResponse, error: null }
-        }
-      }
-
       return { data: null, error: err }
     }
   }

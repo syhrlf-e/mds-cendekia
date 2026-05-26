@@ -55,10 +55,10 @@ const loadPackages = async () => {
   isLoading.value = true
   loadError.value = ''
 
-  const { data, usingFallback } = await listPackages()
+  const { data, error } = await listPackages()
 
   packages.value = data
-  loadError.value = usingFallback ? 'Endpoint paket sekolah belum tersedia, sementara memakai data lokal.' : ''
+  loadError.value = error ? 'Data paket sekolah belum bisa diambil dari server.' : ''
   isLoading.value = false
 }
 
