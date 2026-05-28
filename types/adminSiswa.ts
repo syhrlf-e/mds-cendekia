@@ -4,6 +4,7 @@ export type Student = {
   nis: string
   nisn: string
   nama: string
+  fotoUrl: string
   nik: string
   sekolah: string
   program: string

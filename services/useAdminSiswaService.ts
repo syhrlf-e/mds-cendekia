@@ -8,6 +8,16 @@ const normalizeNumber = (value: unknown) => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+const normalizeAssetUrl = (url: unknown, apiBaseUrl: string) => {
+  const rawUrl = normalizeText(url)
+  if (!rawUrl) return ''
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
+
+  const baseUrl = apiBaseUrl.replace(/\/$/, '')
+  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
+  return `${baseUrl}${path}`
+}
+
 const readArrayPayload = (payload: any): StudentDto[] => {
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.data)) return payload.data
@@ -17,7 +27,7 @@ const readArrayPayload = (payload: any): StudentDto[] => {
   return []
 }
 
-const mapStudent = (item: StudentDto): Student | null => {
+const mapStudent = (item: StudentDto, apiBaseUrl: string): Student | null => {
   const kodePendaftaran = normalizeText(item.id_pendaftaran || item.kode_pendaftaran || item.nomor_pendaftaran || item.kode || item.id)
   const nis = normalizeText(item.nis || item.nomor_induk || item.nomor_induk_siswa || item.no_induk)
   const sekolah = normalizeText(
@@ -37,6 +47,7 @@ const mapStudent = (item: StudentDto): Student | null => {
     nis,
     nisn: normalizeText(item.nisn),
     nama: normalizeText(item.nama),
+    fotoUrl: normalizeAssetUrl(item.pass_photo || item.foto || item.foto_url || item.url_foto || item.pas_foto || item.file_foto || item.path_foto, apiBaseUrl),
     nik: normalizeText(item.nik),
     sekolah,
     program: normalizeText(item.program || item.program_paket || item.paket) || '-',
@@ -50,6 +61,7 @@ const mapStudent = (item: StudentDto): Student | null => {
 }
 
 export const useAdminSiswaService = () => {
+  const config = useRuntimeConfig()
   const { get } = useApi()
 
   const listStudents = async () => {
@@ -64,7 +76,7 @@ export const useAdminSiswaService = () => {
     }
 
     return {
-      data: rows.map(mapStudent).filter((item): item is Student => Boolean(item)),
+      data: rows.map(item => mapStudent(item, String(config.public.apiBaseUrl || ''))).filter((item): item is Student => Boolean(item)),
       error: null
     }
   }

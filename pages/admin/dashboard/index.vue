@@ -6,6 +6,7 @@ import {
   Clock3,
   GraduationCap,
   LayoutDashboard,
+  Newspaper,
   UserCheck,
   UserRound,
   Users,
@@ -66,6 +67,7 @@ const counts = computed(() => {
   const pending = summary.value?.menunggu ?? registrations.value.filter(item => item.status === 'pending').length
   const verifiedFiles = summary.value?.berkas_terverifikasi ?? summary.value?.berkas_disetujui ?? registrations.value.filter(item => isBerkasVerifiedText(item.statusBerkas)).length
   const students = summary.value?.total_siswa ?? summary.value?.siswa ?? totalStudents.value
+  const news = summary.value?.total_berita ?? summary.value?.berita ?? 0
 
   return {
     total,
@@ -73,7 +75,8 @@ const counts = computed(() => {
     verifiedFiles,
     accepted,
     rejected,
-    students
+    students,
+    news
   }
 })
 
@@ -104,6 +107,13 @@ const kpiCards = computed(() => [
     value: counts.value.students,
     helper: 'Sudah punya NIS',
     icon: GraduationCap,
+    tone: 'bg-bg-base text-text-secondary'
+  },
+  {
+    label: 'Total Berita',
+    value: counts.value.news,
+    helper: 'Konten sekolah',
+    icon: Newspaper,
     tone: 'bg-bg-base text-text-secondary'
   }
 ])
@@ -248,7 +258,7 @@ onMounted(() => {
       </div>
     </section>
 
-    <section class="grid shrink-0 grid-cols-4 gap-3">
+    <section class="grid shrink-0 grid-cols-5 gap-3">
       <article
         v-for="card in kpiCards"
         :key="card.label"
@@ -295,7 +305,7 @@ onMounted(() => {
                   <th class="w-36 px-4">Tanggal</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-primary-50">
+              <tbody class="divide-y divide-border-soft">
                 <tr v-if="isLoading">
                   <td colspan="4" class="px-5 py-12 text-center text-sm text-text-secondary">
                     Memuat antrian...

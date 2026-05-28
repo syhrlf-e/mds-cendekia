@@ -254,7 +254,7 @@ onMounted(loadPackages)
               <th class="w-44 px-4 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-primary-50">
+          <tbody class="divide-y divide-border-soft">
             <tr v-if="isLoading">
               <td colspan="9">
                 <div class="flex min-h-[420px] items-center justify-center">

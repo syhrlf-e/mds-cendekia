@@ -13,9 +13,9 @@ import {
   XCircle
 } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { defaultBerkas, normalizeActionId, normalizeStatus } from '~/mappers/adminPendaftarMapper'
+import { defaultBerkas, normalizeActionId } from '~/mappers/adminPendaftarMapper'
 import { useAdminPendaftaranService } from '~/services/useAdminPendaftaranService'
-import type { PublicCheckStatusResponse, Registration, RegistrationFile, RegistrationStatus } from '~/types/adminPendaftaran'
+import type { Registration, RegistrationFile, RegistrationStatus } from '~/types/adminPendaftaran'
 
 type SortKey = 'nama' | 'tanggal' | ''
 type SortOrder = 'asc' | 'desc'
@@ -29,7 +29,6 @@ definePageMeta({
 useHead({ title: 'Pendaftaran | MDS Cendekia' })
 
 const {
-  checkPublicStatus,
   updatePendaftarStatus,
   verifyBerkas
 } = useAdminPendaftaranService()
@@ -129,20 +128,6 @@ const perPageOptions = [
 
 const getAdminActionId = (id: string) => normalizeActionId(id)
 const getBerkasActionId = (id: string) => normalizeActionId(id)
-
-const readPublicStatusText = (response?: PublicCheckStatusResponse | null) => {
-  return response?.data?.status_pendaftaran || response?.data?.status || ''
-}
-
-const verifyPublicRegistrationStatus = async (item: Registration) => {
-  const { data, error } = await checkPublicStatus({
-    kode_pendaftaran: item.id,
-    nisn: item.nisn
-  })
-
-  if (error || !data?.status || !data.data) return ''
-  return readPublicStatusText(data)
-}
 
 const loadPendaftar = (force = false) => force ? refreshPendaftar() : loadCachedPendaftar()
 
@@ -262,6 +247,29 @@ const getBerkasStatusClass = (status: string) => {
   return 'bg-status-pending-bg text-status-pending-text'
 }
 
+const getOutlineStatusClass = (status: string) => {
+  const normalized = status.toLowerCase()
+
+  if (normalized.includes('tolak') || normalized.includes('ditolak') || normalized.includes('rejected') || normalized.includes('tidak valid')) {
+    return 'border-status-rejected-text/25 bg-status-rejected-bg/60 text-status-rejected-text'
+  }
+
+  if (
+    normalized.includes('diterima') ||
+    normalized.includes('disetujui') ||
+    normalized.includes('approved') ||
+    normalized.includes('terverifikasi') ||
+    normalized.includes('sesuai') ||
+    normalized.includes('komplit') ||
+    (normalized.includes('lengkap') && !normalized.includes('belum')) ||
+    (normalized.includes('valid') && !normalized.includes('tidak valid'))
+  ) {
+    return 'border-status-approved-text/25 bg-status-approved-bg/60 text-status-approved-text'
+  }
+
+  return 'border-status-pending-text/25 bg-status-pending-bg/70 text-status-pending-text'
+}
+
 const fieldSections = computed(() => {
   if (!selectedItem.value) return []
 
@@ -278,12 +286,7 @@ const fieldSections = computed(() => {
         ['Agama', selectedItem.value.agama],
         ['Asal Sekolah', selectedItem.value.sekolah],
         ['Program', selectedItem.value.program],
-        ['Gelombang', selectedItem.value.gelombang ? String(selectedItem.value.gelombang) : '-']
-      ]
-    },
-    {
-      title: 'Kontak',
-      fields: [
+        ['Gelombang', selectedItem.value.gelombang ? String(selectedItem.value.gelombang) : '-'],
         ['Email', selectedItem.value.email],
         ['No. HP', selectedItem.value.hp]
       ]
@@ -523,22 +526,8 @@ const handleApprove = async () => {
     return
   }
 
-  const publicStatusText = await verifyPublicRegistrationStatus(selectedItem.value)
-  const publicStatus = normalizeStatus(publicStatusText)
-
-  if (publicStatus !== 'approved') {
-    await loadPendaftar(true)
-    useToast().addToast(
-      publicStatusText
-        ? `Server menerima aksi, tapi status cek pendaftaran masih "${publicStatusText}".`
-        : 'Server menerima aksi, tapi status cek pendaftaran belum bisa diverifikasi.',
-      'error'
-    )
-    return
-  }
-
   selectedItem.value.status = 'approved'
-  selectedItem.value.statusText = publicStatusText || 'Diterima'
+  selectedItem.value.statusText = 'Diterima'
   isApproveModalOpen.value = false
   closeFilePreview()
   isDetailModalOpen.value = false
@@ -575,22 +564,8 @@ const handleReject = async () => {
     return
   }
 
-  const publicStatusText = await verifyPublicRegistrationStatus(selectedItem.value)
-  const publicStatus = normalizeStatus(publicStatusText)
-
-  if (publicStatus !== 'rejected') {
-    await loadPendaftar(true)
-    useToast().addToast(
-      publicStatusText
-        ? `Server menerima aksi, tapi status cek pendaftaran masih "${publicStatusText}".`
-        : 'Server menerima aksi, tapi status cek pendaftaran belum bisa diverifikasi.',
-      'error'
-    )
-    return
-  }
-
   selectedItem.value.status = 'rejected'
-  selectedItem.value.statusText = publicStatusText || 'Ditolak'
+  selectedItem.value.statusText = 'Ditolak'
   isRejectModalOpen.value = false
   closeFilePreview()
   isDetailModalOpen.value = false
@@ -704,7 +679,7 @@ watch(totalPages, value => {
               <th class="w-40 px-4 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-primary-50">
+          <tbody class="divide-y divide-border-soft">
             <tr v-if="isLoading">
               <td colspan="8">
                 <div class="flex min-h-105 items-center justify-center">
@@ -814,71 +789,69 @@ watch(totalPages, value => {
                ═══════════════════════════════════════════════════ -->
           <div class="sticky top-0 z-20 shrink-0 bg-bg-surface shadow-sm">
 
-            <!-- Row 1: Close + Identity + Photo -->
-            <div class="flex items-start gap-5 border-b border-border px-8 py-5">
-              <!-- Close button -->
-              <button
-                type="button"
-                class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
-                aria-label="Tutup detail"
-                @click="closeDetail"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              </button>
+            <!-- Row 1: Close + Photo + Identity + Status -->
+            <div class="flex items-start justify-between gap-5 border-b border-border px-8 py-5">
+              <div class="flex min-w-0 items-start gap-5">
+                <!-- Close button -->
+                <button
+                  type="button"
+                  class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
+                  aria-label="Tutup detail"
+                  @click="closeDetail"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
 
-              <!-- Name + meta -->
-              <div class="min-w-0 grow">
-                <h2 class="truncate font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
-                  {{ selectedItem.nama }}
-                </h2>
-                <p class="mt-1 truncate text-sm font-medium leading-[1.43] text-text-secondary">
-                  {{ selectedItem.id }}
-                  <span class="mx-1.5 opacity-40">·</span>
-                  {{ selectedItem.sekolah }}
-                </p>
-
-                <!-- Status pills row -->
-                <div class="mt-3 flex flex-wrap items-center gap-2">
-                  <!-- Status pendaftaran pill -->
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-[11px] font-medium uppercase tracking-wider text-text-muted">Pendaftaran</span>
-                    <AppBadge :status="selectedItem.status" :text="selectedItem.statusText" />
+                <!-- Photo 3x4 -->
+                <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
+                  <img
+                    v-if="selectedItem.fotoUrl"
+                    :src="selectedItem.fotoUrl"
+                    :alt="`Foto ${selectedItem.nama}`"
+                    class="h-full w-full object-cover"
+                  >
+                  <div
+                    v-else
+                    class="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-text-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+                    <p class="text-[10px] font-medium leading-[1.3] text-text-muted">Foto belum tersedia</p>
                   </div>
+                </div>
 
-                  <span class="h-4 w-px bg-border-soft" />
-
-                  <!-- Status berkas pill -->
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-[11px] font-medium uppercase tracking-wider text-text-muted">Berkas</span>
-                    <span
-                      class="inline-flex items-center whitespace-nowrap rounded-full px-3 py-0.5 text-xs font-medium"
-                      :class="getBerkasStatusClass(selectedItem.statusBerkas)"
-                    >
-                      {{ selectedItem.statusBerkas }}
-                    </span>
-                  </div>
-
-                  <!-- Gelombang chip -->
-                  <span v-if="selectedItem.gelombang" class="ml-auto shrink-0 rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-brand">
+                <div class="min-w-0">
+                  <h2 class="truncate font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
+                    {{ selectedItem.nama }}
+                  </h2>
+                  <p class="mt-1 truncate text-sm font-medium leading-[1.43] text-text-secondary">
+                    {{ selectedItem.id }}
+                    <span class="mx-1.5 opacity-40">·</span>
+                    {{ selectedItem.sekolah }}
+                  </p>
+                  <span v-if="selectedItem.gelombang" class="mt-3 inline-flex rounded-full border border-border-soft px-3 py-1 text-xs font-medium text-text-secondary">
                     Gelombang {{ selectedItem.gelombang }}
                   </span>
                 </div>
               </div>
 
-              <!-- Photo 3x4 -->
-              <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
-                <img
-                  v-if="selectedItem.fotoUrl"
-                  :src="selectedItem.fotoUrl"
-                  :alt="`Foto ${selectedItem.nama}`"
-                  class="h-full w-full object-cover"
-                >
-                <div
-                  v-else
-                  class="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-text-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-                  <p class="text-[10px] font-medium leading-[1.3] text-text-muted">Foto belum tersedia</p>
+              <div class="flex shrink-0 flex-col items-end gap-2 pt-1">
+                <div class="flex items-center gap-2 whitespace-nowrap">
+                  <span class="text-xs font-medium leading-none text-text-secondary">Status Pendaftaran :</span>
+                  <span
+                    class="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium leading-none"
+                    :class="getOutlineStatusClass(selectedItem.statusText)"
+                  >
+                    {{ selectedItem.statusText }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 whitespace-nowrap">
+                  <span class="text-xs font-medium leading-none text-text-secondary">Status Berkas :</span>
+                  <span
+                    class="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium leading-none"
+                    :class="getOutlineStatusClass(selectedItem.statusBerkas)"
+                  >
+                    {{ selectedItem.statusBerkas }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -889,7 +862,7 @@ watch(totalPages, value => {
                 v-for="tab in detailTabs"
                 :key="tab.key"
                 type="button"
-                class="relative h-11 px-5 text-sm font-semibold leading-none transition-colors focus:outline-none"
+                class="relative h-11 px-5 text-sm font-normal leading-none transition-colors focus:outline-none"
                 :class="activeTab === tab.key
                   ? 'text-brand after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:rounded-t-full after:bg-brand after:content-[\'\']'
                   : 'text-text-secondary hover:text-text-primary'"
@@ -1035,7 +1008,7 @@ watch(totalPages, value => {
                   </div>
 
                   <!-- File list -->
-                  <div class="divide-y divide-primary-50">
+                  <div class="divide-y divide-border-soft">
                     <div
                       v-for="file in selectedBerkasFiles"
                       :key="file.id"
@@ -1231,10 +1204,10 @@ watch(totalPages, value => {
     </Transition>
   </Teleport>
 
-  <AppModal v-model="isApproveModalOpen" title="Terima Pendaftar?" width="max-w-[400px]" :z-index="60">
+  <AppModal v-model="isApproveModalOpen" title="Terima Pendaftar Ini?" width="max-w-[400px]" :z-index="60">
 
     <p class="text-sm leading-[1.43] tracking-[-0.15px] text-text-primary">
-      Tindakan ini akan mengirimkan email notifikasi ke pendaftar.
+      Status pendaftar akan diubah menjadi diterima. Sistem juga akan mengirimkan email notifikasi kepada pendaftar.
     </p>
 
     <template #footer>

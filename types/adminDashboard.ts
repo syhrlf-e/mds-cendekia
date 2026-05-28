@@ -10,6 +10,8 @@ export type AdminSummaryDto = {
   berkas_disetujui?: number
   siswa?: number
   total_siswa?: number
+  berita?: number
+  total_berita?: number
 }
 
 export type DashboardRegistration = {

@@ -1,6 +1,6 @@
 import { mapPendaftarList } from '~/mappers/adminPendaftarMapper'
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
-import type { AdminPendaftarListResponse, ApiMutationResponse, PublicCheckStatusResponse } from '~/types/adminPendaftaran'
+import type { AdminPendaftarListResponse, ApiMutationResponse } from '~/types/adminPendaftaran'
 
 export const useAdminPendaftaranService = () => {
   const config = useRuntimeConfig()
@@ -17,12 +17,6 @@ export const useAdminPendaftaranService = () => {
     }
   }
 
-  const checkPublicStatus = (payload: { kode_pendaftaran: string, nisn: string }) => {
-    return post<PublicCheckStatusResponse>(adminApiEndpoints.pendaftar.checkStatus, payload, {
-      showErrorToast: false
-    })
-  }
-
   const updatePendaftarStatus = (payload: { id: string, accept: boolean, notes: string }) => {
     return post<ApiMutationResponse>(adminApiEndpoints.pendaftar.status, payload, {
       showErrorToast: false
@@ -37,7 +31,6 @@ export const useAdminPendaftaranService = () => {
 
   return {
     listPendaftar,
-    checkPublicStatus,
     updatePendaftarStatus,
     verifyBerkas
   }

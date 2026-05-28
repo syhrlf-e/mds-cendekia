@@ -51,6 +51,7 @@ const nisn = ref('')
 const state = ref<CheckState>('initial')
 const resultData = ref<StatusResult | null>(null)
 const isMobile = ref(false)
+const isClosingResult = ref(false)
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
@@ -65,11 +66,38 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
 
-const hasResult = computed(() => state.value === 'success' || state.value === 'not-found')
+const hasResult = computed(() => state.value === 'success' || state.value === 'not-found' || isClosingResult.value)
 const isChecking = computed(() => state.value === 'loading')
 const rightButtonLabel = computed(() => hasResult.value ? 'Cek Pendaftaran Lainnya' : 'Cek Sekarang')
 
 const { post } = useApi()
+
+const getStatusResultCopy = (status: StatusResult['status']) => {
+  if (status === 'approved') {
+    return {
+      title: 'Pendaftaran Kamu Diterima',
+      description: 'Selamat, pendaftaran kamu sudah disetujui oleh panitia.'
+    }
+  }
+
+  if (status === 'rejected') {
+    return {
+      title: 'Pendaftaran Kamu Belum Diterima',
+      description: 'Pendaftaran kamu belum dapat disetujui. Silakan cek detail atau informasi lanjutan dari panitia.'
+    }
+  }
+
+  return {
+    title: 'Pendaftaran Kamu Sedang Divalidasi',
+    description: 'Data dan berkas kamu sedang diperiksa oleh panitia. Cek kembali secara berkala untuk melihat pembaruan status.'
+  }
+}
+
+const getStatusResultClass = (status: StatusResult['status']) => {
+  if (status === 'approved') return 'border-status-approved-text/20 bg-status-approved-bg text-status-approved-text'
+  if (status === 'rejected') return 'border-status-rejected-text/20 bg-status-rejected-bg text-status-rejected-text'
+  return 'border-status-pending-text/20 bg-status-pending-bg text-status-pending-text'
+}
 
 const mapRegistrationStatus = (status?: string): StatusResult['status'] => {
   const normalized = String(status || '').toLowerCase()
@@ -81,6 +109,25 @@ const mapRegistrationStatus = (status?: string): StatusResult['status'] => {
 
 const normalizeNomorPendaftaran = (value: string) => {
   return value.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '')
+}
+
+const stripNomorPendaftaran = (value: string) => normalizeNomorPendaftaran(value).replace(/-/g, '')
+
+const formatNomorPendaftaran = (value: string) => {
+  const normalized = normalizeNomorPendaftaran(value)
+  if (!normalized || normalized.includes('-')) return normalized
+
+  const match = normalized.match(/^([A-Z]+)(\d{4})(\d+)$/)
+  if (!match) return normalized
+
+  return `${match[1]}-${match[2]}-${match[3]}`
+}
+
+const getNomorPendaftaranLookupVariants = (value: string) => {
+  const stripped = stripNomorPendaftaran(value)
+  const formatted = formatNomorPendaftaran(stripped)
+
+  return Array.from(new Set([stripped, formatted].filter(Boolean)))
 }
 
 const formatDate = (dateString?: string) => {
@@ -106,42 +153,59 @@ const handleCheck = async () => {
 
   const normalizedNumber = normalizeNomorPendaftaran(nomorPendaftaran.value)
   const normalizedNisn = nisn.value.trim()
+  const lookupNumbers = getNomorPendaftaranLookupVariants(normalizedNumber)
 
-  const { data, error } = await post<CheckStatusResponse>('/register/cek-status', {
-    kode_pendaftaran: normalizedNumber,
-    nisn: normalizedNisn
-  }, { showErrorToast: false })
+  let foundData: CheckStatusResponse | null = null
 
-  if (error || !data?.status || !data.data) {
+  for (const kodePendaftaran of lookupNumbers) {
+    const { data, error } = await post<CheckStatusResponse>('/register/cek-status', {
+      kode_pendaftaran: kodePendaftaran,
+      nisn: normalizedNisn
+    }, { showErrorToast: false })
+
+    if (!error && data?.status && data.data) {
+      foundData = data
+      break
+    }
+  }
+
+  if (!foundData?.status || !foundData.data) {
     state.value = 'not-found'
     return
   }
 
-  const biodata = data.data.biodata || {}
+  const biodata = foundData.data.biodata || {}
   const tanggalLahir = formatDate(biodata.tanggal_lahir)
+  const resultNumber = String(foundData.data.kode || foundData.data.id || normalizedNumber)
 
   resultData.value = {
-    nomor: String(data.data.kode || data.data.id || normalizedNumber),
+    nomor: formatNomorPendaftaran(resultNumber),
     nisn: normalizedNisn,
-    tanggal: formatDate(data.data.created_at),
+    tanggal: formatDate(foundData.data.created_at),
     nama: biodata.nama || '-',
     ttl: `${biodata.tempat_lahir || '-'}, ${tanggalLahir}`,
     jenisKelamin: biodata.jenis_kelamin || '-',
-    sekolah: data.data.riwayat_pendidikan?.nama_sekolah_asal || '-',
+    sekolah: foundData.data.riwayat_pendidikan?.nama_sekolah_asal || '-',
     email: biodata.email || '-',
     noHp: biodata.no_telepon || '-',
-    status: mapRegistrationStatus(data.data.status_pendaftaran || data.data.status),
-    alasanPenolakan: data.message || ''
+    status: mapRegistrationStatus(foundData.data.status_pendaftaran || foundData.data.status),
+    alasanPenolakan: foundData.message || ''
   }
 
   state.value = 'success'
 }
 
 const checkAnother = () => {
+  if (isClosingResult.value) return
+
+  isClosingResult.value = true
   state.value = 'initial'
-  resultData.value = null
-  nomorPendaftaran.value = ''
-  nisn.value = ''
+  window.setTimeout(() => {
+    resultData.value = null
+    nomorPendaftaran.value = ''
+    nisn.value = ''
+    isClosingResult.value = false
+  }, 300)
 }
 </script>
 
@@ -186,13 +250,17 @@ const checkAnother = () => {
             </div>
 
             <div v-else-if="state === 'success' && resultData" class="rounded-2xl border border-border bg-bg-surface p-6">
-              <div class="mb-4 flex items-center justify-between">
-                <AppBadge :status="resultData.status" />
+              <div
+                class="mb-6 rounded-xl border p-4"
+                :class="getStatusResultClass(resultData.status)"
+              >
+                <p class="text-base font-semibold text-current">
+                  {{ getStatusResultCopy(resultData.status).title }}
+                </p>
+                <p class="mt-1 text-sm leading-relaxed text-current/80">
+                  {{ getStatusResultCopy(resultData.status).description }}
+                </p>
               </div>
-
-              <p class="mb-6 text-[17px] text-text-secondary">
-                Status pendaftaran kamu: {{ resultData.status === 'pending' ? 'Menunggu Persetujuan' : resultData.status === 'approved' ? 'Pendaftaran Diterima' : 'Pendaftaran Ditolak' }}
-              </p>
 
               <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
                 <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
@@ -271,8 +339,16 @@ const checkAnother = () => {
 
   <AppBottomSheet v-if="isMobile && hasResult" :modelValue="hasResult" @update:modelValue="checkAnother">
     <div v-if="state === 'success' && resultData" class="flex flex-col pt-2">
-      <div class="mb-6 flex justify-center">
-        <AppBadge :status="resultData.status" />
+      <div
+        class="mb-6 rounded-xl border p-4"
+        :class="getStatusResultClass(resultData.status)"
+      >
+        <p class="text-base font-semibold text-current">
+          {{ getStatusResultCopy(resultData.status).title }}
+        </p>
+        <p class="mt-1 text-sm leading-relaxed text-current/80">
+          {{ getStatusResultCopy(resultData.status).description }}
+        </p>
       </div>
 
       <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">

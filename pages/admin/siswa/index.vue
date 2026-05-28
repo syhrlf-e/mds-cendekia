@@ -7,7 +7,6 @@ import {
   Eye,
   GraduationCap,
   Search,
-  UserRound,
   XCircle
 } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -220,7 +219,7 @@ watch(totalPages, value => {
                 <th class="w-36 px-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-primary-50">
+            <tbody class="divide-y divide-border-soft">
               <tr v-if="isLoading">
                 <td colspan="9">
                   <div class="flex min-h-[420px] items-center justify-center">
@@ -343,19 +342,26 @@ watch(totalPages, value => {
                 <XCircle class="h-5 w-5" />
               </button>
 
-              <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-brand">
-                <UserRound class="h-7 w-7" />
+              <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
+                <img
+                  v-if="selectedItem.fotoUrl"
+                  :src="selectedItem.fotoUrl"
+                  :alt="`Foto ${selectedItem.nama}`"
+                  class="h-full w-full object-cover"
+                >
+                <div
+                  v-else
+                  class="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-text-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+                  <p class="text-[10px] font-medium leading-[1.3] text-text-muted">Foto belum tersedia</p>
+                </div>
               </div>
 
               <div class="min-w-0 grow">
                 <h2 class="truncate font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
                   {{ selectedItem.nama }}
                 </h2>
-                <p class="mt-1 truncate text-sm font-medium leading-[1.43] text-text-secondary">
-                  NIS {{ selectedItem.nis }}
-                  <span class="mx-1.5 opacity-40">·</span>
-                  {{ selectedItem.program }}
-                </p>
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-3 py-0.5 text-xs font-medium text-status-approved-text">
                     <BadgeCheck class="h-3.5 w-3.5" />
@@ -370,10 +376,10 @@ watch(totalPages, value => {
           </header>
 
           <main class="min-h-0 grow overflow-y-auto px-8 py-6">
-            <div class="grid grid-cols-2 gap-4">
+            <div>
               <section class="overflow-hidden rounded-2xl border border-border bg-bg-surface">
                 <div class="border-b border-border bg-bg-base px-6 py-3">
-                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Identitas Siswa</h3>
+                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Data Diri Siswa</h3>
                 </div>
                 <div class="grid grid-cols-2 gap-x-8 gap-y-5 p-6">
                   <div>
@@ -396,14 +402,6 @@ watch(totalPages, value => {
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Jenis Kelamin</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.jenisKelamin || '-' }}</p>
                   </div>
-                </div>
-              </section>
-
-              <section class="overflow-hidden rounded-2xl border border-border bg-bg-surface">
-                <div class="border-b border-border bg-bg-base px-6 py-3">
-                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Akademik</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-x-8 gap-y-5 p-6">
                   <div>
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Program</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.program }}</p>
@@ -420,14 +418,6 @@ watch(totalPages, value => {
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Tanggal Diterima</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ formatDate(selectedItem.tanggalDiterima) }}</p>
                   </div>
-                </div>
-              </section>
-
-              <section class="col-span-2 overflow-hidden rounded-2xl border border-border bg-bg-surface">
-                <div class="border-b border-border bg-bg-base px-6 py-3">
-                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Kontak</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-x-8 gap-y-5 p-6">
                   <div>
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">No. HP</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.hp || '-' }}</p>

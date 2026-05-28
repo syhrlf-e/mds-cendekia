@@ -7,8 +7,7 @@ export const adminApiEndpoints = {
   pendaftar: {
     list: '/api/pendaftar/data',
     status: '/api/pendaftar/status',
-    berkas: '/api/pendaftar/berkas',
-    checkStatus: '/register/cek-status'
+    berkas: '/api/pendaftar/berkas'
   },
   siswa: {
     list: '/api/siswa/data'

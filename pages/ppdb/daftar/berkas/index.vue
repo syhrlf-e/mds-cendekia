@@ -51,9 +51,77 @@ const pendingNavigationPath = ref('')
 const allowRouteLeave = ref(false)
 const pendingRegistrationStorageKey = 'ppdb-pending-registration'
 const pendingRegistration = ref<{ id: number, kode: string } | null>(null)
+type SubmitStage = 'idle' | 'registration' | 'files' | 'finishing'
+const submitStage = ref<SubmitStage>('idle')
 
 const isMobile = ref(true)
 const isCopied = ref(false)
+
+const formatNomorPendaftaran = (value: string) => {
+  const normalized = value.trim().toUpperCase()
+  if (!normalized || normalized.includes('-')) return normalized
+
+  const match = normalized.match(/^([A-Z]+)(\d{4})(\d+)$/)
+  if (!match) return normalized
+
+  return `${match[1]}-${match[2]}-${match[3]}`
+}
+
+const displayNomorPendaftaran = computed(() => formatNomorPendaftaran(nomorPendaftaran.value))
+
+const confirmModalModel = computed({
+  get: () => isConfirmModalOpen.value,
+  set: (value: boolean) => {
+    if (isSubmitting.value && !value) return
+    isConfirmModalOpen.value = value
+  }
+})
+
+const submitProgressCopy = computed(() => {
+  if (submitStage.value === 'registration') {
+    return {
+      title: 'Mengirim Data Pendaftaran',
+      description: 'Lagi ngirim data diri, data sekolah, dan data orang tua. Mohon tunggu sebentar ya.'
+    }
+  }
+
+  if (submitStage.value === 'files') {
+    return {
+      title: 'Mengunggah Berkas Persyaratan',
+      description: 'Lagi ngirim foto dan dokumen persyaratan. Proses ini bisa sedikit lebih lama, tetap di halaman ini ya.'
+    }
+  }
+
+  if (submitStage.value === 'finishing') {
+    return {
+      title: 'Menyelesaikan Pendaftaran',
+      description: 'Data sudah diterima, kami sedang merapikan hasil pendaftaran kamu.'
+    }
+  }
+
+  return {
+    title: 'Konfirmasi',
+    description: 'Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?'
+  }
+})
+
+const submitProgressSteps = computed(() => [
+  {
+    label: 'Data diri, sekolah, dan orang tua',
+    active: submitStage.value === 'registration',
+    done: submitStage.value === 'files' || submitStage.value === 'finishing'
+  },
+  {
+    label: 'Berkas persyaratan',
+    active: submitStage.value === 'files',
+    done: submitStage.value === 'finishing'
+  },
+  {
+    label: 'Finalisasi',
+    active: submitStage.value === 'finishing',
+    done: false
+  }
+])
 
 const apiBaseUrl = computed(() => {
   return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
@@ -145,7 +213,7 @@ onBeforeRouteLeave((to) => {
 
 const copyNomor = async () => {
   try {
-    await navigator.clipboard.writeText(nomorPendaftaran.value)
+    await navigator.clipboard.writeText(displayNomorPendaftaran.value)
     isCopied.value = true
     setTimeout(() => {
       isCopied.value = false
@@ -157,6 +225,7 @@ const copyNomor = async () => {
 
 const proceedSubmit = () => {
   submitErrorMessage.value = ''
+  submitStage.value = 'idle'
   isConfirmModalOpen.value = true
 }
 
@@ -440,12 +509,14 @@ const submitForm = async () => {
 
   isSubmitting.value = true
   submitErrorMessage.value = ''
+  submitStage.value = 'registration'
 
   let registration: { id: number, kode: string }
   try {
     registration = await submitRegistrationData()
   } catch (error) {
     isSubmitting.value = false
+    submitStage.value = 'idle'
     submitErrorMessage.value = error instanceof Error
       ? error.message
       : 'Registrasi gagal. Periksa kembali data pendaftaran kamu.'
@@ -453,6 +524,7 @@ const submitForm = async () => {
     return
   }
 
+  submitStage.value = 'files'
   const berkasFormData = buildBerkasFormData(registration.id)
   const { data: berkasData, error: berkasError } = await postRegistrationApi<{
     success?: boolean
@@ -460,11 +532,11 @@ const submitForm = async () => {
     message: string
   }>(berkasUploadEndpoint.value, berkasFormData, 30000)
 
-  isSubmitting.value = false
-
   const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
 
   if (berkasError || !isBerkasUploaded) {
+    isSubmitting.value = false
+    submitStage.value = 'idle'
     logBerkasUploadError(registration.id, berkasError, berkasData, berkasFormData)
     const failedMessage = berkasData?.success === false || berkasData?.status === false
       ? berkasData.message
@@ -474,10 +546,13 @@ const submitForm = async () => {
     return
   }
 
+  submitStage.value = 'finishing'
   isConfirmModalOpen.value = false
   nomorPendaftaran.value = registration.kode
   clearPendingRegistration()
   resetForm()
+  isSubmitting.value = false
+  submitStage.value = 'idle'
   isSuccessSheetOpen.value = true
 }
 </script>
@@ -523,11 +598,48 @@ const submitForm = async () => {
   </div>
 
   <AppModal
-    v-model="isConfirmModalOpen"
-    :title="submitErrorMessage ? 'Pendaftaran Belum Terkirim' : 'Konfirmasi'"
+    v-model="confirmModalModel"
+    :title="submitErrorMessage ? 'Pendaftaran Belum Terkirim' : submitProgressCopy.title"
   >
     <div class="space-y-4">
-      <p v-if="!submitErrorMessage" class="text-text-primary text-base">Apakah kamu yakin data dan berkas yang diunggah sudah sesuai?</p>
+      <template v-if="isSubmitting">
+        <div class="flex items-start gap-4 rounded-xl border border-brand/10 bg-bg-base p-4">
+          <div class="mt-0.5 h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-brand/20 border-t-brand"></div>
+          <div>
+            <p class="text-sm font-medium text-text-primary">{{ submitProgressCopy.title }}</p>
+            <p class="mt-1 text-sm leading-relaxed text-text-secondary">{{ submitProgressCopy.description }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div
+            v-for="step in submitProgressSteps"
+            :key="step.label"
+            class="flex items-center gap-3 text-sm"
+          >
+            <span
+              class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold"
+              :class="[
+                step.done
+                  ? 'border-success bg-status-approved-bg text-status-approved-text'
+                  : step.active
+                    ? 'border-brand bg-primary-50 text-brand'
+                    : 'border-border bg-bg-surface text-text-muted'
+              ]"
+            >
+              <span v-if="step.done">✓</span>
+              <span v-else-if="step.active" class="h-1.5 w-1.5 rounded-full bg-current"></span>
+            </span>
+            <span
+              :class="step.done || step.active ? 'text-text-primary' : 'text-text-secondary'"
+            >
+              {{ step.label }}
+            </span>
+          </div>
+        </div>
+      </template>
+
+      <p v-else-if="!submitErrorMessage" class="text-text-primary text-base">{{ submitProgressCopy.description }}</p>
 
       <p v-if="submitErrorMessage" class="text-sm text-text-primary">
         {{ submitErrorMessage }}
@@ -538,7 +650,7 @@ const submitForm = async () => {
       <AppButton variant="secondary" @click="isConfirmModalOpen = false" :disabled="isSubmitting">
         {{ submitErrorMessage ? 'Tutup' : 'Belum' }}
       </AppButton>
-      <AppButton variant="primary" @click="submitForm" :loading="isSubmitting">
+      <AppButton v-if="!isSubmitting" variant="primary" @click="submitForm">
         {{ submitErrorMessage ? 'Coba Lagi' : 'Ya, Kirim' }}
       </AppButton>
     </template>
@@ -573,7 +685,7 @@ const submitForm = async () => {
         <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
           <div class="text-left">
             <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
-            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ nomorPendaftaran }}</p>
+            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ displayNomorPendaftaran }}</p>
           </div>
           <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
             <Check v-if="isCopied" class="w-5 h-5 text-success" />
@@ -612,7 +724,7 @@ const submitForm = async () => {
         <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
           <div class="text-left">
             <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
-            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ nomorPendaftaran }}</p>
+            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ displayNomorPendaftaran }}</p>
           </div>
           <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
             <Check v-if="isCopied" class="w-5 h-5 text-success" />

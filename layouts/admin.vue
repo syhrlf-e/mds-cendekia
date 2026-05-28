@@ -49,8 +49,8 @@ const handleLogout = async () => {
       </p>
     </div>
 
-    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-bg-surface shadow-sm lg:flex">
-      <div class="flex h-17.5 shrink-0 items-center gap-3 border-b border-primary-50 px-6">
+    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-sm lg:flex">
+      <div class="flex h-17.5 shrink-0 items-center gap-3 border-b border-border-soft px-6">
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
@@ -76,7 +76,7 @@ const handleLogout = async () => {
         </NuxtLink>
       </nav>
 
-      <div class="mt-auto shrink-0 border-t border-primary-50 bg-bg-surface/80 p-4">
+      <div class="mt-auto shrink-0 border-t border-border-soft bg-bg-surface/80 p-4">
         <NuxtLink
           :to="settingsMenu.path"
           class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
@@ -89,7 +89,7 @@ const handleLogout = async () => {
     </aside>
 
     <main class="relative hidden h-full min-w-0 grow flex-col overflow-hidden bg-bg-base lg:flex">
-      <header class="relative z-30 mb-0 mt-4 flex h-17.5 shrink-0 items-center justify-between rounded-2xl border border-border/80 bg-bg-surface px-6 shadow-sm transition-colors">
+      <header class="relative z-30 mb-0 mt-4 flex h-17.5 shrink-0 items-center justify-between rounded-2xl border border-border-soft bg-bg-surface px-6 shadow-sm transition-colors">
         <div>
           <h1 class="text-lg font-bold leading-[1.24] tracking-[-0.2px] text-text-primary">
             {{ pageTitle }}
@@ -136,7 +136,7 @@ const handleLogout = async () => {
               v-if="isAdminMenuOpen"
               class="absolute right-0 top-[calc(100%+10px)] z-20 w-56 overflow-hidden rounded-3xl border border-border bg-bg-surface p-2 shadow-2xl shadow-text-primary/10"
             >
-              <div class="mb-1 border-b border-primary-50 px-4 py-3">
+              <div class="mb-1 border-b border-border-soft px-4 py-3">
                 <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-text-muted">Sesi Aktif</p>
                 <p class="truncate text-xs font-bold text-text-secondary">admin@mdscendekia.local</p>
               </div>

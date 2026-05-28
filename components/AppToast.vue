@@ -24,18 +24,20 @@ const getToastClass = (type: string) => {
 </script>
 
 <template>
-  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none">
+  <div class="fixed top-4 left-1/2 z-50 flex w-full max-w-[min(calc(100vw-32px),460px)] -translate-x-1/2 flex-col items-center gap-2.5 px-4 pointer-events-none">
     <TransitionGroup name="toast">
       <div
         v-for="toast in toasts"
         :key="toast.id"
         :class="[
-          'flex items-center gap-2 px-4 py-2 rounded-full shadow-lg pointer-events-auto',
+          'flex min-h-14 w-full items-center gap-3 rounded-full px-3.5 py-2.5 shadow-[rgba(0,0,0,0.16)_0_10px_28px_0] pointer-events-auto',
           getToastClass(toast.type)
         ]"
       >
-        <component :is="getIcon(toast.type)" class="w-5 h-5" />
-        <span class="text-sm font-medium">{{ toast.message }}</span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/22">
+          <component :is="getIcon(toast.type)" class="h-5 w-5" />
+        </span>
+        <span class="min-w-0 pr-2 text-sm font-medium leading-[1.4]">{{ toast.message }}</span>
       </div>
     </TransitionGroup>
   </div>
