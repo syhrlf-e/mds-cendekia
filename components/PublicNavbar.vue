@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ArrowLeft, Info, Menu, X } from 'lucide-vue-next'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { ArrowLeft, Menu, X } from 'lucide-vue-next'
+import { onUnmounted, ref, watch, onMounted, nextTick } from 'vue'
 
 type NavItem = {
   id: number
@@ -12,23 +12,87 @@ const route = useRoute()
 const router = useRouter()
 const mobileMenuOpen = ref(false)
 
-const ppdbYear = computed(() => {
-  const year = new Date().getFullYear()
-  return `${year}/${year + 1}`
-})
-
 const menuItems: NavItem[] = [
-  { id: 1, label: 'Beranda', to: '/ppdb' },
+  { id: 1, label: 'Beranda', to: '/' },
   { id: 2, label: 'Profil', to: '/profil-sekolah' },
-  { id: 3, label: 'Prestasi', to: '/profil-sekolah#prestasi' },
-  { id: 4, label: 'Galeri', to: '/profil-sekolah#galeri' },
-  { id: 5, label: 'Berita', to: '/profil-sekolah#berita' },
-  { id: 6, label: 'Kontak', to: '/profil-sekolah#kontak' }
+  { id: 3, label: 'Galeri', to: '#galeri' },
+  { id: 4, label: 'Berita', to: '#berita' },
+  { id: 5, label: 'PPDB', to: '/ppdb' }
 ]
 
-const activeMenu = computed(() => {
-  if (route.path.startsWith('/profil-sekolah')) return 'Profil'
-  return 'Beranda'
+// Active menu dikelola manual agar bisa diupdate saat klik hash tanpa Vue Router
+const activeMenuLabel = ref('Beranda')
+
+// Setel active berdasarkan route path saat mount/navigasi
+const setActiveFromRoute = () => {
+  if (route.path === '/ppdb') {
+    activeMenuLabel.value = 'PPDB'
+  } else if (route.path === '/profil-sekolah') {
+    activeMenuLabel.value = 'Profil'
+  } else if (route.path === '/') {
+    activeMenuLabel.value = 'Beranda'
+  }
+}
+
+// IntersectionObserver: auto-detect seksi yang sedang di viewport
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (!import.meta.client) return
+  const sections = ['profil', 'galeri', 'berita']
+  const threshold = 0.3
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const matched = menuItems.find(m => m.to === `#${entry.target.id}`)
+          if (matched) activeMenuLabel.value = matched.label
+        }
+      })
+    },
+    { threshold }
+  )
+
+  sections.forEach((id) => {
+    const el = document.getElementById(id)
+    if (el) observer!.observe(el)
+  })
+}
+
+const itemRefs = ref<HTMLElement[]>([])
+const indicatorStyle = ref<any>({ width: '0px', transform: 'translateX(0px)', opacity: 0 })
+
+const updateIndicator = async () => {
+  if (!import.meta.client) return
+  await nextTick()
+  const activeIndex = menuItems.findIndex(m => m.label === activeMenuLabel.value)
+  if (activeIndex !== -1 && itemRefs.value[activeIndex]) {
+    const el = itemRefs.value[activeIndex]
+    indicatorStyle.value = {
+      width: `${el.offsetWidth}px`,
+      transform: `translateX(${el.offsetLeft}px)`,
+      opacity: 1
+    }
+  } else {
+    indicatorStyle.value.opacity = 0
+  }
+}
+
+onMounted(() => {
+  setActiveFromRoute()
+  updateIndicator()
+  setupObserver()
+  window.addEventListener('resize', updateIndicator)
+})
+
+watch(activeMenuLabel, () => {
+  updateIndicator()
+})
+
+watch(() => route.path, () => {
+  setActiveFromRoute()
+  mobileMenuOpen.value = false
 })
 
 watch(mobileMenuOpen, (isOpen) => {
@@ -36,24 +100,36 @@ watch(mobileMenuOpen, (isOpen) => {
   document.body.style.overflow = isOpen ? 'hidden' : ''
 })
 
-watch(() => route.fullPath, () => {
-  mobileMenuOpen.value = false
-})
-
 onUnmounted(() => {
-  if (import.meta.client) document.body.style.overflow = ''
+  if (import.meta.client) {
+    document.body.style.overflow = ''
+    window.removeEventListener('resize', updateIndicator)
+    observer?.disconnect()
+  }
 })
 
 const goToHome = () => {
-  router.push('/ppdb')
+  activeMenuLabel.value = 'Beranda'
+  router.push('/')
 }
 
 const handleNavClick = (item: NavItem) => {
   mobileMenuOpen.value = false
-  router.push(item.to)
+  if (item.to.startsWith('#')) {
+    if (!import.meta.client) return
+    // Set active langsung saat klik, jangan tunggu observer
+    activeMenuLabel.value = item.label
+    const target = document.querySelector(item.to)
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      history.pushState(null, '', item.to)
+    }
+  } else {
+    router.push(item.to)
+  }
 }
 
-const handleDokumenPPDB = () => {
+const handlePendaftaran = () => {
   mobileMenuOpen.value = false
   router.push('/ppdb')
 }
@@ -61,7 +137,7 @@ const handleDokumenPPDB = () => {
 </script>
 
 <template>
-  <nav class="fixed left-0 right-0 top-0 z-[60] pt-5 transition-all duration-300">
+  <nav class="fixed left-0 right-0 top-0 z-[60] bg-white/80 backdrop-blur-md transition-all duration-300">
       <div
         class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
       :class="mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
@@ -70,55 +146,61 @@ const handleDokumenPPDB = () => {
 
     <div class="public-navbar-container">
       <div
-        class="relative z-50 overflow-hidden rounded-3xl border border-border bg-bg-surface px-6 shadow-2xl shadow-brand/10 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-        :class="mobileMenuOpen ? 'py-6' : 'py-2 hover:bg-bg-surface'"
+        class="relative z-50 bg-transparent transition-all duration-500"
+        :class="mobileMenuOpen ? 'py-6' : 'py-4'"
       >
         <div class="flex items-center justify-between">
+          <!-- Logo -->
           <button type="button" class="group flex items-center gap-3" aria-label="Ke beranda" @click="goToHome">
             <img
               src="/images/logo-mds-main.png"
               alt="Logo MDS Cendekia"
-              class="h-12 w-12 object-contain transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
+              class="h-10 w-10 object-contain"
               fetchpriority="high"
               loading="eager"
             />
           </button>
 
-          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
+          <!-- Desktop Menu -->
+          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[64px] lg:flex">
             <button
-              v-for="item in menuItems"
+              v-for="(item, index) in menuItems"
               :key="item.id"
+              :ref="(el) => { if (el) itemRefs[index] = el as HTMLElement }"
               type="button"
-              class="relative cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300 hover:bg-primary-50"
+              class="group relative cursor-pointer py-2 text-[16px] font-medium font-heading transition-colors duration-300"
               :class="
-                activeMenu === item.label
+                activeMenuLabel === item.label
                   ? 'text-brand'
-                  : 'text-text-secondary hover:text-brand'
+                  : 'text-[#3A3A3A] hover:text-brand'
               "
               @click="handleNavClick(item)"
             >
-              <span class="relative z-10">{{ item.label }}</span>
-              <span
-                v-if="activeMenu === item.label"
-                class="animate-slide-up absolute bottom-1.5 left-4 right-4 h-0.5 rounded-full bg-brand"
-              />
+              <span>{{ item.label }}</span>
             </button>
+            
+            <!-- Magic Sliding Indicator -->
+            <span
+              class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
+              :style="indicatorStyle"
+            />
           </div>
 
+          <!-- Actions -->
           <div class="flex items-center gap-3">
             <button
               type="button"
-              class="hidden items-center gap-2 rounded-xl border-2 border-brand bg-bg-surface px-4 py-2 text-sm font-medium text-brand transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-50 lg:flex"
-              @click="handleDokumenPPDB"
+              class="hidden items-center justify-center rounded-full border border-brand bg-[#FFFFFF] px-6 py-2.5 text-[16px] font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
+              @click="handlePendaftaran"
             >
-              <Info class="h-4 w-4" />
-              <span>PPDB {{ ppdbYear }}</span>
+              <span>Daftarkan Diri Kamu</span>
             </button>
 
+            <!-- Mobile Toggle -->
             <div class="flex items-center gap-3 lg:hidden">
               <button
                 type="button"
-                class="rounded-lg p-2 transition-transform duration-200 hover:scale-110 hover:bg-primary-50"
+                class="rounded-full p-2 transition-transform duration-200 hover:bg-primary-50"
                 aria-label="Toggle menu"
                 @click="mobileMenuOpen = !mobileMenuOpen"
               >
@@ -129,6 +211,7 @@ const handleDokumenPPDB = () => {
           </div>
         </div>
 
+        <!-- Mobile Menu Panel -->
         <div v-show="mobileMenuOpen" class="mt-4 border-t border-border-soft lg:hidden">
           <div class="space-y-2 pb-4 pt-4">
             <button
@@ -138,28 +221,27 @@ const handleDokumenPPDB = () => {
               :style="{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : '0ms' }"
               class="group flex w-full translate-y-2 items-center justify-between rounded-xl px-4 py-3 text-left opacity-0 transition-all duration-300"
               :class="[
-                activeMenu === item.label
+                activeMenuLabel === item.label
                   ? 'bg-primary-50 text-brand'
-                  : 'text-text-secondary hover:bg-bg-base',
+                  : 'text-[#3A3A3A] hover:bg-bg-base',
                 mobileMenuOpen ? 'animate-slide-in' : ''
               ]"
               @click="handleNavClick(item)"
             >
-              <span class="font-medium transition-transform group-hover:translate-x-1">{{ item.label }}</span>
-              <ArrowLeft v-if="activeMenu === item.label" class="h-5 w-5 animate-bounce-x text-brand" />
+              <span class="font-medium font-heading text-[16px] transition-transform group-hover:translate-x-1">{{ item.label }}</span>
+              <ArrowLeft v-if="activeMenuLabel === item.label" class="h-5 w-5 animate-bounce-x text-brand" />
             </button>
           </div>
 
           <div class="border-t border-border-soft pb-2 pt-4">
             <button
               type="button"
-              class="flex w-full translate-y-2 items-center justify-center gap-2 rounded-xl border-2 border-brand bg-bg-surface px-4 py-3 font-medium text-brand opacity-0 transition-all duration-300"
+              class="flex w-full translate-y-2 items-center justify-center gap-2 rounded-full border border-brand bg-[#FFFFFF] px-4 py-3 font-medium font-heading text-[16px] text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
               :class="mobileMenuOpen ? 'animate-slide-in' : ''"
               style="transition-delay: 300ms"
-              @click="handleDokumenPPDB"
+              @click="handlePendaftaran"
             >
-              <Info class="h-5 w-5" />
-              <span>PPDB {{ ppdbYear }}</span>
+              <span>Daftarkan Diri Kamu</span>
             </button>
           </div>
         </div>
@@ -169,21 +251,6 @@ const handleDokumenPPDB = () => {
 </template>
 
 <style scoped>
-@keyframes slide-up {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 @keyframes slide-in {
   from {
     opacity: 0;
