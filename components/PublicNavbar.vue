@@ -14,34 +14,32 @@ const mobileMenuOpen = ref(false)
 
 const menuItems: NavItem[] = [
   { id: 1, label: 'Beranda', to: '/' },
-  { id: 2, label: 'Profil', to: '/profil-sekolah' },
-  { id: 3, label: 'Galeri', to: '#galeri' },
-  { id: 4, label: 'Berita', to: '#berita' },
+  { id: 2, label: 'Galeri', to: '#galeri' },
+  { id: 3, label: 'Berita', to: '#berita' },
+  { id: 4, label: 'Profil', to: '/profil-sekolah' },
   { id: 5, label: 'PPDB', to: '/ppdb' }
 ]
-
-// Active menu dikelola manual agar bisa diupdate saat klik hash tanpa Vue Router
-const activeMenuLabel = ref('Beranda')
-
-// Setel active berdasarkan route path saat mount/navigasi
-const setActiveFromRoute = () => {
-  if (route.path === '/ppdb') {
-    activeMenuLabel.value = 'PPDB'
-  } else if (route.path === '/profil-sekolah') {
-    activeMenuLabel.value = 'Profil'
-  } else if (route.path === '/') {
-    activeMenuLabel.value = 'Beranda'
+const getActiveLabelFromRoute = (path: string, hash = '') => {
+  if (path.startsWith('/ppdb')) return 'PPDB'
+  if (path.startsWith('/profil-sekolah')) return 'Profil'
+  if (path === '/' && hash) {
+    const matched = menuItems.find(item => item.to === hash)
+    return matched?.label || 'Beranda'
   }
+  return 'Beranda'
 }
+const activeMenuLabel = ref(getActiveLabelFromRoute(route.path, route.hash))
 
-// IntersectionObserver: auto-detect seksi yang sedang di viewport
+const setActiveFromRoute = (path = route.path, hash = route.hash) => {
+  activeMenuLabel.value = getActiveLabelFromRoute(path, hash)
+}
 let observer: IntersectionObserver | null = null
 
 const setupObserver = () => {
   if (!import.meta.client) return
-  const sections = ['profil', 'galeri', 'berita']
-  const threshold = 0.3
+  if (observer) observer.disconnect()
 
+  const sections = ['galeri', 'berita']
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -51,7 +49,7 @@ const setupObserver = () => {
         }
       })
     },
-    { threshold }
+    { threshold: 0.4 }
   )
 
   sections.forEach((id) => {
@@ -59,8 +57,8 @@ const setupObserver = () => {
     if (el) observer!.observe(el)
   })
 }
-
 const itemRefs = ref<HTMLElement[]>([])
+const indicatorReady = ref(false)
 const indicatorStyle = ref<any>({ width: '0px', transform: 'translateX(0px)', opacity: 0 })
 
 const updateIndicator = async () => {
@@ -75,14 +73,17 @@ const updateIndicator = async () => {
       opacity: 1
     }
   } else {
-    indicatorStyle.value.opacity = 0
+    indicatorStyle.value = { ...indicatorStyle.value, opacity: 0 }
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   setActiveFromRoute()
-  updateIndicator()
-  setupObserver()
+  await nextTick()
+  await updateIndicator()
+  await nextTick()
+  indicatorReady.value = true
+  if (route.path === '/') setupObserver()
   window.addEventListener('resize', updateIndicator)
 })
 
@@ -90,9 +91,16 @@ watch(activeMenuLabel, () => {
   updateIndicator()
 })
 
-watch(() => route.path, () => {
-  setActiveFromRoute()
+watch(() => route.fullPath, (_, oldFull) => {
+  setActiveFromRoute(route.path, route.hash)
   mobileMenuOpen.value = false
+
+  if (route.path !== '/') {
+    observer?.disconnect()
+    observer = null
+  } else {
+    nextTick(() => setupObserver())
+  }
 })
 
 watch(mobileMenuOpen, (isOpen) => {
@@ -110,19 +118,41 @@ onUnmounted(() => {
 
 const goToHome = () => {
   activeMenuLabel.value = 'Beranda'
-  router.push('/')
+  if (route.path === '/') {
+    if (import.meta.client) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      history.pushState(null, '', '/')
+    }
+  } else {
+    router.push('/')
+  }
 }
 
-const handleNavClick = (item: NavItem) => {
+const handleNavClick = async (item: NavItem) => {
   mobileMenuOpen.value = false
+  activeMenuLabel.value = item.label
+
   if (item.to.startsWith('#')) {
     if (!import.meta.client) return
-    // Set active langsung saat klik, jangan tunggu observer
-    activeMenuLabel.value = item.label
+
+    if (route.path !== '/') {
+      await router.push('/' + item.to)
+      return
+    }
+
     const target = document.querySelector(item.to)
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       history.pushState(null, '', item.to)
+    }
+  } else if (item.to === '/') {
+    if (route.path === '/') {
+      if (import.meta.client) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        history.pushState(null, '', '/')
+      }
+    } else {
+      router.push('/')
     }
   } else {
     router.push(item.to)
@@ -131,15 +161,14 @@ const handleNavClick = (item: NavItem) => {
 
 const handlePendaftaran = () => {
   mobileMenuOpen.value = false
-  router.push('/ppdb')
+  router.push('/ppdb/daftar')
 }
-
 </script>
 
 <template>
   <nav class="fixed left-0 right-0 top-0 z-[60] bg-white/80 backdrop-blur-md transition-all duration-300">
-      <div
-        class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
+    <div
+      class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
       :class="mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
       @click="mobileMenuOpen = false"
     />
@@ -150,7 +179,6 @@ const handlePendaftaran = () => {
         :class="mobileMenuOpen ? 'py-6' : 'py-4'"
       >
         <div class="flex items-center justify-between">
-          <!-- Logo -->
           <button type="button" class="group flex items-center gap-3" aria-label="Ke beranda" @click="goToHome">
             <img
               src="/images/logo-mds-main.png"
@@ -161,7 +189,6 @@ const handlePendaftaran = () => {
             />
           </button>
 
-          <!-- Desktop Menu -->
           <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[64px] lg:flex">
             <button
               v-for="(item, index) in menuItems"
@@ -178,15 +205,13 @@ const handlePendaftaran = () => {
             >
               <span>{{ item.label }}</span>
             </button>
-            
-            <!-- Magic Sliding Indicator -->
             <span
-              class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
+              class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand"
+              :class="indicatorReady ? 'transition-all duration-300 ease-in-out' : ''"
               :style="indicatorStyle"
             />
           </div>
 
-          <!-- Actions -->
           <div class="flex items-center gap-3">
             <button
               type="button"
@@ -196,7 +221,6 @@ const handlePendaftaran = () => {
               <span>Daftarkan Diri Kamu</span>
             </button>
 
-            <!-- Mobile Toggle -->
             <div class="flex items-center gap-3 lg:hidden">
               <button
                 type="button"
@@ -211,7 +235,6 @@ const handlePendaftaran = () => {
           </div>
         </div>
 
-        <!-- Mobile Menu Panel -->
         <div v-show="mobileMenuOpen" class="mt-4 border-t border-border-soft lg:hidden">
           <div class="space-y-2 pb-4 pt-4">
             <button
