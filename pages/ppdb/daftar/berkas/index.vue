@@ -57,17 +57,7 @@ const submitStage = ref<SubmitStage>('idle')
 const isMobile = ref(true)
 const isCopied = ref(false)
 
-const formatNomorPendaftaran = (value: string) => {
-  const normalized = value.trim().toUpperCase()
-  if (!normalized || normalized.includes('-')) return normalized
-
-  const match = normalized.match(/^([A-Z]+)(\d{4})(\d+)$/)
-  if (!match) return normalized
-
-  return `${match[1]}-${match[2]}-${match[3]}`
-}
-
-const displayNomorPendaftaran = computed(() => formatNomorPendaftaran(nomorPendaftaran.value))
+const displayNomorPendaftaran = computed(() => nomorPendaftaran.value.trim())
 
 const confirmModalModel = computed({
   get: () => isConfirmModalOpen.value,
@@ -675,8 +665,15 @@ const submitForm = async () => {
     <AppModal v-if="!isMobile" v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
       <template #header><div></div></template>
       <div class="flex flex-col items-center text-center pt-2">
-        <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+        <div class="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-bg-surface shadow-lg shadow-success/15">
+          <img
+            src="/images/logo-mds-main.png"
+            alt="Logo MDS Cendekia"
+            class="h-14 w-14 object-contain"
+          >
+          <div class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-success text-white shadow-md shadow-success/30 ring-4 ring-bg-surface">
+            <Check class="h-5 w-5" />
+          </div>
         </div>
 
         <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
@@ -714,8 +711,15 @@ const submitForm = async () => {
 
     <AppBottomSheet v-else v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
       <div class="flex flex-col items-center text-center pt-6">
-        <div class="w-16 h-16 bg-status-approved text-white rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/30">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"/></svg>
+        <div class="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-bg-surface shadow-lg shadow-success/15">
+          <img
+            src="/images/logo-mds-main.png"
+            alt="Logo MDS Cendekia"
+            class="h-14 w-14 object-contain"
+          >
+          <div class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-success text-white shadow-md shadow-success/30 ring-4 ring-bg-surface">
+            <Check class="h-5 w-5" />
+          </div>
         </div>
 
         <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>

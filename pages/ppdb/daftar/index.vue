@@ -1,5 +1,24 @@
 <script setup lang="ts">
-import { reactive, ref, computed, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
+import {
+  agamaOptions,
+  createDefaultProgramOptions,
+  gajiOptions,
+  pendidikanOptions,
+  waliHubunganOptions,
+  type ProgramOption
+} from '~/composables/usePpdbFormOptions'
+import {
+  sanitizeDigits,
+  sanitizeEmail,
+  sanitizeIjazahNumber,
+  sanitizeIndonesianMobile,
+  sanitizeName,
+  sanitizeSafeText,
+  sanitizeSchoolName,
+  setSanitized,
+  type StringRecord
+} from '~/composables/usePpdbFormSanitizers'
 
 useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
@@ -15,126 +34,32 @@ const {
 
 const form = biodata.value
 
-const errors = reactive<Record<string, string>>({})
-
-const agamaOptions = [
-  { label: 'Islam', value: 'Islam' },
-  { label: 'Kristen', value: 'Kristen' },
-  { label: 'Katolik', value: 'Katolik' },
-  { label: 'Hindu', value: 'Hindu' },
-  { label: 'Buddha', value: 'Buddha' },
-  { label: 'Konghucu', value: 'Konghucu' }
-]
-
 const formSekolah = sekolah.value
 const ayah = orangTua.value[0]!
 const ibu = orangTua.value[1]!
 const wali = orangTua.value[2]!
 
-const pendidikanOptions = [
-  { label: 'Tidak Sekolah', value: 'Tidak Sekolah' },
-  { label: 'SD/Sederajat', value: 'SD' },
-  { label: 'SMP/Sederajat', value: 'SMP' },
-  { label: 'SMA/Sederajat', value: 'SMA' },
-  { label: 'D1/D2/D3', value: 'Diploma' },
-  { label: 'S1/D4', value: 'S1' },
-  { label: 'S2', value: 'S2' },
-  { label: 'S3', value: 'S3' }
-]
-
-const gajiOptions = [
-  { label: 'Kurang dari Rp 1.000.000', value: '1000000' },
-  { label: 'Rp 1.000.000 - Rp 2.000.000', value: '2000000' },
-  { label: 'Rp 2.000.000 - Rp 5.000.000', value: '5000000' },
-  { label: 'Rp 5.000.000 - Rp 10.000.000', value: '10000000' },
-  { label: 'Lebih dari Rp 10.000.000', value: '10000001' }
-]
-
-const waliHubunganOptions = [
-  { label: 'Wali', value: 'Wali' },
-  { label: 'Paman', value: 'Paman' },
-  { label: 'Bibi', value: 'Bibi' },
-  { label: 'Kakek', value: 'Kakek' },
-  { label: 'Nenek', value: 'Nenek' },
-  { label: 'Kakak', value: 'Kakak' },
-  { label: 'Saudara', value: 'Saudara' },
-  { label: 'Orang Tua Asuh', value: 'Orang Tua Asuh' },
-  { label: 'Lainnya', value: 'Lainnya' }
-]
-
-type ProgramOption = {
-  label: string
-  value: string
-  description: string
-}
-
 const config = useRuntimeConfig()
 const isLoadingPrograms = ref(false)
-const defaultProgramOptions: ProgramOption[] = [
-  {
-    label: 'Paket C',
-    value: String(config.public.ppdbProgramId || 1),
-    description: 'Setara SMA'
-  }
-]
+const defaultProgramOptions: ProgramOption[] = createDefaultProgramOptions(config.public.ppdbProgramId)
 const programOptions = ref<ProgramOption[]>([...defaultProgramOptions])
 
 const maxBirthYear = new Date().getFullYear() - 1
 
-type StringRecord = Record<string, string>
-
-const sanitizeDigits = (value: unknown, maxLength?: number) => {
-  const sanitized = String(value ?? '').replace(/\D/g, '')
-  return typeof maxLength === 'number' ? sanitized.slice(0, maxLength) : sanitized
-}
-
-const sanitizeIndonesianMobile = (value: unknown) => {
-  const digits = sanitizeDigits(value, 13)
-  if (!digits) return ''
-  if (digits.startsWith('08')) return digits.slice(0, 13)
-  if (digits.startsWith('8')) return `0${digits}`.slice(0, 13)
-  if (digits.startsWith('0')) return digits.slice(0, 13)
-  return `08${digits}`.slice(0, 13)
-}
-
-const sanitizeName = (value: unknown) => String(value ?? '')
-  .replace(/[^a-zA-Z\s]/g, '')
-  .replace(/\s{2,}/g, ' ')
-  .slice(0, 80)
-
-const stripControlChars = (value: string) => Array.from(value)
-  .filter((char) => {
-    const code = char.charCodeAt(0)
-    return code >= 32 && code !== 127
-  })
-  .join('')
-
-const sanitizeSafeText = (value: unknown, maxLength = 160) => stripControlChars(String(value ?? ''))
-  .replace(/[<>{}`\\]/g, '')
-  .replace(/\s{2,}/g, ' ')
-  .slice(0, maxLength)
-
-const sanitizeSchoolName = (value: unknown) => String(value ?? '')
-  .replace(/[^a-zA-Z0-9\s]/g, '')
-  .replace(/\s{2,}/g, ' ')
-  .slice(0, 120)
-
-const sanitizeIjazahNumber = (value: unknown) => String(value ?? '')
-  .replace(/[^a-zA-Z0-9/-]/g, '')
-  .slice(0, 25)
-
-const sanitizeEmail = (value: unknown) => String(value ?? '')
-  .trim()
-  .toLowerCase()
-  .replace(/\s/g, '')
-  .replace(/[<>{}`\\'"]/g, '')
-  .slice(0, 120)
-
-const setSanitized = (target: StringRecord, key: string, sanitized: string) => {
-  if (target[key] !== sanitized) {
-    target[key] = sanitized
-  }
-}
+const {
+  errors,
+  validateField,
+  validateOrangTuaField,
+  isAcc1Valid,
+  isAcc2Valid,
+  isAcc3Valid
+} = usePpdbFormValidation({
+  form,
+  formSekolah,
+  orangTua,
+  isWaliBerbeda,
+  maxBirthYear
+})
 
 const revalidateErroredField = (field: string) => {
   if (errors[field]) {
@@ -148,7 +73,19 @@ const revalidateErroredOrangTuaField = (index: number, field: string) => {
   }
 }
 
-// Sanitization Watchers (Global Form Input Sanitization)
+const {
+  provinsiOptions,
+  kotaOptions,
+  kecamatanOptions,
+  kelurahanOptions,
+  isLookingUpKodePos,
+  loadSelectedRegions
+} = usePpdbRegionCascade({
+  form,
+  isRestoringDraft,
+  validateField
+})
+
 watch(form, (val) => {
   const fields = val as StringRecord
   setSanitized(fields, 'nama', sanitizeName(val.nama))
@@ -195,27 +132,6 @@ watch(isWaliBerbeda, () => {
   ensureOrangTuaShape()
 })
 
-const {
-  provinsiOptions,
-  kotaOptions,
-  kecamatanOptions,
-  kelurahanOptions,
-  loadProvinsi,
-  loadKota,
-  loadKecamatan,
-  loadKelurahan,
-  findLabel
-} = useWilayahIndonesia()
-
-const { isLookingUpKodePos, lookupKodePos } = useKodePos()
-
-const loadSelectedRegions = async () => {
-  await loadProvinsi()
-  if (form.provinsi) await loadKota(form.provinsi)
-  if (form.kabupaten_kota) await loadKecamatan(form.kabupaten_kota)
-  if (form.kecamatan) await loadKelurahan(form.kecamatan)
-}
-
 const loadPrograms = async () => {
   isLoadingPrograms.value = true
   programOptions.value = [...defaultProgramOptions]
@@ -238,353 +154,34 @@ onMounted(async () => {
   ])
 })
 
-watch(isRestoringDraft, async (isRestoring) => {
-  if (!isRestoring) {
-    await loadSelectedRegions()
-  }
+const {
+  isAcc1Open,
+  isAcc2Open,
+  isAcc3Open,
+  acc2FinalLock,
+  acc3FinalLock,
+  toggleAccordion
+} = usePpdbAccordionFlow({
+  isAcc1Valid,
+  isAcc2Valid
 })
 
-watch(() => form.provinsi, async (newVal) => {
-  if (isRestoringDraft.value) return
-
-  form.kabupaten_kota = ''
-  form.kecamatan = ''
-  form.kelurahan = ''
-  form.kode_pos = ''
-  kotaOptions.value = []
-  kecamatanOptions.value = []
-  kelurahanOptions.value = []
-  if (newVal) {
-    await loadKota(newVal)
-  }
-  validateField('provinsi')
-})
-
-watch(() => form.kabupaten_kota, async (newVal) => {
-  if (isRestoringDraft.value) return
-
-  form.kecamatan = ''
-  form.kelurahan = ''
-  form.kode_pos = ''
-  kecamatanOptions.value = []
-  kelurahanOptions.value = []
-  if (newVal) {
-    await loadKecamatan(newVal)
-  }
-  validateField('kabupaten_kota')
-})
-
-watch(() => form.kecamatan, async (newVal) => {
-  if (isRestoringDraft.value) return
-
-  form.kelurahan = ''
-  form.kode_pos = ''
-  kelurahanOptions.value = []
-  if (newVal) {
-    await loadKelurahan(newVal)
-  }
-  validateField('kecamatan')
-})
-
-watch(() => form.kelurahan, async (newVal) => {
-  if (isRestoringDraft.value) return
-
-  form.kode_pos = ''
-  validateField('kelurahan')
-
-  if (!newVal) return
-
-  const kodePos = await lookupKodePos({
-    kelurahan: findLabel(kelurahanOptions.value, form.kelurahan),
-    kecamatan: findLabel(kecamatanOptions.value, form.kecamatan),
-    kabupatenKota: findLabel(kotaOptions.value, form.kabupaten_kota)
-  })
-
-  if (kodePos) {
-    form.kode_pos = kodePos
-    validateField('kode_pos')
-  }
-})
-
-// Validation Logic
-const validateField = (field: string) => {
-  errors[field] = ''
-
-  // Accordion 1
-  if (field in form) {
-    const val = String(form[field as keyof typeof form]).trim()
-    switch (field) {
-      case 'nama':
-      case 'tempat_lahir':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (val.length < 3) errors[field] = 'Minimal 3 karakter'
-        else if (!/^[a-zA-Z\s]*$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan spasi'
-        break
-
-      case 'nik':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{16}$/.test(val)) errors[field] = 'NIK harus 16 digit angka'
-        else if (val === '1234567812345678') errors[field] = 'NIK ini sudah terdaftar dalam sistem'
-        break
-
-      case 'nisn':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{10}$/.test(val)) errors[field] = 'NISN harus 10 digit angka'
-        break
-
-      case 'tanggal_lahir':
-        if (!val) {
-          errors[field] = 'Field ini wajib diisi'
-        } else {
-          const selectedDate = new Date(val)
-          if (selectedDate > new Date()) errors[field] = 'Tanggal lahir tidak boleh di masa depan'
-          else if (selectedDate.getFullYear() > maxBirthYear) errors[field] = 'Tahun lahir tidak boleh tahun ini'
-        }
-        break
-
-      case 'jenis_kelamin':
-      case 'agama':
-      case 'id_program':
-      case 'provinsi':
-      case 'kabupaten_kota':
-      case 'kecamatan':
-      case 'kelurahan':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        break
-
-      case 'alamat':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (val.length < 10) errors[field] = 'Minimal 10 karakter'
-        break
-
-      case 'rt':
-      case 'rw':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{3}$/.test(val)) errors[field] = `${field.toUpperCase()} harus 3 digit angka`
-        break
-
-      case 'kode_pos':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{5}$/.test(val)) errors[field] = 'Kode pos harus 5 digit angka'
-        break
-
-      case 'no_telepon':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^08\d{10,11}$/.test(val)) errors[field] = 'Nomor HP harus 12-13 digit dan diawali 08'
-        break
-
-      case 'email':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[field] = 'Format email tidak valid'
-        else if (val === 'test@test.com') errors[field] = 'Email ini sudah terdaftar dalam sistem'
-        break
-    }
-  }
-
-  // Accordion 2
-  if (field in formSekolah) {
-    const val = String(formSekolah[field as keyof typeof formSekolah]).trim()
-    switch (field) {
-      case 'nama_sekolah_asal':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
-        else if (!/^[a-zA-Z0-9\s]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan angka'
-        break
-
-      case 'npsn_sekolah_asal':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{8}$/.test(val)) errors[field] = 'NPSN harus 8 digit angka'
-        break
-
-      case 'alamat_sekolah_asal':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (val.length < 10) errors[field] = 'Minimal 10 karakter'
-        break
-
-      case 'tahun_lulus':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (!/^\d{4}$/.test(val)) errors[field] = 'Tahun harus 4 digit angka'
-        else if (Number(val) > new Date().getFullYear()) errors[field] = 'Tahun lulus tidak boleh di masa depan'
-        break
-
-      case 'no_ijazah':
-        if (!val) errors[field] = 'Field ini wajib diisi'
-        else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
-        else if (val.length > 25) errors[field] = 'Maksimal 25 karakter'
-        else if (!/^[a-zA-Z0-9/-]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf, angka, tanda - dan /'
-        break
-    }
-  }
-
-}
-
-const validateOrangTuaField = (index: number, field: string) => {
-  const item = orangTua.value[index]
-  if (!item) return
-
-  const errorKey = `orangTua.${index}.${field}`
-  errors[errorKey] = ''
-
-  if (index === 2 && !isWaliBerbeda.value) return
-
-  const value = item[field as keyof typeof item]
-  const val = String(value ?? '').trim()
-  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran', 'no_telepon']
-  const isRequired = index === 2
-    ? requiredFields.includes(field) || (field === 'hubungan_lainnya' && item.hubungan === 'Lainnya')
-    : requiredFields.includes(field)
-
-  if (isRequired && !val) {
-    errors[errorKey] = 'Field ini wajib diisi'
-    return
-  }
-
-  if (!val) return
-
-  switch (field) {
-    case 'nama':
-      if (val.length < 3) errors[errorKey] = 'Minimal 3 karakter'
-      else if (!/^[a-zA-Z\s]*$/.test(val)) errors[errorKey] = 'Hanya boleh berisi huruf dan spasi'
-      break
-    case 'pekerjaan':
-      if (val.length < 3) errors[errorKey] = 'Minimal 3 karakter'
-      break
-    case 'nik':
-      if (!/^\d{16}$/.test(val)) errors[errorKey] = 'NIK harus 16 digit angka'
-      break
-    case 'no_telepon':
-      if (!/^08\d{10,11}$/.test(val)) errors[errorKey] = 'Nomor HP harus 12-13 digit dan diawali 08'
-      break
-    case 'email':
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[errorKey] = 'Format email tidak valid'
-      break
-  }
-}
-
-// Accordion State
-const isAcc1Open = ref(true)
-const isAcc2Open = ref(false)
-const isAcc3Open = ref(false)
-
-const toggleAccordion = (target: 1 | 2 | 3) => {
-  if (target === 2 && acc2FinalLock.value) return
-  if (target === 3 && acc3FinalLock.value) return
-
-  const willOpen = target === 1
-    ? !isAcc1Open.value
-    : target === 2
-      ? !isAcc2Open.value
-      : !isAcc3Open.value
-
-  isAcc1Open.value = target === 1 ? willOpen : false
-  isAcc2Open.value = target === 2 ? willOpen : false
-  isAcc3Open.value = target === 3 ? willOpen : false
-}
-
-// Computed validity
-const isAcc1Valid = computed(() => {
-  const reqFields: (keyof typeof form)[] = [
-    'nama', 'nisn', 'nik', 'email', 'no_telepon', 'tanggal_lahir',
-    'tempat_lahir', 'jenis_kelamin', 'agama', 'id_program', 'alamat',
-    'rt', 'rw', 'provinsi', 'kabupaten_kota', 'kecamatan', 'kelurahan', 'kode_pos'
-  ]
-  return reqFields.every(f => form[f] !== '' && !errors[f])
-})
-
-const isAcc2Valid = computed(() => {
-  const reqFields: (keyof typeof formSekolah)[] = [
-    'nama_sekolah_asal', 'alamat_sekolah_asal', 'npsn_sekolah_asal', 'tahun_lulus', 'no_ijazah'
-  ]
-  return reqFields.every(f => formSekolah[f] !== '' && !errors[f])
-})
-
-const isAcc3Valid = computed(() => {
-  const requiredFields = ['nama', 'nik', 'agama', 'hubungan', 'peran', 'no_telepon'] as const
-
-  const parentValid = [0, 1].every((index) => requiredFields.every((field) => {
-    const item = orangTua.value[index]
-    return item?.[field] !== '' && !errors[`orangTua.${index}.${field}`]
-  }))
-
-  if (!isWaliBerbeda.value) return parentValid
-
-  const waliValid = requiredFields.every((field) => {
-    const item = orangTua.value[2]
-    return item?.[field] !== '' && !errors[`orangTua.2.${field}`]
-  })
-
-  return parentValid && waliValid
-})
-
-// Unlock management (Once unlocked, never locked again based on PRD: "Setelah unlock, accordion tidak bisa dikunci kembali meskipun user edit ulang")
-const acc2UnlockedEver = ref(false)
-watch(isAcc1Valid, (valid) => {
-  if (valid && !acc2UnlockedEver.value) {
-    acc2UnlockedEver.value = true
-  }
-}, { immediate: true })
-const acc2FinalLock = computed(() => !acc2UnlockedEver.value)
-
-const acc3UnlockedEver = ref(false)
-watch(isAcc2Valid, (valid) => {
-  if (valid && !acc3UnlockedEver.value) {
-    acc3UnlockedEver.value = true
-  }
-}, { immediate: true })
-const acc3FinalLock = computed(() => !acc3UnlockedEver.value)
-
-// Phase 21 Logic
 const isAllValid = computed(() => isAcc1Valid.value && isAcc2Valid.value && isAcc3Valid.value)
-const router = useRouter()
-const isLeaveGuardOpen = ref(false)
-const pendingNavigationPath = ref('')
-const allowRouteLeave = ref(false)
 
-const hasFilledValue = (value: unknown) => String(value ?? '').trim() !== ''
-
-const hasFilledForm = computed(() => {
-  const biodataFilled = Object.values(form).some(hasFilledValue)
-  const sekolahFilled = Object.values(formSekolah).some(hasFilledValue)
-  const orangTuaFilled = orangTua.value.some((item) => Object.entries(item).some(([key, value]) => {
-    if (key === 'peran' || key === 'hubungan') return false
-    return hasFilledValue(value)
-  }))
-
-  return biodataFilled || sekolahFilled || orangTuaFilled || isWaliBerbeda.value
+const {
+  isLeaveGuardOpen,
+  requestLeave,
+  confirmLeave,
+  proceedNext
+} = usePpdbFormNavigationGuard({
+  form,
+  formSekolah,
+  orangTua,
+  isWaliBerbeda,
+  resetForm,
+  nextPath: '/ppdb/daftar/berkas',
+  fallbackPath: '/ppdb'
 })
-
-const requestLeave = (path: string) => {
-  if (!hasFilledForm.value) {
-    allowRouteLeave.value = true
-    router.push(path)
-    return
-  }
-
-  pendingNavigationPath.value = path
-  isLeaveGuardOpen.value = true
-}
-
-const confirmLeave = () => {
-  isLeaveGuardOpen.value = false
-  const path = pendingNavigationPath.value || '/ppdb'
-  pendingNavigationPath.value = ''
-  resetForm()
-  allowRouteLeave.value = true
-  router.push(path)
-}
-
-onBeforeRouteLeave((to) => {
-  if (allowRouteLeave.value || !hasFilledForm.value) return true
-
-  pendingNavigationPath.value = to.fullPath
-  isLeaveGuardOpen.value = true
-  return false
-})
-
-const proceedNext = () => {
-  allowRouteLeave.value = true
-  router.push('/ppdb/daftar/berkas')
-}
 </script>
 
 <template>
@@ -595,7 +192,6 @@ const proceedNext = () => {
         <p class="text-text-secondary mt-1">Lengkapi data di bawah ini dengan benar.</p>
       </div>
 
-      <!-- Accordion 1: Data Diri Siswa -->
       <AppAccordion
         title="Data Diri Siswa"
         :isOpen="isAcc1Open"
@@ -667,7 +263,6 @@ const proceedNext = () => {
             <AppInput v-model="form.rw" label="RW" required :error="errors.rw" :sanitizer="(val) => sanitizeDigits(val, 3)" inputmode="numeric" :maxlength="3" placeholder="002" @blur="validateField('rw')" />
           </div>
 
-          <!-- Cascade Dropdowns -->
           <AppSelect v-model="form.provinsi" label="Provinsi" required :options="provinsiOptions" :error="errors.provinsi" @blur="validateField('provinsi')" placeholder="Pilih Provinsi" />
           <AppSelect v-model="form.kabupaten_kota" label="Kota/Kabupaten" required :options="kotaOptions" :disabled="!form.provinsi" :error="errors.kabupaten_kota" @blur="validateField('kabupaten_kota')" placeholder="Pilih Kota/Kabupaten" />
           <AppSelect v-model="form.kecamatan" label="Kecamatan" required :options="kecamatanOptions" :disabled="!form.kabupaten_kota" :error="errors.kecamatan" @blur="validateField('kecamatan')" placeholder="Pilih Kecamatan" />
@@ -690,7 +285,6 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
-      <!-- Accordion 2: Data Asal Sekolah -->
       <AppAccordion
         title="Data Asal Sekolah"
         :isOpen="isAcc2Open"
@@ -712,7 +306,6 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
-      <!-- Accordion 3: Data Orang Tua / Wali -->
       <AppAccordion
         title="Data Orang Tua / Wali"
         :isOpen="isAcc3Open"
@@ -723,7 +316,6 @@ const proceedNext = () => {
         @toggle="toggleAccordion(3)"
       >
         <div class="flex flex-col gap-8">
-          <!-- Data Ayah -->
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ayah</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -738,7 +330,6 @@ const proceedNext = () => {
             </div>
           </div>
 
-          <!-- Data Ibu -->
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ibu</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -753,7 +344,6 @@ const proceedNext = () => {
             </div>
           </div>
 
-          <!-- Data Wali Checkbox -->
           <div class="flex items-center gap-3 p-4 bg-bg-surface border border-border rounded-xl">
             <input type="checkbox" id="waliCheckbox" v-model="isWaliBerbeda" class="w-5 h-5 rounded border-border text-brand focus:ring-brand accent-brand">
             <label for="waliCheckbox" class="text-text-primary font-medium cursor-pointer select-none">
@@ -761,7 +351,6 @@ const proceedNext = () => {
             </label>
           </div>
 
-          <!-- Data Wali (Conditional) -->
           <div v-if="isWaliBerbeda" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Wali</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -780,7 +369,6 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
-      <!-- Tombol Navigasi -->
       <div class="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AppButton
           variant="secondary"
