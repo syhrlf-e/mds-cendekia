@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { SearchX } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
+definePageMeta({ hideFooter: true })
 
 type CheckState = 'initial' | 'loading' | 'success' | 'not-found'
 type StatusResult = {
@@ -222,23 +223,25 @@ const checkAnother = () => {
       </div>
 
       <form class="flex flex-col gap-5" @submit.prevent="handleCheck">
-        <AppInput
-          v-model="nomorPendaftaran"
-          label="Nomor Pendaftaran"
-          placeholder="Contoh: MDS-2025-0001"
-          required
-          :disabled="isChecking || hasResult"
-        />
-        <AppInput
-          v-model="nisn"
-          label="NISN"
-          placeholder="Contoh: 0101234567"
-          required
-          inputmode="numeric"
-          :maxlength="10"
-          :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
-          :disabled="isChecking || hasResult"
-        />
+        <div class="grid gap-5 sm:grid-cols-2">
+          <AppInput
+            v-model="nomorPendaftaran"
+            label="Nomor Pendaftaran"
+            placeholder="Contoh: MDS-2025-0001"
+            required
+            :disabled="isChecking || hasResult"
+          />
+          <AppInput
+            v-model="nisn"
+            label="NISN"
+            placeholder="Contoh: 0101234567"
+            required
+            inputmode="numeric"
+            :maxlength="10"
+            :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
+            :disabled="isChecking || hasResult"
+          />
+        </div>
 
         <div
           class="hidden lg:grid transition-all duration-300 ease-out"
@@ -254,7 +257,7 @@ const checkAnother = () => {
                 class="mb-6 rounded-xl border p-4"
                 :class="getStatusResultClass(resultData.status)"
               >
-                <p class="text-base font-semibold text-current">
+                <p class="text-base font-medium text-current">
                   {{ getStatusResultCopy(resultData.status).title }}
                 </p>
                 <p class="mt-1 text-sm leading-relaxed text-current/80">
@@ -343,7 +346,7 @@ const checkAnother = () => {
         class="mb-6 rounded-xl border p-4"
         :class="getStatusResultClass(resultData.status)"
       >
-        <p class="text-base font-semibold text-current">
+        <p class="text-base font-medium text-current">
           {{ getStatusResultCopy(resultData.status).title }}
         </p>
         <p class="mt-1 text-sm leading-relaxed text-current/80">

@@ -86,7 +86,7 @@ export default defineNuxtConfig({
 
   googleFonts: {
     families: {
-      'Plus Jakarta Sans': [500, 600, 700],
+      'Plus Jakarta Sans': [400, 500, 600, 700],
       'Inter': [400, 500]
     },
     display: 'swap',

@@ -3,8 +3,12 @@ import { onMounted, onUnmounted, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
+  closeOnBackdrop?: boolean
+  closeOnEscape?: boolean
 }>(), {
-  modelValue: false
+  modelValue: false,
+  closeOnBackdrop: true,
+  closeOnEscape: true
 })
 
 const emit = defineEmits(['update:modelValue', 'close'])
@@ -26,7 +30,7 @@ onMounted(() => {
   if (props.modelValue) document.body.style.overflow = 'hidden'
 
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.modelValue) close()
+    if (e.key === 'Escape' && props.modelValue && props.closeOnEscape) close()
   }
   document.addEventListener('keydown', handleEscape)
 
@@ -44,7 +48,7 @@ onMounted(() => {
         <!-- Backdrop -->
         <div
           class="absolute inset-0 bg-black/50 transition-opacity"
-          @click="close"
+          @click="closeOnBackdrop && close()"
         ></div>
 
         <div class="relative bg-bg-surface w-full h-[85vh] rounded-t-3xl shadow-2xl flex flex-col">

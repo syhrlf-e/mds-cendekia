@@ -7,10 +7,18 @@ const props = withDefaults(defineProps<{
   title?: string
   width?: string
   zIndex?: string | number
+  closeOnBackdrop?: boolean
+  closeOnEscape?: boolean
+  showCloseButton?: boolean
+  showHeader?: boolean
 }>(), {
   modelValue: false,
   width: 'max-w-lg',
-  zIndex: 50
+  zIndex: 50,
+  closeOnBackdrop: true,
+  closeOnEscape: true,
+  showCloseButton: true,
+  showHeader: true
 })
 
 const emit = defineEmits(['update:modelValue', 'close'])
@@ -33,7 +41,7 @@ onMounted(() => {
 
   // Close on Escape key
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.modelValue) close()
+    if (e.key === 'Escape' && props.modelValue && props.closeOnEscape) close()
   }
   document.addEventListener('keydown', handleEscape)
 
@@ -48,7 +56,10 @@ onMounted(() => {
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="modelValue" class="fixed inset-0 flex items-center justify-center p-4 sm:p-6" :style="{ zIndex: zIndex }">
-        <div class="absolute inset-0 bg-black/40 transition-opacity" @click="close"></div>
+        <div
+          class="absolute inset-0 bg-black/40 transition-opacity"
+          @click="closeOnBackdrop && close()"
+        ></div>
 
         <div
           :class="[
@@ -56,13 +67,14 @@ onMounted(() => {
             width
           ]"
         >
-          <div class="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
+          <div v-if="showHeader" class="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
             <h3 v-if="title" class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
               {{ title }}
             </h3>
             <slot name="header" v-else></slot>
 
             <button
+              v-if="showCloseButton"
               @click="close"
               class="-mr-2 rounded-full p-2 text-text-secondary transition-colors hover:bg-bg-base hover:text-text-primary"
             >

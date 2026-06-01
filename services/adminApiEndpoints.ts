@@ -20,5 +20,10 @@ export const adminApiEndpoints = {
     list: '/api/timeline-ppdb',
     publicList: '/api/timeline-ppdb/publik'
   },
+  gallery: {
+    list: '/api/gallery/all',
+    create: '/api/gallery/create',
+    detail: (id: string) => `/api/gallery/${id}`
+  },
   summary: '/api/summary'
 } as const

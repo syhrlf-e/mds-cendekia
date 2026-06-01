@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
-import { Copy, Check } from 'lucide-vue-next'
+import { Check } from 'lucide-vue-next'
 
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 const router = useRouter()
+const route = useRoute()
 const config = useRuntimeConfig()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
@@ -55,9 +56,6 @@ type SubmitStage = 'idle' | 'registration' | 'files' | 'finishing'
 const submitStage = ref<SubmitStage>('idle')
 
 const isMobile = ref(true)
-const isCopied = ref(false)
-
-const displayNomorPendaftaran = computed(() => nomorPendaftaran.value.trim())
 
 const confirmModalModel = computed({
   get: () => isConfirmModalOpen.value,
@@ -133,8 +131,18 @@ const updateDeviceType = () => {
   isMobile.value = window.innerWidth < 768
 }
 
+const openSuccessPreview = () => {
+  if (!import.meta.dev || route.query.previewSuccess !== '1') return
+
+  const previewNomor = Array.isArray(route.query.nomor) ? route.query.nomor[0] : route.query.nomor
+  nomorPendaftaran.value = previewNomor || 'MDS-PREVIEW-001'
+  isSuccessSheetOpen.value = true
+}
+
 onMounted(() => {
   updateDeviceType()
+  openSuccessPreview()
+
   if (import.meta.client) {
     const rawPendingRegistration = localStorage.getItem(pendingRegistrationStorageKey)
     if (rawPendingRegistration) {
@@ -200,18 +208,6 @@ onBeforeRouteLeave((to) => {
   isLeaveGuardOpen.value = true
   return false
 })
-
-const copyNomor = async () => {
-  try {
-    await navigator.clipboard.writeText(displayNomorPendaftaran.value)
-    isCopied.value = true
-    setTimeout(() => {
-      isCopied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy', err)
-  }
-}
 
 const proceedSubmit = () => {
   submitErrorMessage.value = ''
@@ -662,44 +658,34 @@ const submitForm = async () => {
   </AppModal>
 
   <template v-if="isSuccessSheetOpen">
-    <AppModal v-if="!isMobile" v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
-      <template #header><div></div></template>
-      <div class="flex flex-col items-center text-center pt-2">
-        <div class="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-bg-surface shadow-lg shadow-success/15">
-          <img
-            src="/images/logo-mds-main.png"
-            alt="Logo MDS Cendekia"
-            class="h-14 w-14 object-contain"
-          >
-          <div class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-success text-white shadow-md shadow-success/30 ring-4 ring-bg-surface">
-            <Check class="h-5 w-5" />
-          </div>
+    <AppModal
+      v-if="!isMobile"
+      v-model="isSuccessSheetOpen"
+      :close-on-backdrop="false"
+      :close-on-escape="false"
+      :show-close-button="false"
+      :show-header="false"
+      @close="$router.push('/ppdb')"
+    >
+      <div class="flex flex-col items-center text-center pt-2 font-heading">
+        <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
+          <Check class="h-10 w-10 stroke-[2.5]" />
         </div>
 
-        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
-        <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
-
-        <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
-          <div class="text-left">
-            <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
-            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ displayNomorPendaftaran }}</p>
-          </div>
-          <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
-            <Check v-if="isCopied" class="w-5 h-5 text-success" />
-            <Copy v-else class="w-5 h-5" />
-          </button>
-        </div>
+        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Diterima!</h3>
+        <p class="text-text-secondary mb-3">
+          Cek email kamu. Kami sudah mengirim nomor pendaftaran dan NISN untuk cek status pendaftaran.
+        </p>
+        <a
+          href="mailto:info@mdscendekia.or.id?subject=Belum%20Menerima%20Email%20Pendaftaran"
+          class="mb-8 inline-flex text-sm font-normal text-brand transition-colors hover:text-brand-hover"
+        >
+          Belum menerima email?
+        </a>
 
         <div class="w-full flex flex-col gap-3">
           <AppButton
             variant="primary"
-            class="w-full"
-            @click="$router.push('/ppdb/cek-status')"
-          >
-            Cek Status Pendaftaran
-          </AppButton>
-          <AppButton
-            variant="secondary"
             class="w-full"
             @click="$router.push('/ppdb')"
           >
@@ -709,43 +695,32 @@ const submitForm = async () => {
       </div>
     </AppModal>
 
-    <AppBottomSheet v-else v-model="isSuccessSheetOpen" @close="$router.push('/ppdb')">
-      <div class="flex flex-col items-center text-center pt-6">
-        <div class="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-bg-surface shadow-lg shadow-success/15">
-          <img
-            src="/images/logo-mds-main.png"
-            alt="Logo MDS Cendekia"
-            class="h-14 w-14 object-contain"
-          >
-          <div class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-success text-white shadow-md shadow-success/30 ring-4 ring-bg-surface">
-            <Check class="h-5 w-5" />
-          </div>
+    <AppBottomSheet
+      v-else
+      v-model="isSuccessSheetOpen"
+      :close-on-backdrop="false"
+      :close-on-escape="false"
+      @close="$router.push('/ppdb')"
+    >
+      <div class="flex flex-col items-center text-center pt-6 font-heading">
+        <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
+          <Check class="h-10 w-10 stroke-[2.5]" />
         </div>
 
-        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Berhasil!</h3>
-        <p class="text-text-secondary mb-8">Pendaftaran berhasil! Cek email kamu untuk informasi lebih lanjut.</p>
-
-        <div class="w-full bg-bg-base border border-border rounded-xl p-5 mb-8 flex items-center justify-between">
-          <div class="text-left">
-            <p class="text-sm font-medium text-text-secondary mb-1">Nomor Pendaftaran</p>
-            <p class="text-2xl font-heading font-bold text-brand tracking-wider">{{ displayNomorPendaftaran }}</p>
-          </div>
-          <button @click="copyNomor" class="w-10 h-10 bg-bg-surface hover:bg-border rounded-lg border border-border flex items-center justify-center text-text-secondary hover:text-brand transition-colors" title="Salin Nomor">
-            <Check v-if="isCopied" class="w-5 h-5 text-success" />
-            <Copy v-else class="w-5 h-5" />
-          </button>
-        </div>
+        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Diterima!</h3>
+        <p class="text-text-secondary mb-3">
+          Cek email kamu. Kami sudah mengirim nomor pendaftaran dan NISN untuk cek status pendaftaran.
+        </p>
+        <a
+          href="mailto:info@mdscendekia.or.id?subject=Belum%20Menerima%20Email%20Pendaftaran"
+          class="mb-8 inline-flex text-sm font-normal text-brand transition-colors hover:text-brand-hover"
+        >
+          Belum menerima email?
+        </a>
 
         <div class="w-full flex flex-col gap-3 pb-4">
           <AppButton
             variant="primary"
-            class="w-full"
-            @click="$router.push('/ppdb/cek-status')"
-          >
-            Cek Status Pendaftaran
-          </AppButton>
-          <AppButton
-            variant="secondary"
             class="w-full"
             @click="$router.push('/ppdb')"
           >

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ArrowRight, Instagram, Facebook, Youtube, MapPin, Phone, Mail } from 'lucide-vue-next'
+import type { GalleryItem } from '~/types/adminGallery'
+import { usePublicGalleryService } from '~/services/usePublicGalleryService'
 import { usePublicNewsService } from '~/services/usePublicNewsService'
 
 useHead({
@@ -10,6 +12,7 @@ useHead({
 })
 
 const { listPublicNews } = usePublicNewsService()
+const { listPublicGallery } = usePublicGalleryService()
 
 const { data: publicNewsItems, pending: isNewsLoading } = await useAsyncData('public-news-home', async () => {
   const { data } = await listPublicNews(5)
@@ -20,6 +23,44 @@ const { data: publicNewsItems, pending: isNewsLoading } = await useAsyncData('pu
 
 const visiblePublicNewsItems = computed(() => publicNewsItems.value.slice(0, 4))
 const hasMorePublicNews = computed(() => publicNewsItems.value.length > 4)
+
+const { data: publicGalleryItems, pending: isGalleryLoading } = await useAsyncData('public-gallery-home', async () => {
+  const { data } = await listPublicGallery(12)
+  return data
+}, {
+  default: () => []
+})
+
+const activeGalleryIndex = ref(-1)
+const galleryFallbackItems: GalleryItem[] = [
+  {
+    id: 'fallback-1',
+    nama: 'Galeri Lingkungan',
+    deskripsi: '',
+    gambar: '/images/beranda.jpg',
+    isUtama: true,
+    urutan: 1,
+    createdAt: '',
+    updatedAt: ''
+  }
+]
+
+const displayGalleryItems = computed(() => publicGalleryItems.value.length ? publicGalleryItems.value : galleryFallbackItems)
+const primaryGalleryIndex = computed(() => 0)
+const activeGalleryItem = computed(() => {
+  if (activeGalleryIndex.value >= 0) return displayGalleryItems.value[activeGalleryIndex.value] || displayGalleryItems.value[primaryGalleryIndex.value]
+  return displayGalleryItems.value[primaryGalleryIndex.value] || displayGalleryItems.value[0]
+})
+const squareGalleryItems = computed(() => displayGalleryItems.value.filter(item => item.id !== activeGalleryItem.value?.id))
+
+const setActiveGallery = (item: GalleryItem) => {
+  const nextIndex = displayGalleryItems.value.findIndex(galleryItem => galleryItem.id === item.id)
+  if (nextIndex >= 0) activeGalleryIndex.value = nextIndex
+}
+
+watch(publicGalleryItems, () => {
+  activeGalleryIndex.value = -1
+})
 
 const formatNewsDate = (date: string) => {
   if (!date) return ''
@@ -139,7 +180,7 @@ const formatNewsDate = (date: string) => {
         </div>
 
         <!-- Card -->
-        <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-start overflow-hidden rounded-[24px] border border-border-soft bg-[#FFFFFF] px-[40px] pt-[40px] text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
+        <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-[24px] border border-border-soft bg-[#FFFFFF] px-[40px] text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
           <!-- Card Background -->
           <img src="/images/cardgradasi.png" alt="Card Background" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
           
@@ -227,8 +268,16 @@ const formatNewsDate = (date: string) => {
         <div class="flex w-full items-center gap-[24px]">
           <!-- Kolom Kiri: Gambar -->
           <div class="h-[342px] w-[707px] flex-shrink-0 overflow-hidden rounded-[24px] bg-gray-200">
-            <!-- Menggunakan placeholder sementara, Anda bisa ganti src sesuai file asli -->
-            <img src="/images/beranda.jpg" alt="Galeri Lingkungan" class="h-full w-full object-cover" />
+            <div
+              v-if="isGalleryLoading"
+              class="h-full w-full animate-pulse bg-[#E5E7EB]"
+            ></div>
+            <img
+              v-else
+              :src="activeGalleryItem?.gambar || '/images/beranda.jpg'"
+              :alt="activeGalleryItem?.nama || 'Galeri Lingkungan'"
+              class="h-full w-full object-cover"
+            />
           </div>
           
           <!-- Kolom Kanan: Teks -->
@@ -239,19 +288,36 @@ const formatNewsDate = (date: string) => {
           </div>
         </div>
 
-        <!-- Baris Kedua: 4 Foto Grid -->
-        <div class="mt-[24px] grid w-full grid-cols-4 gap-[24px]">
-          <div class="h-[342px] w-full overflow-hidden rounded-[24px] bg-gray-200">
-            <img src="/images/beranda.jpg" alt="Galeri Lingkungan 1" class="h-full w-full object-cover" />
-          </div>
-          <div class="h-[342px] w-full overflow-hidden rounded-[24px] bg-gray-200">
-            <img src="/images/beranda.jpg" alt="Galeri Lingkungan 2" class="h-full w-full object-cover" />
-          </div>
-          <div class="h-[342px] w-full overflow-hidden rounded-[24px] bg-gray-200">
-            <img src="/images/beranda.jpg" alt="Galeri Lingkungan 3" class="h-full w-full object-cover" />
-          </div>
-          <div class="h-[342px] w-full overflow-hidden rounded-[24px] bg-gray-200">
-            <img src="/images/beranda.jpg" alt="Galeri Lingkungan 4" class="h-full w-full object-cover" />
+        <!-- Baris Kedua: Carousel Foto Kecil -->
+        <div class="mt-[24px] w-full overflow-hidden">
+          <div class="gallery-swipe-track flex gap-[24px] overflow-x-auto scroll-smooth pb-1">
+            <template v-if="isGalleryLoading">
+              <div
+                v-for="index in 3"
+                :key="`gallery-skeleton-${index}`"
+                class="aspect-square h-[341px] w-[341px] flex-none animate-pulse overflow-hidden rounded-[24px] bg-[#E5E7EB]"
+              ></div>
+            </template>
+
+            <button
+              v-for="item in squareGalleryItems"
+              v-else
+              :key="item.id"
+              type="button"
+              class="group relative aspect-square h-[341px] w-[341px] flex-none snap-start overflow-hidden rounded-[24px] bg-gray-200 text-left"
+              :aria-label="`Tampilkan ${item.nama}`"
+              @click="setActiveGallery(item)"
+            >
+              <img
+                :src="item.gambar || '/images/beranda.jpg'"
+                :alt="item.nama"
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <span
+                class="absolute inset-0 border-[3px] border-transparent transition-colors"
+                :class="activeGalleryItem?.id === item.id ? 'border-brand' : 'group-hover:border-white/70'"
+              ></span>
+            </button>
           </div>
         </div>
       </div>
@@ -349,4 +415,13 @@ const formatNewsDate = (date: string) => {
 </template>
 
 <style scoped>
+.gallery-swipe-track {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gallery-swipe-track::-webkit-scrollbar {
+  display: none;
+}
 </style>
