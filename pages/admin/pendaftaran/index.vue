@@ -784,10 +784,15 @@ watch(totalPages, value => {
       >
         <aside class="relative z-[40] ml-auto flex h-full w-[var(--detail-drawer-width)] flex-col overflow-hidden border-l-2 border-border bg-bg-base shadow-[rgba(0,0,0,0.08)_-12px_0_32px_0]">
 
+          <!-- ═══════════════════════════════════════════════════
+               ZONE 1 · STICKY IDENTITY HEADER
+               ═══════════════════════════════════════════════════ -->
           <div class="sticky top-0 z-20 shrink-0 bg-bg-surface shadow-sm">
 
+            <!-- Row 1: Close + Photo + Identity + Status -->
             <div class="flex items-start justify-between gap-5 border-b border-border px-8 py-5">
               <div class="flex min-w-0 items-start gap-5">
+                <!-- Close button -->
                 <button
                   type="button"
                   class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
@@ -797,6 +802,7 @@ watch(totalPages, value => {
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
 
+                <!-- Photo 3x4 -->
                 <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
                   <img
                     v-if="selectedItem.fotoUrl"
@@ -850,6 +856,7 @@ watch(totalPages, value => {
               </div>
             </div>
 
+            <!-- Row 2: Tab bar (full-width, underline style) -->
             <div class="flex items-center bg-bg-base px-8">
               <button
                 v-for="tab in detailTabs"
@@ -866,9 +873,13 @@ watch(totalPages, value => {
             </div>
           </div>
 
+          <!-- ═══════════════════════════════════════════════════
+               ZONE 2 · SCROLLABLE CONTENT AREA
+               ═══════════════════════════════════════════════════ -->
           <main class="min-h-0 grow overflow-y-auto">
             <div class="mx-auto w-full max-w-5xl px-8 py-6">
 
+              <!-- ── Tab: Data Diri ── -->
               <div v-if="activeTab === 'diri'" class="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-start gap-4">
                 <section
                   v-for="section in fieldSections"
@@ -894,6 +905,7 @@ watch(totalPages, value => {
                 </section>
               </div>
 
+              <!-- ── Tab: Orang Tua ── -->
               <div v-else-if="activeTab === 'ortu' && parentSections.length" class="grid grid-cols-2 items-start gap-4">
                 <section
                   v-for="section in parentSections"
@@ -917,6 +929,7 @@ watch(totalPages, value => {
                 </section>
               </div>
 
+              <!-- Empty state orang tua -->
               <div v-else-if="activeTab === 'ortu'" class="flex min-h-[360px] items-center justify-center rounded-2xl border border-dashed border-border bg-bg-surface">
                 <AppEmptyState
                   title="Data orang tua belum tersedia"
@@ -928,8 +941,10 @@ watch(totalPages, value => {
                 </AppEmptyState>
               </div>
 
+              <!-- ── Tab: Berkas ── -->
               <div v-else class="space-y-4">
                 <div class="overflow-hidden rounded-2xl border border-border bg-bg-surface">
+                  <!-- Card header -->
                   <div class="flex items-center justify-between gap-4 border-b border-border bg-bg-base px-6 py-3">
                     <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">
                       Status saat ini
@@ -942,6 +957,7 @@ watch(totalPages, value => {
                     </span>
                   </div>
 
+                  <!-- Validation action row -->
                   <div class="flex items-center justify-between gap-6 border-b border-border-soft px-6 py-4">
                     <div>
                       <p class="text-sm font-medium text-text-primary">Validasi paket berkas</p>
@@ -991,6 +1007,7 @@ watch(totalPages, value => {
                     </div>
                   </div>
 
+                  <!-- File list -->
                   <div class="divide-y divide-border-soft">
                     <div
                       v-for="file in selectedBerkasFiles"
@@ -1036,6 +1053,9 @@ watch(totalPages, value => {
             </div>
           </main>
 
+          <!-- ═══════════════════════════════════════════════════
+               ZONE 3 · FOOTER ACTION BAR — COLOR-CODED PER STATE
+               ═══════════════════════════════════════════════════ -->
           <footer
             class="shrink-0 border-t-2 px-8 py-4 transition-colors"
             :class="{
@@ -1047,6 +1067,7 @@ watch(totalPages, value => {
           >
             <div class="mx-auto flex max-w-4xl items-center justify-between gap-6">
 
+              <!-- Left: contextual hint -->
               <div>
                 <template v-if="selectedItem.status !== 'pending'">
                   <p class="text-sm font-semibold text-text-primary">
@@ -1085,6 +1106,7 @@ watch(totalPages, value => {
                 </template>
               </div>
 
+              <!-- Right: action buttons -->
               <div class="flex shrink-0 items-center gap-3">
                 <template v-if="selectedItem.status === 'pending' && isBerkasVerified">
                   <AppButton variant="ghost" @click="closeDetail">Tutup</AppButton>

@@ -88,8 +88,8 @@ onBeforeUnmount(() => {
       :aria-controls="`${selectId}-listbox`"
       :class="[
         'flex h-11 w-full items-center justify-between rounded-lg border bg-bg-surface px-4 text-left outline-none transition-colors',
-        error
-          ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
+        error 
+          ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10' 
           : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
         disabled ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100' : 'cursor-pointer hover:bg-bg-base',
         selectedOption ? 'text-text-primary' : 'text-text-secondary'

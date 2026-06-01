@@ -31,6 +31,7 @@ watch(() => props.modelValue, (isOpen) => {
 onMounted(() => {
   if (props.modelValue) document.body.style.overflow = 'hidden'
 
+  // Close on Escape key
   const handleEscape = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && props.modelValue) close()
   }

@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     }
   },
 
+  // Memaksa Nuxt dev berjalan di IPv4 lokal agar tidak stuck/menolak koneksi
   devServer: {
     host: '127.0.0.1',
     port: 3000

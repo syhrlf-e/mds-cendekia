@@ -73,103 +73,148 @@ const formatDateRange = (startDate: string, endDate: string) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#FFFFFF] font-sans">
+  <div class="min-h-screen bg-bg-base font-sans">
     <PublicNavbar />
-    <section class="relative bg-[#FFFFFF] px-6 py-[160px] lg:pt-[200px] lg:pb-[120px]">
-      <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="mb-[24px] flex h-[35px] w-fit px-6 items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent font-heading text-[14px] font-medium text-[#525252] z-20">
-          {{ landingInfo.active_wave.name }}
-        </div>
-        <h1 class="font-heading text-[48px] lg:text-[64px] font-medium leading-[1.1] tracking-tight lg:whitespace-nowrap z-20">
-          <span class="text-[#3B3B3B]">Penerimaan Peserta Didik Baru</span><br/>
-          <span class="text-brand">Tahun {{ academicYear }}</span>
-        </h1>
-        <p class="mt-[24px] mb-[54px] max-w-lg font-sans text-[20px] leading-relaxed text-[#525252]">
-          Membangun generasi cerdas, berakhlak mulia, dan berwawasan global. Mulai perjalanan pendidikan kesetaraan Anda bersama YMDSC hari ini.
-        </p>
+    <section class="relative flex min-h-screen items-center overflow-hidden pb-16 pt-32">
+      <div class="public-navbar-container relative z-10">
+        <div class="max-w-5xl">
+          <h1 class="mb-4 font-heading text-4xl font-extrabold leading-[1.08] text-text-primary md:text-6xl lg:whitespace-nowrap lg:text-7xl">
+            Penerimaan Peserta Didik Baru
+          </h1>
+          <p class="mb-8 font-heading text-3xl font-bold leading-tight text-brand md:text-5xl">
+            {{ academicYear }}
+          </p>
 
-        <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <button
-            :disabled="isDaftarDisabled"
-            @click="$router.push('/ppdb/daftar')"
-            class="flex h-[56px] min-w-[200px] items-center justify-center rounded-full bg-brand px-8 font-heading text-[18px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ daftarLabel }}
-          </button>
-          <button
-            @click="$router.push('/ppdb/cek-status')"
-            class="flex h-[56px] min-w-[200px] items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent px-8 font-heading text-[18px] font-medium text-[#3B3B3B] transition-colors hover:bg-[#F9FAFB]"
-          >
-            Cek Status Pendaftaran
-          </button>
-        </div>
+          <p class="mb-10 max-w-2xl text-base font-medium leading-[1.8] text-text-secondary md:text-lg">
+            Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.
+          </p>
 
-      </div>
-    </section>
-    <section class="bg-[#F9FAFB] px-6 py-[120px] border-t border-[#E5E5E5]">
-      <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-[80px]">
-          <div class="lg:w-1/3">
-            <h2 class="sticky top-[120px] font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
-              Informasi<br/>Pendaftaran.
-            </h2>
-          </div>
-          <div class="lg:w-2/3 flex flex-col gap-16">
-            <div>
-              <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Jadwal & Gelombang</h3>
-              </div>
+          <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <AppButton
+              variant="primary"
+              :disabled="isDaftarDisabled"
+              @click="$router.push('/ppdb/daftar')"
+              class="min-w-44 px-6 py-3.5 text-sm font-semibold shadow-xl shadow-brand/20"
+            >
+              {{ daftarLabel }}
+            </AppButton>
 
-              <div class="flex flex-col gap-6">
-                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <p class="font-heading text-[28px] font-medium text-[#3B3B3B]">{{ wave.name }}</p>
-                  <p class="font-sans text-[18px] text-[#525252] mt-2 sm:mt-0">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
-                </div>
-                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <p class="font-heading text-[24px] font-medium text-[#3B3B3B]">{{ jadwal.label }}</p>
-                  <p class="font-sans text-[18px] text-[#525252] mt-2 sm:mt-0">{{ jadwal.value }}</p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Persyaratan Dokumen</h3>
-              </div>
-              <ul class="flex flex-col gap-6">
-                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-[#E5E5E5] pb-6">
-                  <div class="mt-2 h-3 w-3 rounded-full bg-brand shrink-0"></div>
-                  <span class="font-heading text-[24px] font-medium text-[#3B3B3B]">{{ item }}</span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Rincian Biaya</h3>
-              </div>
-              <div class="flex flex-col gap-6">
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <span class="font-sans text-[20px] text-[#525252]">Biaya Formulir</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
-                </div>
-                <div v-if="landingInfo.active_wave" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <span class="font-sans text-[20px] text-[#525252]">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between pb-2">
-                  <span class="font-sans text-[20px] text-[#525252]">SPP Bulanan</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
-                </div>
-              </div>
-            </div>
-
+            <AppButton
+              variant="secondary"
+              @click="$router.push('/ppdb/cek-status')"
+              class="min-w-52 border-2 bg-bg-surface px-6 py-3.5 text-sm font-semibold transition-colors hover:bg-bg-base hover:text-brand"
+            >
+              Cek Status Pendaftaran
+            </AppButton>
           </div>
         </div>
       </div>
     </section>
-    <PublicFooter />
+
+    <section class="py-16 bg-bg-surface border-y border-border">
+      <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <Calendar class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Jadwal Pendaftaran</h3>
+            </div>
+            <ul class="space-y-4 text-sm md:text-base text-text-secondary">
+              <li v-for="wave in landingInfo.waves" :key="wave.id" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 shrink-0"></span>
+                <span>{{ wave.name }}: <br/><strong class="text-text-primary">{{ formatDateRange(wave.start_date, wave.end_date) }}</strong></span>
+              </li>
+              <li v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-border mt-2 shrink-0"></span>
+                <span>{{ jadwal.label }}: <br/><strong class="text-text-primary">{{ jadwal.value }}</strong></span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <FileText class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Persyaratan</h3>
+            </div>
+            <ul class="space-y-4 text-sm md:text-base text-text-secondary">
+              <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-cta mt-2 shrink-0"></span>
+                <span>{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-bg-base rounded-3xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                <Wallet class="w-7 h-7 text-brand" />
+              </div>
+              <h3 class="text-xl font-heading font-bold text-text-primary">Biaya Pendaftaran</h3>
+            </div>
+            <div class="space-y-4 text-sm md:text-base text-text-secondary">
+              <div class="flex justify-between items-center border-b border-border pb-3">
+                <span>Biaya Formulir</span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
+              </div>
+              <div v-if="landingInfo.active_wave" class="flex justify-between items-center border-b border-border pb-3">
+                <span>Uang Pangkal <br/><span class="text-xs">({{ landingInfo.active_wave.name }})</span></span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-1">
+                <span>SPP Bulanan</span>
+                <span class="font-bold text-text-primary">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="py-16 bg-bg-base">
+      <div class="w-full px-6 md:px-12 lg:px-24 mx-auto max-w-3xl">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+            <Download class="w-6 h-6 text-brand" />
+          </div>
+          <div>
+            <h3 class="text-xl font-heading font-bold text-text-primary">
+              Dokumen & Unduhan
+            </h3>
+            <p class="text-text-secondary text-sm">Download brosur dan berkas panduan pendaftaran.</p>
+          </div>
+        </div>
+
+        <div v-if="documents && documents.length > 0" class="bg-bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
+          <div class="divide-y divide-border">
+            <div
+              v-for="doc in documents"
+              :key="doc.id"
+              class="flex items-center justify-between px-6 py-4 hover:bg-bg-base transition-colors group cursor-pointer"
+            >
+              <span class="text-base font-medium text-text-primary group-hover:text-brand transition-colors">{{ doc.title }}</span>
+              <button
+                class="p-2.5 bg-brand text-white hover:bg-brand-hover rounded-xl transition-colors shrink-0 shadow-sm"
+                title="Download"
+              >
+                <Download class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-12 bg-bg-surface rounded-2xl border-2 border-dashed border-border">
+          <FileText class="w-12 h-12 text-border mx-auto mb-3" />
+          <p class="text-text-secondary font-medium">Belum ada dokumen yang tersedia.</p>
+        </div>
+      </div>
+    </section>
+
   </div>
 </template>

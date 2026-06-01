@@ -148,6 +148,7 @@ const revalidateErroredOrangTuaField = (index: number, field: string) => {
   }
 }
 
+// Sanitization Watchers (Global Form Input Sanitization)
 watch(form, (val) => {
   const fields = val as StringRecord
   setSanitized(fields, 'nama', sanitizeName(val.nama))
@@ -305,9 +306,11 @@ watch(() => form.kelurahan, async (newVal) => {
   }
 })
 
+// Validation Logic
 const validateField = (field: string) => {
   errors[field] = ''
 
+  // Accordion 1
   if (field in form) {
     const val = String(form[field as keyof typeof form]).trim()
     switch (field) {
@@ -378,6 +381,7 @@ const validateField = (field: string) => {
     }
   }
 
+  // Accordion 2
   if (field in formSekolah) {
     const val = String(formSekolah[field as keyof typeof formSekolah]).trim()
     switch (field) {
@@ -457,6 +461,7 @@ const validateOrangTuaField = (index: number, field: string) => {
   }
 }
 
+// Accordion State
 const isAcc1Open = ref(true)
 const isAcc2Open = ref(false)
 const isAcc3Open = ref(false)
@@ -476,6 +481,7 @@ const toggleAccordion = (target: 1 | 2 | 3) => {
   isAcc3Open.value = target === 3 ? willOpen : false
 }
 
+// Computed validity
 const isAcc1Valid = computed(() => {
   const reqFields: (keyof typeof form)[] = [
     'nama', 'nisn', 'nik', 'email', 'no_telepon', 'tanggal_lahir',
@@ -510,6 +516,7 @@ const isAcc3Valid = computed(() => {
   return parentValid && waliValid
 })
 
+// Unlock management (Once unlocked, never locked again based on PRD: "Setelah unlock, accordion tidak bisa dikunci kembali meskipun user edit ulang")
 const acc2UnlockedEver = ref(false)
 watch(isAcc1Valid, (valid) => {
   if (valid && !acc2UnlockedEver.value) {
@@ -526,6 +533,7 @@ watch(isAcc2Valid, (valid) => {
 }, { immediate: true })
 const acc3FinalLock = computed(() => !acc3UnlockedEver.value)
 
+// Phase 21 Logic
 const isAllValid = computed(() => isAcc1Valid.value && isAcc2Valid.value && isAcc3Valid.value)
 const router = useRouter()
 const isLeaveGuardOpen = ref(false)
@@ -587,6 +595,7 @@ const proceedNext = () => {
         <p class="text-text-secondary mt-1">Lengkapi data di bawah ini dengan benar.</p>
       </div>
 
+      <!-- Accordion 1: Data Diri Siswa -->
       <AppAccordion
         title="Data Diri Siswa"
         :isOpen="isAcc1Open"
@@ -658,6 +667,7 @@ const proceedNext = () => {
             <AppInput v-model="form.rw" label="RW" required :error="errors.rw" :sanitizer="(val) => sanitizeDigits(val, 3)" inputmode="numeric" :maxlength="3" placeholder="002" @blur="validateField('rw')" />
           </div>
 
+          <!-- Cascade Dropdowns -->
           <AppSelect v-model="form.provinsi" label="Provinsi" required :options="provinsiOptions" :error="errors.provinsi" @blur="validateField('provinsi')" placeholder="Pilih Provinsi" />
           <AppSelect v-model="form.kabupaten_kota" label="Kota/Kabupaten" required :options="kotaOptions" :disabled="!form.provinsi" :error="errors.kabupaten_kota" @blur="validateField('kabupaten_kota')" placeholder="Pilih Kota/Kabupaten" />
           <AppSelect v-model="form.kecamatan" label="Kecamatan" required :options="kecamatanOptions" :disabled="!form.kabupaten_kota" :error="errors.kecamatan" @blur="validateField('kecamatan')" placeholder="Pilih Kecamatan" />
@@ -680,6 +690,7 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
+      <!-- Accordion 2: Data Asal Sekolah -->
       <AppAccordion
         title="Data Asal Sekolah"
         :isOpen="isAcc2Open"
@@ -701,6 +712,7 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
+      <!-- Accordion 3: Data Orang Tua / Wali -->
       <AppAccordion
         title="Data Orang Tua / Wali"
         :isOpen="isAcc3Open"
@@ -711,6 +723,7 @@ const proceedNext = () => {
         @toggle="toggleAccordion(3)"
       >
         <div class="flex flex-col gap-8">
+          <!-- Data Ayah -->
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ayah</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -725,6 +738,7 @@ const proceedNext = () => {
             </div>
           </div>
 
+          <!-- Data Ibu -->
           <div class="flex flex-col gap-4">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Ibu</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -739,6 +753,7 @@ const proceedNext = () => {
             </div>
           </div>
 
+          <!-- Data Wali Checkbox -->
           <div class="flex items-center gap-3 p-4 bg-bg-surface border border-border rounded-xl">
             <input type="checkbox" id="waliCheckbox" v-model="isWaliBerbeda" class="w-5 h-5 rounded border-border text-brand focus:ring-brand accent-brand">
             <label for="waliCheckbox" class="text-text-primary font-medium cursor-pointer select-none">
@@ -746,6 +761,7 @@ const proceedNext = () => {
             </label>
           </div>
 
+          <!-- Data Wali (Conditional) -->
           <div v-if="isWaliBerbeda" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
             <h3 class="text-lg font-heading font-semibold text-brand border-b border-border pb-2">Data Wali</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -764,6 +780,7 @@ const proceedNext = () => {
         </div>
       </AppAccordion>
 
+      <!-- Tombol Navigasi -->
       <div class="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AppButton
           variant="secondary"

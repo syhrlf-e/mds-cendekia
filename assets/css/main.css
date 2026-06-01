@@ -28,25 +28,25 @@
   --color-bg-base: #f9fafb;
   --color-bg-surface: #ffffff;
   --color-bg-parchment: #f5f5f7;
-
+  
   --color-brand: #a7221b;
   --color-brand-hover: #bb221a;
-
+  
   --color-cta: #fbe579;
   --color-cta-hover: #fad74f;
   --color-cta-text: #81201b;
-
+  
   --color-text-primary: #1d1d1f;
   --color-text-secondary: #6b7280;
   --color-text-muted: #86868b;
-
+  
   --color-border: #e5e7eb;
   --color-border-soft: rgba(0, 0, 0, 0.06);
-
+  
   --color-success: #16a34a;
   --color-error: #dc2626;
   --color-warning: #d97706;
-
+  
   --color-status-pending-bg: #fef9c3;
   --color-status-pending-text: #854d0e;
   --color-status-approved-bg: #dcfce7;
@@ -65,29 +65,29 @@
     scrollbar-width: thin;
     scrollbar-color: #d1d5db var(--color-bg-base);
   }
-
+  
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-
+  
   ::-webkit-scrollbar-track {
     background: var(--color-bg-base);
   }
-
+  
   ::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 9999px;
   }
-
+  
   ::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
   }
-
+  
   body {
     @apply bg-bg-base text-text-primary font-body antialiased;
   }
-
+  
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }

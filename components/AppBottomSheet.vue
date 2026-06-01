@@ -41,6 +41,7 @@ onMounted(() => {
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="fixed inset-0 z-50 flex flex-col justify-end">
+        <!-- Backdrop -->
         <div
           class="absolute inset-0 bg-black/50 transition-opacity"
           @click="close"
