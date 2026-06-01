@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ArrowLeft, Menu, X } from 'lucide-vue-next'
-import { onUnmounted, ref, watch, onMounted, nextTick } from 'vue'
+import { Menu, X } from 'lucide-vue-next'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 type NavItem = {
   id: number
@@ -11,53 +11,60 @@ type NavItem = {
 const route = useRoute()
 const router = useRouter()
 const mobileMenuOpen = ref(false)
+const clickedHashLabel = ref<string | null>(null)
 
 const menuItems: NavItem[] = [
   { id: 1, label: 'Beranda', to: '/' },
-  { id: 2, label: 'Profil', to: '/profil-sekolah' },
-  { id: 3, label: 'Galeri', to: '#galeri' },
-  { id: 4, label: 'Berita', to: '#berita' },
+  { id: 2, label: 'Galeri', to: '#galeri' },
+  { id: 3, label: 'Berita', to: '#berita' },
+  { id: 4, label: 'Profil', to: '/profil-sekolah' },
   { id: 5, label: 'PPDB', to: '/ppdb' }
 ]
 
-// Active menu dikelola manual agar bisa diupdate saat klik hash tanpa Vue Router
-const activeMenuLabel = ref('Beranda')
+const getRouteActiveLabel = () => {
+  if (route.path.startsWith('/ppdb')) return 'PPDB'
+  if (route.path.startsWith('/profil-sekolah')) return 'Profil'
 
-// Setel active berdasarkan route path saat mount/navigasi
-const setActiveFromRoute = () => {
-  if (route.path === '/ppdb') {
-    activeMenuLabel.value = 'PPDB'
-  } else if (route.path === '/profil-sekolah') {
-    activeMenuLabel.value = 'Profil'
-  } else if (route.path === '/') {
+  if (route.path === '/') {
+    if (clickedHashLabel.value && route.hash) return clickedHashLabel.value
+    return 'Beranda'
+  }
+
+  return 'Beranda'
+}
+
+const activeMenuLabel = ref(getRouteActiveLabel())
+let isScrollListenerActive = false
+
+const setActiveFromScroll = () => {
+  if (!import.meta.client || route.path !== '/') return
+
+  const activationLine = window.scrollY + window.innerHeight * 0.42
+  const galeri = document.getElementById('galeri')
+  const berita = document.getElementById('berita')
+  const galeriTop = galeri ? galeri.getBoundingClientRect().top + window.scrollY : Number.POSITIVE_INFINITY
+  const beritaTop = berita ? berita.getBoundingClientRect().top + window.scrollY : Number.POSITIVE_INFINITY
+
+  if (activationLine >= beritaTop) {
+    activeMenuLabel.value = 'Berita'
+  } else if (activationLine >= galeriTop) {
+    activeMenuLabel.value = 'Galeri'
+  } else {
     activeMenuLabel.value = 'Beranda'
   }
 }
 
-// IntersectionObserver: auto-detect seksi yang sedang di viewport
-let observer: IntersectionObserver | null = null
+const activateScrollListener = () => {
+  if (!import.meta.client || isScrollListenerActive) return
+  window.addEventListener('scroll', setActiveFromScroll, { passive: true })
+  isScrollListenerActive = true
+  setActiveFromScroll()
+}
 
-const setupObserver = () => {
-  if (!import.meta.client) return
-  const sections = ['profil', 'galeri', 'berita']
-  const threshold = 0.3
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const matched = menuItems.find(m => m.to === `#${entry.target.id}`)
-          if (matched) activeMenuLabel.value = matched.label
-        }
-      })
-    },
-    { threshold }
-  )
-
-  sections.forEach((id) => {
-    const el = document.getElementById(id)
-    if (el) observer!.observe(el)
-  })
+const deactivateScrollListener = () => {
+  if (!import.meta.client || !isScrollListenerActive) return
+  window.removeEventListener('scroll', setActiveFromScroll)
+  isScrollListenerActive = false
 }
 
 const itemRefs = ref<HTMLElement[]>([])
@@ -79,10 +86,48 @@ const updateIndicator = async () => {
   }
 }
 
-onMounted(() => {
-  setActiveFromRoute()
+const syncActiveFromRoute = async () => {
+  activeMenuLabel.value = getRouteActiveLabel()
+  await nextTick()
+
+  if (route.path === '/') {
+    activateScrollListener()
+  } else {
+    deactivateScrollListener()
+  }
+
   updateIndicator()
-  setupObserver()
+}
+
+const scrollToPosition = (targetTop: number) => {
+  if (!import.meta.client) return
+  window.scrollTo({ top: targetTop, left: 0, behavior: 'auto' })
+}
+
+const scrollToTop = () => {
+  scrollToPosition(0)
+}
+
+const scrollToTarget = async (hash: string) => {
+  if (!import.meta.client) return
+  await nextTick()
+  const target = document.querySelector(hash)
+  if (!target) return
+
+  const navbarOffset = 80
+  const targetTop = Math.max(0, target.getBoundingClientRect().top + window.scrollY - navbarOffset)
+  scrollToPosition(targetTop)
+  history.replaceState(null, '', hash)
+}
+
+onMounted(async () => {
+  if (route.path === '/' && route.hash) {
+    await router.replace('/')
+    scrollToTop()
+  }
+
+  await syncActiveFromRoute()
+  updateIndicator()
   window.addEventListener('resize', updateIndicator)
 })
 
@@ -90,8 +135,16 @@ watch(activeMenuLabel, () => {
   updateIndicator()
 })
 
-watch(() => route.path, () => {
-  setActiveFromRoute()
+watch(() => route.fullPath, async () => {
+  if (route.path !== '/' || !route.hash) {
+    clickedHashLabel.value = null
+  }
+
+  await syncActiveFromRoute()
+  if (route.path === '/' && route.hash && clickedHashLabel.value) {
+    scrollToTarget(route.hash)
+  }
+
   mobileMenuOpen.value = false
 })
 
@@ -104,28 +157,54 @@ onUnmounted(() => {
   if (import.meta.client) {
     document.body.style.overflow = ''
     window.removeEventListener('resize', updateIndicator)
-    observer?.disconnect()
+    deactivateScrollListener()
   }
 })
 
-const goToHome = () => {
+const goToHome = async () => {
+  clickedHashLabel.value = null
   activeMenuLabel.value = 'Beranda'
-  router.push('/')
+  await router.push('/')
+  await nextTick()
+  scrollToTop()
+  updateIndicator()
 }
 
-const handleNavClick = (item: NavItem) => {
+const handleNavClick = async (item: NavItem) => {
   mobileMenuOpen.value = false
+
+  if (item.to === '/') {
+    clickedHashLabel.value = null
+    activeMenuLabel.value = 'Beranda'
+    await router.push('/')
+    await nextTick()
+    scrollToTop()
+    updateIndicator()
+    return
+  }
+
   if (item.to.startsWith('#')) {
-    if (!import.meta.client) return
-    // Set active langsung saat klik, jangan tunggu observer
+    clickedHashLabel.value = item.label
     activeMenuLabel.value = item.label
-    const target = document.querySelector(item.to)
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      history.pushState(null, '', item.to)
+
+    if (route.path !== '/') {
+      await router.push('/')
+      await nextTick()
+      activeMenuLabel.value = item.label
+      scrollToTarget(item.to)
+      return
     }
-  } else {
+
+    scrollToTarget(item.to)
+    return
+  }
+
+  clickedHashLabel.value = null
+
+  if (route.path !== item.to) {
     router.push(item.to)
+  } else {
+    syncActiveFromRoute()
   }
 }
 
@@ -138,8 +217,8 @@ const handlePendaftaran = () => {
 
 <template>
   <nav class="fixed left-0 right-0 top-0 z-[60] bg-white/80 backdrop-blur-md transition-all duration-300">
-      <div
-        class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
+    <div
+      class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
       :class="mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
       @click="mobileMenuOpen = false"
     />
@@ -151,7 +230,7 @@ const handlePendaftaran = () => {
       >
         <div class="flex items-center justify-between">
           <!-- Logo -->
-          <button type="button" class="group flex items-center gap-3" aria-label="Ke beranda" @click="goToHome">
+          <button type="button" class="group flex cursor-pointer items-center gap-3" aria-label="Ke beranda" @click="goToHome">
             <img
               src="/images/logo-mds-main.png"
               alt="Logo MDS Cendekia"
@@ -174,12 +253,12 @@ const handlePendaftaran = () => {
                   ? 'text-brand'
                   : 'text-[#3A3A3A] hover:text-brand'
               "
+              :aria-current="activeMenuLabel === item.label ? 'page' : undefined"
               @click="handleNavClick(item)"
             >
               <span>{{ item.label }}</span>
             </button>
-            
-            <!-- Magic Sliding Indicator -->
+
             <span
               class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
               :style="indicatorStyle"
@@ -190,7 +269,7 @@ const handlePendaftaran = () => {
           <div class="flex items-center gap-3">
             <button
               type="button"
-              class="hidden items-center justify-center rounded-full border border-brand bg-[#FFFFFF] px-6 py-2.5 text-[16px] font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
+              class="hidden cursor-pointer items-center justify-center rounded-full border border-brand bg-[#FFFFFF] px-6 py-2.5 text-[16px] font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
               @click="handlePendaftaran"
             >
               <span>Daftarkan Diri Kamu</span>
@@ -200,7 +279,7 @@ const handlePendaftaran = () => {
             <div class="flex items-center gap-3 lg:hidden">
               <button
                 type="button"
-                class="rounded-full p-2 transition-transform duration-200 hover:bg-primary-50"
+                class="cursor-pointer rounded-full p-2 transition-transform duration-200 hover:bg-primary-50"
                 aria-label="Toggle menu"
                 @click="mobileMenuOpen = !mobileMenuOpen"
               >
@@ -219,7 +298,7 @@ const handlePendaftaran = () => {
               :key="item.id"
               type="button"
               :style="{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : '0ms' }"
-              class="group flex w-full translate-y-2 items-center justify-between rounded-xl px-4 py-3 text-left opacity-0 transition-all duration-300"
+              class="group flex w-full translate-y-2 cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left opacity-0 transition-all duration-300"
               :class="[
                 activeMenuLabel === item.label
                   ? 'bg-primary-50 text-brand'
@@ -229,14 +308,14 @@ const handlePendaftaran = () => {
               @click="handleNavClick(item)"
             >
               <span class="font-medium font-heading text-[16px] transition-transform group-hover:translate-x-1">{{ item.label }}</span>
-              <ArrowLeft v-if="activeMenuLabel === item.label" class="h-5 w-5 animate-bounce-x text-brand" />
+              <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
             </button>
           </div>
 
           <div class="border-t border-border-soft pb-2 pt-4">
             <button
               type="button"
-              class="flex w-full translate-y-2 items-center justify-center gap-2 rounded-full border border-brand bg-[#FFFFFF] px-4 py-3 font-medium font-heading text-[16px] text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
+              class="flex w-full translate-y-2 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-[#FFFFFF] px-4 py-3 font-medium font-heading text-[16px] text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
               :class="mobileMenuOpen ? 'animate-slide-in' : ''"
               style="transition-delay: 300ms"
               @click="handlePendaftaran"
@@ -264,19 +343,5 @@ const handlePendaftaran = () => {
 
 .animate-slide-in {
   animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes bounce-x {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-4px);
-  }
-}
-
-.animate-bounce-x {
-  animation: bounce-x 1s ease-in-out infinite;
 }
 </style>

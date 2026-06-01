@@ -1,173 +1,492 @@
 <script setup lang="ts">
 import {
+  ChevronLeft,
+  ChevronRight,
+  Edit2,
   Eye,
-  FileText,
   Image as ImageIcon,
-  Newspaper,
-  Pencil,
   Plus,
+  Save,
   Search,
   Trash2,
-  UploadCloud,
-  XCircle
+  Upload,
+  X,
 } from 'lucide-vue-next'
 
-type NewsStatus = 'draft' | 'published' | 'archived'
 type NewsItem = {
   id: string
   title: string
   slug: string
   excerpt: string
+  content: string
   category: string
-  status: NewsStatus
-  publishDate: string
-  imageUrl: string
+  tags: string
+  author: string
+  image: string
+  created_at: string
+  published: boolean
+  is_featured: boolean
+  views: number
+}
+
+type NewsForm = {
+  title: string
+  content: string
+  category: string
+  tags: string
+  image: File | null
 }
 
 definePageMeta({
   layout: 'admin',
-  middleware: ['admin-auth']
+  middleware: ['admin-auth'],
 })
 
-useHead({ title: 'Berita | MDS Cendekia' })
+useHead({
+  title: 'Berita | MDS Cendekia',
+})
 
 const { addToast } = useToast()
+const { get, post, put, delete: deleteRequest } = useApi()
 
-const newsItems = ref<NewsItem[]>([])
+const items = ref<NewsItem[]>([])
+const loading = ref(false)
+const saving = ref(false)
+const error = ref('')
+const pageMode = ref<'list' | 'form'>('list')
+const isEdit = ref(false)
+const editingId = ref('')
 const searchQuery = ref('')
-const statusFilter = ref<NewsStatus | ''>('')
-const isEditorOpen = ref(false)
-const editingItem = ref<NewsItem | null>(null)
-const form = reactive({
+const filterCategory = ref('')
+const filterStatus = ref('')
+const currentPage = ref(1)
+const perPage = ref(10)
+const isPreviewExpanded = ref(false)
+const imagePreview = ref('')
+const fileInput = ref<HTMLInputElement | null>(null)
+
+let previousBodyOverflow = ''
+let previousHtmlOverflow = ''
+
+const form = ref<NewsForm>({
   title: '',
-  slug: '',
-  excerpt: '',
-  category: '',
-  status: 'draft' as NewsStatus,
-  publishDate: '',
-  imageUrl: ''
+  content: '',
+  category: 'other',
+  tags: '',
+  image: null,
 })
 
-const statusOptions = [
+const statusFilterOptions = [
   { label: 'Semua Status', value: '' },
-  { label: 'Dipublikasikan', value: 'published' },
-  { label: 'Draft', value: 'draft' },
-  { label: 'Diarsipkan', value: 'archived' }
+  { label: 'Terpublikasi', value: 'published' },
+  { label: 'Draf', value: 'draft' },
 ]
 
-const formStatusOptions = statusOptions.slice(1)
-
-const filteredNews = computed(() => {
+const filteredItems = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
 
-  return newsItems.value.filter((item) => {
+  return items.value.filter((item) => {
     const matchesSearch = !query || [
       item.title,
+      item.slug,
       item.excerpt,
+      item.content,
       item.category,
-      item.slug
+      item.tags,
+      item.author,
     ].some(value => value.toLowerCase().includes(query))
-    const matchesStatus = !statusFilter.value || item.status === statusFilter.value
+    const matchesCategory = !filterCategory.value || item.category === filterCategory.value
+    const matchesStatus = !filterStatus.value || (filterStatus.value === 'published' ? item.published : !item.published)
 
-    return matchesSearch && matchesStatus
+    return matchesSearch && matchesCategory && matchesStatus
   })
 })
 
-const statusLabel = (status: NewsStatus) => {
-  if (status === 'published') return 'Dipublikasikan'
-  if (status === 'archived') return 'Diarsipkan'
-  return 'Draft'
+const lastPage = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / perPage.value)))
+const from = computed(() => filteredItems.value.length ? (currentPage.value - 1) * perPage.value + 1 : 0)
+const to = computed(() => Math.min(currentPage.value * perPage.value, filteredItems.value.length))
+const pagedItems = computed(() => filteredItems.value.slice(from.value - 1, to.value))
+
+const generateSlug = (text: string) => text
+  .toLowerCase()
+  .replace(/[^a-z0-9\s-]/g, '')
+  .replace(/\s+/g, '-')
+  .replace(/-+/g, '-')
+  .trim()
+
+const normalizeText = (value: unknown) => String(value || '').trim()
+
+const normalizeUploadFileName = (name: string) => {
+  const extension = name.includes('.') ? name.split('.').pop()?.toLowerCase() : ''
+  const baseName = name
+    .replace(/\.[^/.]+$/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48) || 'berita'
+
+  return `${baseName}-${Date.now()}${extension ? `.${extension}` : ''}`
 }
 
-const statusClass = (status: NewsStatus) => {
-  if (status === 'published') return 'border-status-approved-text/20 bg-status-approved-bg text-status-approved-text'
-  if (status === 'archived') return 'border-border-soft bg-bg-base text-text-secondary'
-  return 'border-status-pending-text/20 bg-status-pending-bg text-status-pending-text'
+const getFileExtensionFromType = (type: string) => {
+  if (type.includes('png')) return 'png'
+  if (type.includes('webp')) return 'webp'
+  if (type.includes('gif')) return 'gif'
+  return 'jpg'
 }
 
-const formatDate = (date: string) => {
-  if (!date) return '-'
-  const parsedDate = new Date(date)
-  if (Number.isNaN(parsedDate.getTime())) return date
+const getApiErrorMessage = (error: any, fallback: string) => {
+  return error?.data?.message || error?.response?._data?.message || error?.message || fallback
+}
 
-  return new Intl.DateTimeFormat('id-ID', {
+const createFileFromCurrentImage = async () => {
+  if (!import.meta.client || !isEdit.value || form.value.image || !imagePreview.value || imagePreview.value.startsWith('blob:')) {
+    return null
+  }
+
+  const response = await fetch(imagePreview.value, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) return null
+
+  const blob = await response.blob()
+  const extension = getFileExtensionFromType(blob.type)
+  const filename = normalizeUploadFileName(`berita-${editingId.value}.${extension}`)
+
+  return new File([blob], filename, {
+    type: blob.type || 'image/jpeg',
+  })
+}
+
+const normalizeAssetPath = (path: string) => path
+  .split('/')
+  .map(segment => encodeURIComponent(segment))
+  .join('/')
+
+const normalizeAssetUrl = (url: unknown) => {
+  const rawUrl = normalizeText(url)
+
+  if (!rawUrl) return ''
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
+
+  const config = useRuntimeConfig()
+  const baseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
+  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
+
+  return `${baseUrl}${normalizeAssetPath(path)}`
+}
+
+const getCategoryClass = (category: string) => {
+  const normalized = category.toLowerCase()
+
+  if (normalized === 'event') return 'bg-primary-50 text-brand'
+  if (normalized === 'achievement') return 'bg-status-approved-bg text-status-approved-text'
+  if (normalized === 'announcement') return 'bg-status-pending-bg text-status-pending-text'
+
+  return 'bg-bg-base text-text-secondary'
+}
+
+const getCategoryLabel = (category: string) => {
+  const labels: Record<string, string> = {
+    event: 'Event',
+    achievement: 'Prestasi',
+    announcement: 'Pengumuman',
+    other: 'Lainnya',
+  }
+
+  return labels[category] || category || 'Lainnya'
+}
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
+
+  const date = new Date(dateString)
+
+  if (Number.isNaN(date.getTime())) return '-'
+
+  return date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
-    year: 'numeric'
-  }).format(parsedDate)
+    year: 'numeric',
+  })
 }
 
-const buildSlug = (value: string) => value
-  .toLowerCase()
-  .trim()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-|-$/g, '')
+const mapNewsItem = (item: any): NewsItem | null => {
+  const id = normalizeText(item.id || item.berita_id)
+  const title = normalizeText(item.judul || item.title)
+  const content = normalizeText(item.isi || item.content || item.excerpt)
+
+  if (!id || !title) return null
+
+  return {
+    id,
+    title,
+    slug: generateSlug(title),
+    excerpt: content.slice(0, 160),
+    content,
+    category: normalizeText(item.kategori || item.category || 'other'),
+    tags: normalizeText(item.tags),
+    author: normalizeText(item.penulis?.biodata?.nama || item.penulis?.username || item.author),
+    image: normalizeAssetUrl(item.gambar || item.image || item.imageUrl || item.image_url),
+    created_at: normalizeText(item.created_at),
+    published: true,
+    is_featured: false,
+    views: Number(item.views || 0),
+  }
+}
+
+const readRows = (payload: any) => {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.data)) return payload.data
+  if (Array.isArray(payload?.berita)) return payload.berita
+
+  return []
+}
+
+const fetchNews = async () => {
+  loading.value = true
+  error.value = ''
+
+  const { data, error: fetchError } = await get<any>('/api/berita/all', {
+    query: { limit: '100' },
+    showErrorToast: false,
+  })
+
+  if (fetchError) {
+    error.value = 'Gagal memuat data berita'
+    loading.value = false
+    return
+  }
+
+  items.value = readRows(data)
+    .map(mapNewsItem)
+    .filter((item: NewsItem | null): item is NewsItem => Boolean(item))
+  loading.value = false
+}
 
 const resetForm = () => {
-  editingItem.value = null
-  Object.assign(form, {
+  isEdit.value = false
+  editingId.value = ''
+  isPreviewExpanded.value = false
+  imagePreview.value = ''
+  form.value = {
     title: '',
-    slug: '',
-    excerpt: '',
-    category: '',
-    status: 'draft' as NewsStatus,
-    publishDate: '',
-    imageUrl: ''
-  })
+    content: '',
+    category: 'other',
+    tags: '',
+    image: null,
+  }
 }
 
 const openCreate = () => {
   resetForm()
-  isEditorOpen.value = true
+  pageMode.value = 'form'
 }
 
 const openEdit = (item: NewsItem) => {
-  editingItem.value = item
-  Object.assign(form, {
+  isEdit.value = true
+  editingId.value = item.id
+  imagePreview.value = item.image
+  form.value = {
     title: item.title,
-    slug: item.slug,
-    excerpt: item.excerpt,
+    content: item.content,
     category: item.category,
-    status: item.status,
-    publishDate: item.publishDate,
-    imageUrl: item.imageUrl
-  })
-  isEditorOpen.value = true
+    tags: item.tags,
+    image: null,
+  }
+  pageMode.value = 'form'
 }
 
-watch(() => form.title, (title) => {
-  if (!editingItem.value) form.slug = buildSlug(title)
+const backToList = () => {
+  resetForm()
+  pageMode.value = 'list'
+}
+
+const triggerFileInput = () => {
+  fileInput.value?.click()
+}
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  if (!file.type.startsWith('image/')) {
+    addToast('Pilih file gambar yang valid.', 'warning')
+    return
+  }
+
+  if (file.size > 4 * 1024 * 1024) {
+    addToast('Ukuran file maksimal 4MB.', 'warning')
+    return
+  }
+
+  if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
+
+  form.value.image = file
+  imagePreview.value = URL.createObjectURL(file)
+  target.value = ''
+}
+
+const removeImage = () => {
+  if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
+
+  imagePreview.value = ''
+  form.value.image = null
+}
+
+const previewNews = (item: NewsItem) => {
+  navigateTo(`/berita/${item.id}`, {
+    open: {
+      target: '_blank',
+    },
+  })
+}
+
+const buildNewsFormData = async () => {
+  const formData = new FormData()
+  const currentImageFile = await createFileFromCurrentImage()
+  const imageFile = form.value.image || currentImageFile
+
+  formData.append('id_penulis', '1')
+  formData.append('judul', form.value.title.trim())
+  formData.append('isi', form.value.content.trim())
+  formData.append('kategori', form.value.category.trim())
+  formData.append('tags', form.value.tags.trim())
+
+  if (imageFile) {
+    formData.append('gambar', imageFile, normalizeUploadFileName(imageFile.name))
+  }
+
+  return formData
+}
+
+const deleteNews = async (item: NewsItem) => {
+  if (!import.meta.client) return
+
+  const confirmed = window.confirm(`Hapus berita "${item.title}"?`)
+
+  if (!confirmed) return
+
+  const { error: deleteError } = await deleteRequest(`/api/berita/${item.id}`, {
+    showErrorToast: false,
+  })
+
+  if (deleteError) {
+    addToast('Berita belum berhasil dihapus.', 'error')
+    return
+  }
+
+  addToast('Berita berhasil dihapus.', 'success')
+  await fetchNews()
+}
+
+const submitForm = async () => {
+  if (!form.value.title.trim() || !form.value.content.trim() || !form.value.category.trim() || !form.value.tags.trim()) {
+    addToast('Lengkapi judul, konten, kategori, dan tags berita.', 'warning')
+    return
+  }
+
+  if (!isEdit.value && !form.value.image) {
+    addToast('Lengkapi gambar berita.', 'warning')
+    return
+  }
+
+  if (isEdit.value && !imagePreview.value) {
+    addToast('Pilih gambar baru atau gunakan gambar yang sudah ada.', 'warning')
+    return
+  }
+
+  const formData = await buildNewsFormData()
+
+  if (isEdit.value && !formData.has('gambar')) {
+    addToast('Gambar lama belum bisa diproses. Pilih gambar baru untuk memperbarui berita.', 'warning')
+    return
+  }
+
+  saving.value = true
+
+  const { error: submitError } = isEdit.value
+    ? await put(`/api/berita/update/${editingId.value}`, formData, { showErrorToast: false })
+    : await post('/api/berita/create', formData, { showErrorToast: false })
+
+  saving.value = false
+
+  if (submitError) {
+    addToast(getApiErrorMessage(submitError, 'Berita belum berhasil disimpan.'), 'error')
+    return
+  }
+
+  addToast(isEdit.value ? 'Berita berhasil diperbarui.' : 'Berita berhasil dibuat.', 'success')
+  backToList()
+  await fetchNews()
+}
+
+const setPageScrollLock = (locked: boolean) => {
+  if (!import.meta.client) return
+
+  if (locked) {
+    previousBodyOverflow = document.body.style.overflow
+    previousHtmlOverflow = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    document.documentElement.classList.add('admin-berita-drawer-open')
+    return
+  }
+
+  document.body.style.overflow = previousBodyOverflow
+  document.documentElement.style.overflow = previousHtmlOverflow
+  document.documentElement.classList.remove('admin-berita-drawer-open')
+}
+
+watch([searchQuery, filterCategory, filterStatus], () => {
+  currentPage.value = 1
 })
 
-const submitForm = () => {
-  addToast('Endpoint berita belum tersedia di API.', 'warning')
-}
+watch(pageMode, value => {
+  setPageScrollLock(value === 'form')
+})
+
+onMounted(fetchNews)
+
+onBeforeUnmount(() => {
+  setPageScrollLock(false)
+
+  if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
+})
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col px-6">
+  <div class="relative flex h-full min-h-0 flex-col overflow-hidden">
     <div class="flex min-h-0 flex-1 flex-col gap-2">
       <section class="shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
-        <div class="grid grid-cols-[minmax(360px,1fr)_220px_170px] gap-4">
+        <div class="grid grid-cols-[minmax(360px,1fr)_170px_auto_auto] items-center gap-4">
           <div class="relative">
             <Search class="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-text-muted" />
             <input
               v-model="searchQuery"
               type="search"
-              placeholder="Cari judul, kategori, atau slug..."
+              placeholder="Cari judul, kategori, tags, atau penulis..."
               class="h-11 w-full rounded-xl border border-border-soft bg-bg-base py-2.5 pl-10 pr-4 text-sm leading-none text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
             >
           </div>
 
           <div class="relative">
             <AppSelect
-              v-model="statusFilter"
-              :options="statusOptions"
+              v-model="filterStatus"
+              :options="statusFilterOptions"
               placeholder="Semua Status"
             />
           </div>
 
-          <AppButton variant="primary" @click="openCreate">
+          <div class="h-8 w-px bg-border-soft" />
+
+          <AppButton
+            variant="primary"
+            @click="openCreate"
+          >
             <Plus class="mr-2 h-4 w-4" />
             Tambah Berita
           </AppButton>
@@ -176,72 +495,149 @@ const submitForm = () => {
 
       <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface">
         <div class="min-h-0 flex-1 overflow-auto">
-          <table class="w-full min-w-[960px] border-collapse text-left">
+          <table class="w-full border-collapse text-left">
             <thead class="sticky top-0 z-10 bg-bg-base">
               <tr class="h-12 text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                <th class="w-18 px-4">No</th>
-                <th class="min-w-80 px-4">Berita</th>
+                <th class="w-14 px-4">No</th>
+                <th class="min-w-80 px-4">Judul</th>
                 <th class="w-44 px-4">Kategori</th>
-                <th class="w-40 px-4">Status</th>
-                <th class="w-40 px-4">Tanggal Terbit</th>
-                <th class="w-36 px-4 text-center">Aksi</th>
+                <th class="w-40 px-4">Tanggal</th>
+                <th class="w-36 px-4">Status</th>
+                <th class="w-28 px-4 text-center">Views</th>
+                <th class="w-44 px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-soft">
+              <tr v-if="loading">
+                <td colspan="7">
+                  <div class="flex min-h-[420px] items-center justify-center">
+                    <AppEmptyState
+                      title="Memuat data berita"
+                      description="Sebentar, data berita sedang diambil dari server."
+                    >
+                      <template #icon>
+                        <ImageIcon />
+                      </template>
+                    </AppEmptyState>
+                  </div>
+                </td>
+              </tr>
+
+              <tr v-else-if="error">
+                <td colspan="7">
+                  <div class="flex min-h-[420px] items-center justify-center">
+                    <AppEmptyState
+                      title="Data berita belum bisa dimuat"
+                      :description="error"
+                    >
+                      <template #icon>
+                        <ImageIcon />
+                      </template>
+                      <template #action>
+                        <AppButton
+                          variant="primary"
+                          @click="fetchNews"
+                        >
+                          Coba Lagi
+                        </AppButton>
+                      </template>
+                    </AppEmptyState>
+                  </div>
+                </td>
+              </tr>
+
               <tr
-                v-for="(item, index) in filteredNews"
-                :key="item.id"
-                class="h-18 text-sm text-text-primary transition-colors hover:bg-bg-base"
+                v-for="(berita, index) in loading || error ? [] : pagedItems"
+                :key="berita.id"
+                class="h-[60px] text-sm text-text-primary transition-colors hover:bg-bg-base"
               >
-                <td class="px-4 text-text-secondary">{{ index + 1 }}</td>
+                <td class="px-4 text-text-secondary">
+                  {{ from + index }}
+                </td>
                 <td class="px-4">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-soft bg-bg-base text-text-muted">
-                      <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.title" class="h-full w-full object-cover">
-                      <ImageIcon v-else class="h-4 w-4" />
-                    </div>
+                    <img
+                      :src="berita.image || '/images/placeholder-news.jpg'"
+                      :alt="berita.title"
+                      class="h-10 w-14 rounded-lg border border-border-soft object-cover"
+                    >
                     <div class="min-w-0">
-                      <p class="truncate font-medium text-text-primary">{{ item.title }}</p>
-                      <p class="mt-1 truncate text-xs text-text-secondary">{{ item.slug }}</p>
+                      <p class="truncate text-text-primary">
+                        {{ berita.title }}
+                      </p>
+                      <p class="mt-1 truncate text-xs text-text-secondary">
+                        {{ berita.slug }}
+                      </p>
                     </div>
                   </div>
                 </td>
-                <td class="px-4 text-text-secondary">{{ item.category || '-' }}</td>
                 <td class="px-4">
-                  <span class="inline-flex rounded-full border px-3 py-1 text-xs font-medium" :class="statusClass(item.status)">
-                    {{ statusLabel(item.status) }}
+                  <span
+                    class="inline-flex items-center rounded-full px-3 py-0.5 text-xs font-normal"
+                    :class="getCategoryClass(berita.category)"
+                  >
+                    {{ getCategoryLabel(berita.category) }}
                   </span>
                 </td>
-                <td class="px-4 text-text-secondary">{{ formatDate(item.publishDate) }}</td>
+                <td class="px-4 text-text-secondary">
+                  {{ formatDate(berita.created_at) }}
+                </td>
                 <td class="px-4">
+                  <span
+                    v-if="berita.published"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-3 py-0.5 text-xs font-normal text-status-approved-text"
+                  >
+                    Published
+                  </span>
+                  <span
+                    v-else
+                    class="inline-flex items-center gap-1.5 rounded-full bg-status-pending-bg px-3 py-0.5 text-xs font-normal text-status-pending-text"
+                  >
+                    Draft
+                  </span>
+                </td>
+                <td class="px-4 text-center text-text-secondary">
+                  {{ berita.views }}
+                </td>
+                <td class="px-4 text-center">
                   <div class="flex items-center justify-center gap-1.5">
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary" aria-label="Lihat berita">
+                    <button
+                      type="button"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-bg-surface hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                      title="Edit"
+                      @click="openEdit(berita)"
+                    >
+                      <Edit2 class="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
+                      title="Preview"
+                      @click="previewNews(berita)"
+                    >
                       <Eye class="h-4 w-4" />
                     </button>
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-bg-surface hover:text-brand" aria-label="Edit berita" @click="openEdit(item)">
-                      <Pencil class="h-4 w-4" />
-                    </button>
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-status-rejected-bg hover:text-error" aria-label="Hapus berita">
+                    <button
+                      type="button"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-status-rejected-bg hover:text-error focus:outline-none focus:ring-2 focus:ring-error/20"
+                      title="Hapus"
+                      @click="deleteNews(berita)"
+                    >
                       <Trash2 class="h-4 w-4" />
                     </button>
                   </div>
                 </td>
               </tr>
-              <tr v-if="filteredNews.length === 0">
-                <td colspan="6">
+
+              <tr v-if="!loading && !error && filteredItems.length === 0">
+                <td colspan="7">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Belum ada berita"
-                      description="Berita yang sudah dibuat akan tampil di tabel ini."
+                      description="Berita yang sudah dibuat akan muncul di sini."
                     >
                       <template #icon>
-                        <Newspaper />
-                      </template>
-                      <template #action>
-                        <AppButton variant="primary" @click="openCreate">
-                          <Plus class="mr-2 h-4 w-4" />
-                          Tambah Berita
-                        </AppButton>
+                        <ImageIcon />
                       </template>
                     </AppEmptyState>
                   </div>
@@ -251,6 +647,14 @@ const submitForm = () => {
           </table>
         </div>
       </section>
+
+      <AppPaginationBar
+        :current-page="currentPage"
+        :last-page="lastPage"
+        :total="filteredItems.length"
+        :disabled="loading || !!error || filteredItems.length === 0"
+        @page-change="currentPage = $event"
+      />
     </div>
 
     <Teleport to="body">
@@ -263,76 +667,271 @@ const submitForm = () => {
         leave-to-class="opacity-0 [&>aside]:translate-x-full"
       >
         <div
-          v-if="isEditorOpen"
-          class="fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-[14px]"
-          @click.self="isEditorOpen = false"
+          v-if="pageMode === 'form'"
+          class="fixed left-0 top-0 z-50 h-[100dvh] w-[calc(100vw+32px)] overflow-hidden bg-black/50"
+          @click.self="backToList"
         >
-          <aside class="ml-auto flex h-full w-[min(720px,calc(100%-320px))] flex-col overflow-hidden border-l-2 border-border bg-bg-base shadow-[rgba(0,0,0,0.08)_-12px_0_32px_0]">
-            <header class="shrink-0 border-b border-border bg-bg-surface px-8 py-5">
-              <div class="flex items-start justify-between gap-6">
-                <div>
-                  <h2 class="font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
-                    {{ editingItem ? 'Edit Berita' : 'Tambah Berita' }}
+          <aside
+            class="font-heading absolute bottom-4 right-8 top-4 z-10 flex rounded-2xl border border-border bg-bg-base shadow-[rgba(0,0,0,0.14)_-16px_0_40px_0] transition-[width] duration-300 ease-out"
+            :class="isPreviewExpanded ? 'w-[980px] max-w-[calc(100vw-64px)]' : 'w-[560px] max-w-[calc(100vw-64px)]'"
+          >
+            <section
+              class="min-h-0 shrink-0 overflow-hidden border-r border-border bg-bg-surface transition-[width,opacity] duration-300 ease-out"
+              :class="isPreviewExpanded ? 'w-[420px] opacity-100' : 'w-0 opacity-0'"
+            >
+              <div class="flex h-[70px] items-center border-b border-border px-6">
+                <h3 class="text-[17px] font-semibold leading-[1.24] text-text-primary">
+                  Preview Berita
+                </h3>
+              </div>
+
+              <div class="h-[calc(100%-70px)] overflow-y-auto p-4">
+                <article class="overflow-hidden rounded-2xl border border-border bg-bg-base">
+                  <div class="relative h-52 bg-bg-parchment">
+                    <img
+                      v-if="imagePreview"
+                      :src="imagePreview"
+                      :alt="form.title || 'Preview'"
+                      class="h-full w-full object-cover"
+                    >
+                    <div
+                      v-else
+                      class="flex h-full items-center justify-center"
+                    >
+                      <Upload class="h-12 w-12 text-text-muted" />
+                    </div>
+
+                    <div class="absolute left-3 top-3">
+                      <span class="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">
+                        {{ getCategoryLabel(form.category) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="p-4">
+                    <h3 class="line-clamp-2 text-lg font-semibold leading-tight text-text-primary">
+                      {{ form.title || 'Judul berita akan muncul di sini...' }}
+                    </h3>
+                    <p class="mt-3 line-clamp-4 text-sm leading-relaxed text-text-secondary">
+                      {{ form.content.substring(0, 180) || 'Konten berita akan muncul di sini...' }}
+                    </p>
+                    <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4 text-xs text-text-muted">
+                      <span>{{ formatDate(new Date().toISOString()) }}</span>
+                      <span v-if="form.tags" class="rounded-full bg-primary-50 px-2.5 py-1 text-brand">
+                        {{ form.tags.split(',')[0]?.trim() }}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="relative flex min-h-0 w-[560px] shrink-0 flex-col bg-bg-base">
+              <button
+                type="button"
+                class="absolute left-0 top-1/2 z-20 flex h-11 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg-surface text-text-secondary shadow-lg transition-colors hover:bg-bg-base hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                :aria-label="isPreviewExpanded ? 'Sembunyikan preview berita' : 'Tampilkan preview berita'"
+                @click="isPreviewExpanded = !isPreviewExpanded"
+              >
+                <ChevronRight
+                  v-if="isPreviewExpanded"
+                  class="h-5 w-5"
+                />
+                <ChevronLeft
+                  v-else
+                  class="h-5 w-5"
+                />
+              </button>
+
+              <header class="flex h-[70px] shrink-0 items-center border-b border-border bg-bg-surface px-8">
+                <div class="flex w-full items-center justify-between gap-6">
+                  <h2 class="text-[22px] font-bold leading-[1.18] text-text-primary">
+                    {{ isEdit ? 'Edit Berita' : 'Tambah Berita Baru' }}
                   </h2>
-                  <p class="mt-1 text-sm leading-[1.43] text-text-secondary">
-                    Siapkan konten berita sekolah sebelum dipublikasikan.
+
+                  <button
+                    type="button"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary"
+                    aria-label="Tutup editor berita"
+                    @click="backToList"
+                  >
+                    <X class="h-5 w-5" />
+                  </button>
+                </div>
+              </header>
+
+              <main class="min-h-0 grow overflow-y-auto p-4">
+                <div
+                  v-if="error"
+                  class="mb-6 rounded-xl border border-error/20 bg-status-rejected-bg p-4"
+                >
+                  <p class="text-sm text-status-rejected-text">
+                    {{ error }}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary"
-                  aria-label="Tutup editor berita"
-                  @click="isEditorOpen = false"
-                >
-                  <XCircle class="h-5 w-5" />
-                </button>
-              </div>
-            </header>
 
-            <main class="min-h-0 grow overflow-y-auto px-8 py-6">
-              <div class="space-y-5">
-                <div class="rounded-2xl border border-dashed border-border bg-bg-surface p-5">
-                  <div class="flex items-center gap-4">
-                    <div class="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-bg-base text-text-muted">
-                      <UploadCloud class="h-6 w-6" />
+                <div class="space-y-4">
+                  <div class="space-y-4">
+                  <form
+                    class="space-y-4"
+                    @submit.prevent="submitForm"
+                  >
+                    <div class="rounded-2xl border border-border bg-bg-surface p-4">
+                      <div class="space-y-4">
+                        <div>
+                          <label class="mb-2 block text-sm font-semibold text-text-primary">
+                            Judul Berita <span class="text-error">*</span>
+                          </label>
+                          <input
+                            v-model="form.title"
+                            type="text"
+                            required
+                            placeholder="Masukkan judul berita..."
+                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                          >
+                          <p class="mt-2 text-xs text-text-secondary">
+                            Slug: <span>{{ generateSlug(form.title) }}</span>
+                          </p>
+                        </div>
+
+                        <div>
+                          <label class="mb-2 block text-sm font-semibold text-text-primary">
+                            Kategori <span class="text-error">*</span>
+                          </label>
+                          <select
+                            v-model="form.category"
+                            required
+                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                          >
+                            <option value="event">Event</option>
+                            <option value="achievement">Prestasi</option>
+                            <option value="announcement">Pengumuman</option>
+                            <option value="other">Lainnya</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="mb-2 block text-sm font-semibold text-text-primary">
+                            Tags <span class="text-error">*</span>
+                          </label>
+                          <input
+                            v-model="form.tags"
+                            type="text"
+                            placeholder="pengumuman,ppdb,sekolah"
+                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                          >
+                        </div>
+
+                        <div>
+                          <label class="mb-2 block text-sm font-semibold text-text-primary">
+                            Gambar Featured <span v-if="!isEdit" class="text-error">*</span>
+                          </label>
+                          <div
+                            v-if="imagePreview"
+                            class="mb-4"
+                          >
+                            <div class="group relative">
+                              <img
+                                :src="imagePreview"
+                                alt="Preview"
+                                class="h-64 w-full rounded-xl border border-border object-cover"
+                              >
+                              <div class="absolute inset-0 flex items-center justify-center gap-3 rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                                <button
+                                  type="button"
+                                  class="flex items-center gap-2 rounded-lg bg-bg-surface/90 px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg-surface"
+                                  @click="triggerFileInput"
+                                >
+                                  <ImageIcon class="h-4 w-4" />
+                                  Ganti
+                                </button>
+                                <button
+                                  type="button"
+                                  class="flex items-center gap-2 rounded-lg bg-error px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-status-rejected-text"
+                                  @click="removeImage"
+                                >
+                                  <Trash2 class="h-4 w-4" />
+                                  Hapus
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div
+                            v-if="!imagePreview"
+                            class="cursor-pointer rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors duration-200 hover:border-brand hover:bg-bg-surface"
+                            @click="triggerFileInput"
+                          >
+                            <Upload class="mx-auto mb-3 h-12 w-12 text-text-muted" />
+                            <p class="mb-1 text-sm font-medium text-text-primary">
+                              Klik untuk upload gambar
+                            </p>
+                            <p class="text-xs text-text-secondary">
+                              {{ isEdit ? 'Kosongkan jika tidak ingin mengganti gambar. PNG, JPG, WEBP maksimal 4MB.' : 'PNG, JPG, WEBP maksimal 4MB.' }}
+                            </p>
+                          </div>
+                          <input
+                            ref="fileInput"
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
+                            @change="handleFileSelect"
+                          >
+                        </div>
+
+                        <div>
+                          <label class="mb-2 block text-sm font-semibold text-text-primary">
+                            Konten <span class="text-error">*</span>
+                          </label>
+                          <textarea
+                            v-model="form.content"
+                            rows="12"
+                            required
+                            placeholder="Tulis konten berita di sini..."
+                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div class="min-w-0">
-                      <p class="text-sm font-semibold text-text-primary">Gambar Utama</p>
-                      <p class="mt-1 text-sm leading-relaxed text-text-secondary">Upload gambar akan disambungkan setelah endpoint berita tersedia.</p>
+
+                    <div class="flex items-center gap-4">
+                      <button
+                        type="submit"
+                        :disabled="saving"
+                        class="flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-brand-hover hover:shadow-xl disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+                      >
+                        <Save class="h-5 w-5" />
+                        {{ saving ? 'Menyimpan...' : isEdit ? 'Update Berita' : 'Simpan Berita' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-xl bg-bg-base px-6 py-3 font-semibold text-text-secondary transition-colors duration-200 hover:bg-bg-parchment hover:text-text-primary"
+                        @click="backToList"
+                      >
+                        Batal
+                      </button>
                     </div>
-                  </div>
-                </div>
-
-                <AppInput v-model="form.title" label="Judul Berita" required placeholder="Contoh: Pendaftaran Tahun Ajaran Baru Dibuka" />
-                <AppInput v-model="form.slug" label="Slug" required placeholder="pendaftaran-tahun-ajaran-baru-dibuka" />
-                <AppTextarea v-model="form.excerpt" label="Ringkasan" required :rows="3" :maxlength="220" placeholder="Tulis ringkasan singkat berita..." />
-                <div class="grid grid-cols-2 gap-4">
-                  <AppInput v-model="form.category" label="Kategori" placeholder="Pengumuman" />
-                  <AppInput v-model="form.publishDate" label="Tanggal Terbit" type="date" />
-                </div>
-                <AppSelect v-model="form.status" label="Status" required :options="formStatusOptions" />
-                <AppTextarea v-model="form.imageUrl" label="URL Gambar" :rows="2" placeholder="https://..." />
-                <div class="rounded-2xl border border-border-soft bg-bg-surface p-5">
-                  <div class="mb-3 flex items-center gap-2 text-sm font-semibold text-text-primary">
-                    <FileText class="h-4 w-4 text-text-muted" />
-                    Konten Berita
-                  </div>
-                  <div class="min-h-40 rounded-xl border border-border bg-bg-base p-4 text-sm text-text-secondary">
-                    Editor konten lengkap akan disambungkan saat API dan kebutuhan field konten sudah final.
-                  </div>
+                  </form>
                 </div>
               </div>
-            </main>
-
-            <footer class="shrink-0 border-t border-border bg-bg-surface px-8 py-4">
-              <div class="flex justify-end gap-3">
-                <AppButton variant="ghost" @click="isEditorOpen = false">Batal</AppButton>
-                <AppButton variant="primary" @click="submitForm">Simpan Berita</AppButton>
-              </div>
-            </footer>
+              </main>
+            </section>
           </aside>
         </div>
       </Transition>
     </Teleport>
   </div>
 </template>
+
+<style scoped>
+:global(.admin-berita-drawer-open),
+:global(.admin-berita-drawer-open *) {
+  scrollbar-width: none;
+}
+
+:global(.admin-berita-drawer-open::-webkit-scrollbar),
+:global(.admin-berita-drawer-open *::-webkit-scrollbar) {
+  width: 0;
+  height: 0;
+}
+</style>

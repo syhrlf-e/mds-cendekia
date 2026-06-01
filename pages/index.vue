@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, Instagram, Facebook, Youtube, MapPin, Phone, Mail } from 'lucide-vue-next'
+import { usePublicNewsService } from '~/services/usePublicNewsService'
 
 useHead({
   title: 'Beranda | MDS Cendekia',
@@ -7,18 +8,42 @@ useHead({
     { name: 'description', content: 'Yayasan Mukti Desa Sasmita Cendekia. Solusi pendidikan kesetaraan terbaik.' }
   ]
 })
+
+const { listPublicNews } = usePublicNewsService()
+
+const { data: publicNewsItems, pending: isNewsLoading } = await useAsyncData('public-news-home', async () => {
+  const { data } = await listPublicNews(5)
+  return data
+}, {
+  default: () => []
+})
+
+const visiblePublicNewsItems = computed(() => publicNewsItems.value.slice(0, 4))
+const hasMorePublicNews = computed(() => publicNewsItems.value.length > 4)
+
+const formatNewsDate = (date: string) => {
+  if (!date) return ''
+  const parsedDate = new Date(date)
+  if (Number.isNaN(parsedDate.getTime())) return date
+
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(parsedDate)
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-[#FFFFFF] font-sans">
-    <PublicNavbar />
-
     <!-- Hero Section -->
     <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-[80px]">
       <div class="public-navbar-container relative z-10 flex flex-col items-center text-center">
-        <!-- Background Concentric Circles Image (Centered exactly on content) -->
-        <div class="absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <img src="/images/aksesn bultean.png" alt="Aksen Lingkaran" class="min-w-[1200px] w-[120vw] max-w-[1600px] object-cover opacity-100 scale-110" />
+        <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[1680px] max-w-[190vw] -translate-x-1/2 -translate-y-1/2">
+          <span class="absolute inset-0 rounded-full border border-brand/10" />
+          <span class="absolute inset-[10%] rounded-full border border-brand/10" />
+          <span class="absolute inset-[20%] rounded-full border border-brand/10" />
+          <span class="absolute inset-[40%] rounded-full border border-brand/10" />
         </div>
 
         <!-- Hero Headline -->
@@ -33,9 +58,9 @@ useHead({
         </p>
 
         <!-- CTA Button -->
-        <button 
+        <button
           @click="$router.push('/ppdb')"
-          class="flex h-[56px] w-[250px] items-center justify-center rounded-full bg-brand font-heading text-[16px] font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
+          class="flex h-[56px] w-[250px] cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-[16px] font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
         >
           Daftarkan Diri Kamu
         </button>
@@ -58,7 +83,7 @@ useHead({
         <!-- CTA Button -->
         <button 
           @click="$router.push('/profil-sekolah')"
-          class="flex h-[48px] w-[252px] items-center justify-center rounded-full border border-border font-heading text-[16px] font-normal text-[#3B3B3B] transition-colors hover:bg-gray-50 focus:outline-none"
+          class="flex h-[48px] w-[252px] cursor-pointer items-center justify-center rounded-full border border-border font-heading text-[16px] font-normal text-[#3B3B3B] transition-colors hover:bg-gray-50 focus:outline-none"
         >
           Selengkapnya tentang kami
         </button>
@@ -246,7 +271,7 @@ useHead({
           <p class="mb-[42px] max-w-[800px] font-sans text-[20px] font-medium text-white">
             Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
           </p>
-          <button class="flex h-[58px] w-[315px] items-center justify-center rounded-full bg-white font-sans text-[20px] font-medium text-brand transition-opacity hover:opacity-90">
+          <button class="flex h-[58px] w-[315px] cursor-pointer items-center justify-center rounded-full bg-white font-sans text-[20px] font-medium text-brand transition-opacity hover:opacity-90">
             Daftarkan Dirikamu Disini
           </button>
         </div>
@@ -261,178 +286,65 @@ useHead({
           Kabar terbaru dan informasi edukasi.
         </h2>
 
-        <!-- Grid Cards -->
         <div class="grid w-full grid-cols-4 gap-[24px]">
-          <!-- Card 1 -->
-          <div class="flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-shadow hover:shadow-md">
-            <img src="/images/beranda.jpg" alt="Berita 1" class="h-[250px] w-full object-cover" />
-            <div class="flex flex-col p-[32px]">
-              <div class="mb-[24px] flex items-center justify-between">
-                <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
-                  Edukasi
-                </span>
-                <span class="font-sans text-[14px] text-[#9CA3AF]">
-                  dibuat 23 Juli 2026
-                </span>
+          <template v-if="isNewsLoading">
+            <div
+              v-for="index in 4"
+              :key="`news-skeleton-${index}`"
+              class="flex min-h-[460px] animate-pulse flex-col overflow-hidden rounded-[32px] bg-white shadow-sm"
+            >
+              <div class="h-[250px] w-full bg-[#E5E7EB]"></div>
+              <div class="flex flex-col p-[32px]">
+                <div class="mb-[24px] flex items-center justify-between gap-4">
+                  <span class="h-7 w-24 rounded-full bg-[#E5E7EB]"></span>
+                  <span class="h-4 w-28 rounded-full bg-[#E5E7EB]"></span>
+                </div>
+                <div class="mb-[16px] h-16 rounded-2xl bg-[#E5E7EB]"></div>
+                <div class="h-20 rounded-2xl bg-[#E5E7EB]"></div>
               </div>
-              <h3 class="mb-[16px] font-heading text-[20px] font-medium leading-snug text-[#3B3B3B]">
-                Pentingnya Ijazah Kesetaraan Paket C untuk Melanjutkan Kuliah di Tahun 2026.
-              </h3>
-              <p class="font-sans text-[14px] leading-relaxed text-[#6B7280]">
-                lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit....
-              </p>
             </div>
-          </div>
-          <!-- Card 2 -->
-          <div class="flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-shadow hover:shadow-md">
-            <img src="/images/beranda.jpg" alt="Berita 2" class="h-[250px] w-full object-cover" />
-            <div class="flex flex-col p-[32px]">
-              <div class="mb-[24px] flex items-center justify-between">
-                <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
-                  Edukasi
-                </span>
-                <span class="font-sans text-[14px] text-[#9CA3AF]">
-                  dibuat 23 Juli 2026
-                </span>
+          </template>
+          <template v-else-if="visiblePublicNewsItems.length">
+            <NuxtLink
+              v-for="item in visiblePublicNewsItems"
+              :key="item.id"
+              :to="`/berita/${item.id}`"
+              class="flex cursor-pointer flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+            >
+              <img :src="item.imageUrl || '/images/beranda.jpg'" :alt="item.title" class="h-[250px] w-full object-cover" />
+              <div class="flex flex-col p-[32px]">
+                <div class="mb-[24px] flex items-center justify-between gap-4">
+                  <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
+                    {{ item.category || 'Berita' }}
+                  </span>
+                  <span class="text-right font-sans text-[14px] text-[#9CA3AF]">
+                    {{ formatNewsDate(item.publishDate) }}
+                  </span>
+                </div>
+                <h3 class="mb-[16px] font-heading text-[20px] font-medium leading-snug text-[#3B3B3B]">
+                  {{ item.title }}
+                </h3>
+                <p class="font-sans text-[14px] leading-relaxed text-[#6B7280]">
+                  {{ item.excerpt }}
+                </p>
               </div>
-              <h3 class="mb-[16px] font-heading text-[20px] font-medium leading-snug text-[#3B3B3B]">
-                Pentingnya Ijazah Kesetaraan Paket C untuk Melanjutkan Kuliah di Tahun 2026.
-              </h3>
-              <p class="font-sans text-[14px] leading-relaxed text-[#6B7280]">
-                lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit....
-              </p>
-            </div>
-          </div>
-          <!-- Card 3 -->
-          <div class="flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-shadow hover:shadow-md">
-            <img src="/images/beranda.jpg" alt="Berita 3" class="h-[250px] w-full object-cover" />
-            <div class="flex flex-col p-[32px]">
-              <div class="mb-[24px] flex items-center justify-between">
-                <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
-                  Edukasi
-                </span>
-                <span class="font-sans text-[14px] text-[#9CA3AF]">
-                  dibuat 23 Juli 2026
-                </span>
-              </div>
-              <h3 class="mb-[16px] font-heading text-[20px] font-medium leading-snug text-[#3B3B3B]">
-                Pentingnya Ijazah Kesetaraan Paket C untuk Melanjutkan Kuliah di Tahun 2026.
-              </h3>
-              <p class="font-sans text-[14px] leading-relaxed text-[#6B7280]">
-                lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit....
-              </p>
-            </div>
-          </div>
-          <!-- Card 4 -->
-          <div class="flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-shadow hover:shadow-md">
-            <img src="/images/beranda.jpg" alt="Berita 4" class="h-[250px] w-full object-cover" />
-            <div class="flex flex-col p-[32px]">
-              <div class="mb-[24px] flex items-center justify-between">
-                <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
-                  Edukasi
-                </span>
-                <span class="font-sans text-[14px] text-[#9CA3AF]">
-                  dibuat 23 Juli 2026
-                </span>
-              </div>
-              <h3 class="mb-[16px] font-heading text-[20px] font-medium leading-snug text-[#3B3B3B]">
-                Pentingnya Ijazah Kesetaraan Paket C untuk Melanjutkan Kuliah di Tahun 2026.
-              </h3>
-              <p class="font-sans text-[14px] leading-relaxed text-[#6B7280]">
-                lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit amet.lorem ipsum dolor sit....
-              </p>
-            </div>
+            </NuxtLink>
+          </template>
+          <div v-else class="col-span-4 flex min-h-[160px] items-center justify-center px-8 text-center">
+            <p class="font-sans text-[18px] leading-relaxed text-[#6B7280]">
+              Belum ada berita atau informasi yang dibuat
+            </p>
           </div>
         </div>
 
-        <!-- Button CTA Bawah -->
-        <button class="mt-[80px] flex h-[48px] px-8 items-center justify-center rounded-full border border-[#3B82F6] bg-transparent font-sans text-[16px] font-medium text-[#3B82F6] transition-colors hover:bg-[#3B82F6] hover:text-white">
+        <button
+          v-if="hasMorePublicNews"
+          class="mt-[80px] flex h-[48px] cursor-pointer items-center justify-center rounded-full border border-[#3B82F6] bg-transparent px-8 font-sans text-[16px] font-medium text-[#3B82F6] transition-colors hover:bg-[#3B82F6] hover:text-white"
+        >
           Lihat Lebih Banyak
         </button>
       </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="relative flex flex-col items-center justify-center bg-[#525252] px-6 pb-[40px] pt-[100px] text-white">
-      <div class="public-navbar-container flex w-full flex-col">
-        <!-- Top Footer Grid -->
-        <div class="grid w-full grid-cols-12 gap-[40px] pb-[80px]">
-          <!-- Col 1: Branding (4 cols) -->
-          <div class="col-span-4 flex flex-col items-start">
-            <!-- White square wrapper for the icon-only logo -->
-            <div class="mb-[24px] flex h-[88px] w-[88px] items-center justify-center rounded-[20px] bg-white p-[8px]">
-              <img src="/images/logonoteks.png" alt="MDS Cendekia Logo" class="h-full w-full object-contain" />
-            </div>
-            <p class="mb-[32px] font-sans text-[16px] leading-relaxed text-white/70">
-              Membangun manusia seutuhnya melalui pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan berlandaskan nilai-nilai Pancasila.
-            </p>
-            <div class="flex items-center gap-[24px]">
-              <a href="#" class="text-white/70 transition-colors hover:text-brand">
-                <Instagram class="h-6 w-6" />
-              </a>
-              <a href="#" class="text-white/70 transition-colors hover:text-brand">
-                <Facebook class="h-6 w-6" />
-              </a>
-              <a href="#" class="text-white/70 transition-colors hover:text-brand">
-                <Youtube class="h-6 w-6" />
-              </a>
-            </div>
-          </div>
-
-          <!-- Col 2: Program (3 cols) -->
-          <div class="col-span-3 flex flex-col pl-[40px]">
-            <h4 class="mb-[24px] font-heading text-[20px] font-semibold">Program Kami</h4>
-            <div class="flex flex-col gap-[16px]">
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Kejar Paket A</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Kejar Paket B</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Kejar Paket C</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Pelatihan Vokasi</a>
-            </div>
-          </div>
-
-          <!-- Col 3: Tautan Cepat (2 cols) -->
-          <div class="col-span-2 flex flex-col">
-            <h4 class="mb-[24px] font-heading text-[20px] font-semibold">Tautan</h4>
-            <div class="flex flex-col gap-[16px]">
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Tentang Kami</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Fasilitas</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">Berita & Edukasi</a>
-              <a href="#" class="font-sans text-[16px] text-white/70 transition-colors hover:text-brand">PPDB 2026</a>
-            </div>
-          </div>
-
-          <!-- Col 4: Kontak (3 cols) -->
-          <div class="col-span-3 flex flex-col">
-            <h4 class="mb-[24px] font-heading text-[20px] font-semibold">Hubungi Kami</h4>
-            <div class="flex flex-col gap-[16px]">
-              <div class="flex items-start gap-[16px] font-sans text-[16px] text-white/70">
-                <MapPin class="mt-1 h-5 w-5 flex-shrink-0" />
-                <span>Jl. Pendidikan No. 123, Jakarta Selatan, 12345</span>
-              </div>
-              <div class="flex items-center gap-[16px] font-sans text-[16px] text-white/70">
-                <Phone class="h-5 w-5 flex-shrink-0" />
-                <span>+62 812 3456 7890</span>
-              </div>
-              <div class="flex items-center gap-[16px] font-sans text-[16px] text-white/70">
-                <Mail class="h-5 w-5 flex-shrink-0" />
-                <span>info@mdscendekia.or.id</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Bar -->
-        <div class="flex w-full items-center justify-between border-t border-white/10 pt-[32px]">
-          <p class="font-sans text-[14px] text-white/50">
-            © 2026 Yayasan Mukti Daris Sasmita Cendekia (YMDSC). Hak Cipta Dilindungi.
-          </p>
-          <div class="flex gap-[32px]">
-            <a href="#" class="font-sans text-[14px] text-white/50 transition-colors hover:text-white">Kebijakan Privasi</a>
-            <a href="#" class="font-sans text-[14px] text-white/50 transition-colors hover:text-white">Syarat & Ketentuan</a>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 

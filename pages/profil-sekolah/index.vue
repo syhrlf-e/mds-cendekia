@@ -9,8 +9,6 @@ useHead({
 
 <template>
   <div class="min-h-screen bg-bg-base font-sans">
-    <PublicNavbar />
-
     <main class="mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pt-24 sm:px-6 lg:px-8">
       <section class="w-full py-16">
         <p class="mb-3 text-sm font-medium uppercase tracking-[0.16em] text-brand">Profil Sekolah</p>

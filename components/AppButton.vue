@@ -40,7 +40,7 @@ const variantClasses = computed(() => {
     :class="[
       'inline-flex min-h-11 items-center justify-center font-medium leading-none transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]',
       variantClasses,
-      (disabled || loading) ? 'opacity-40 cursor-not-allowed pointer-events-none active:scale-100' : ''
+      (disabled || loading) ? 'opacity-40 cursor-not-allowed pointer-events-none active:scale-100' : 'cursor-pointer'
     ]"
     @click="$emit('click', $event)"
   >
