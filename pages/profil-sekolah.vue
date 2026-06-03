@@ -1,6 +1,28 @@
 <script setup lang="ts">
 useHead({
-  title: 'Profil | MDS Cendekia'
+  title: 'Profil Sekolah | MDS Cendekia',
+  meta: [
+    {
+      name: 'description',
+      content: 'Profil MDS Cendekia, yayasan pendidikan kesetaraan yang membuka akses belajar inklusif, adaptif, dan berkelanjutan untuk semua usia.'
+    },
+    {
+      property: 'og:title',
+      content: 'Profil Sekolah | MDS Cendekia'
+    },
+    {
+      property: 'og:description',
+      content: 'Kenali visi, misi, legalitas, dan penggerak MDS Cendekia sebagai yayasan pendidikan kesetaraan yang inklusif dan berkelanjutan.'
+    },
+    {
+      name: 'twitter:title',
+      content: 'Profil Sekolah | MDS Cendekia'
+    },
+    {
+      name: 'twitter:description',
+      content: 'Kenali visi, misi, legalitas, dan penggerak MDS Cendekia sebagai yayasan pendidikan kesetaraan yang inklusif dan berkelanjutan.'
+    }
+  ]
 })
 </script>
 
