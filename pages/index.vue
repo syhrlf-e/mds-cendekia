@@ -119,6 +119,8 @@ const formatNewsDate = (date: string) => {
     year: 'numeric'
   }).format(parsedDate)
 }
+
+const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encodeURIComponent(item.slug || item.id)}`
 </script>
 
 <template>
@@ -420,7 +422,7 @@ const formatNewsDate = (date: string) => {
             <NuxtLink
               v-for="item in visiblePublicNewsItems"
               :key="item.id"
-              :to="`/berita/${item.id}`"
+              :to="buildNewsPath(item)"
               class="flex cursor-pointer flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
             >
               <img :src="item.imageUrl || '/images/beranda.jpg'" :alt="item.title" class="h-[250px] w-full object-cover" />

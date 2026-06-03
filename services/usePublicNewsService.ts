@@ -7,6 +7,8 @@ export const publicNewsEndpoints = {
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
+const normalizeIdentifier = (value: unknown) => normalizeText(value).toLowerCase()
+
 const stripHtml = (value: unknown) => normalizeText(value).replace(/<[^>]*>/g, ' ')
 
 const buildContent = (item: NewsDto) => normalizeText(item.isi || item.content || item.konten || item.body)
@@ -108,7 +110,7 @@ export const usePublicNewsService = () => {
     }
   }
 
-  const getPublicNewsDetail = async (id: string) => {
+  const getPublicNewsDetail = async (identifier: string) => {
     const { data, error } = await get<any>(publicNewsEndpoints.detail, {
       query: { limit: '100' },
       showErrorToast: false
@@ -123,7 +125,18 @@ export const usePublicNewsService = () => {
 
     const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
     const rows = readArrayPayload(data)
-    const found = rows.find((item) => normalizeText(item.id || item.uuid || item.news_id || item.berita_id) === id)
+    const normalizedIdentifier = normalizeIdentifier(identifier)
+    const found = rows.find((item) => {
+      const candidates = [
+        item.slug,
+        item.id,
+        item.uuid,
+        item.news_id,
+        item.berita_id
+      ]
+
+      return candidates.some(candidate => normalizeIdentifier(candidate) === normalizedIdentifier)
+    })
     const mappedItem = found ? mapPublicNewsItem(found, apiBaseUrl) : null
 
     return {

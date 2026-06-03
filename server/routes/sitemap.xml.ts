@@ -74,6 +74,7 @@ export default defineEventHandler(async (event) => {
   const siteUrl = normalizeSiteUrl(config.public.siteUrl) || normalizeSiteUrl(getRequestURL(event).origin)
   const apiBaseUrl = normalizeSiteUrl(config.public.apiBaseUrl || 'https://api.oirul.com')
   const urls = staticRoutes.map(route => buildUrlEntry(siteUrl, route.loc, route.changefreq, route.priority))
+  const newsPaths = new Set<string>()
 
   try {
     const payload = await $fetch<any>(`${apiBaseUrl}/api/berita/all`, {
@@ -85,10 +86,14 @@ export default defineEventHandler(async (event) => {
     for (const item of readArrayPayload(payload)) {
       const id = normalizeText(item.slug || item.id || item.uuid || item.news_id || item.berita_id)
       if (!id) continue
+      const newsPath = `/berita/${encodeURIComponent(id)}`
+      if (newsPaths.has(newsPath)) continue
+
+      newsPaths.add(newsPath)
 
       urls.push(buildUrlEntry(
         siteUrl,
-        `/berita/${encodeURIComponent(id)}`,
+        newsPath,
         'monthly',
         '0.7',
         normalizeDate(item.updated_at || item.updatedAt || item.publish_date || item.published_at || item.tanggal_terbit || item.created_at || item.createdAt)

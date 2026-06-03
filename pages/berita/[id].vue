@@ -8,7 +8,8 @@ const newsId = computed(() => String(route.params.id || ''))
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 const siteBaseUrl = siteHomeUrl.replace(/\/$/, '')
 const fallbackImageUrl = useAbsoluteSiteUrl('/images/beranda.jpg')
-const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}/berita/${newsId.value}` : '')
+const articlePath = computed(() => `/berita/${encodeURIComponent(newsItem.value?.slug || newsId.value)}`)
+const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}${articlePath.value}` : '')
 
 const { data: newsItem, pending: isLoading } = await useAsyncData(`public-news-detail-${newsId.value}`, async () => {
   const { data } = await getPublicNewsDetail(newsId.value)
@@ -40,6 +41,7 @@ const articleParagraphs = computed(() => {
 
 useHead(() => ({
   title: newsItem.value ? `${newsItem.value.title} | MDS Cendekia` : 'Berita | MDS Cendekia',
+  link: articleUrl.value ? [{ rel: 'canonical', href: articleUrl.value }] : [],
   meta: [
     {
       name: 'description',
