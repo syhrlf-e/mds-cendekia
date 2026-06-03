@@ -11,7 +11,10 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'MDS Cendekia',
+      htmlAttrs: {
+        lang: 'id'
+      },
+      title: 'MDS Cendekia | Pendidikan Kesetaraan dan PPDB Paket C',
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
@@ -20,12 +23,34 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: '/site.webmanifest' }
       ],
       meta: [
-        { name: 'theme-color', content: '#ffffff' }
+        {
+          name: 'description',
+          content: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.'
+        },
+        { name: 'theme-color', content: '#ffffff' },
+        { name: 'application-name', content: 'MDS Cendekia' },
+        { name: 'apple-mobile-web-app-title', content: 'MDS Cendekia' },
+        { name: 'format-detection', content: 'telephone=no' },
+        { property: 'og:site_name', content: 'MDS Cendekia' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:locale', content: 'id_ID' },
+        { property: 'og:title', content: 'MDS Cendekia | Pendidikan Kesetaraan dan PPDB Paket C' },
+        {
+          property: 'og:description',
+          content: 'Pendidikan kesetaraan inklusif dengan sistem belajar adaptif untuk membantu peserta didik meraih ijazah resmi bersama MDS Cendekia.'
+        },
+        { property: 'og:image', content: '/images/logo-mds-main.png' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'MDS Cendekia | Pendidikan Kesetaraan dan PPDB Paket C' },
+        {
+          name: 'twitter:description',
+          content: 'Pendidikan kesetaraan inklusif dengan sistem belajar adaptif untuk membantu peserta didik meraih ijazah resmi bersama MDS Cendekia.'
+        },
+        { name: 'twitter:image', content: '/images/logo-mds-main.png' }
       ]
     }
   },
 
-  // Memaksa Nuxt dev berjalan di IPv4 lokal agar tidak stuck/menolak koneksi
   devServer: {
     host: '127.0.0.1',
     port: 3000
@@ -38,7 +63,11 @@ export default defineNuxtConfig({
       apiBaseUrl: 'https://api.oirul.com',
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
-      ppdbGelombangId: '3'
+      ppdbGelombangId: '3',
+      siteUrl: '',
+      siteName: 'MDS Cendekia',
+      siteDescription: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.',
+      siteImage: '/images/logo-mds-main.png'
     }
   },
 
