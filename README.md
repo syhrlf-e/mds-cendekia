@@ -14,7 +14,6 @@ Project ini berisi dua aplikasi Nuxt yang dideploy sebagai dua project Vercel te
 
 - `apps/web` untuk website publik di `https://mdscendekia.oirul.com`.
 - `apps/admin` untuk panel admin di `https://mdspanel.mdscendekia.oirul.com`.
-- Root app lama masih dipertahankan sementara sebagai fallback selama migrasi split.
 - Template email Handlebars untuk kebutuhan backend NestJS + Resend.
 - Integrasi API langsung dari browser ke backend melalui `NUXT_PUBLIC_API_BASE_URL`.
 
@@ -34,7 +33,6 @@ Project ini berisi dua aplikasi Nuxt yang dideploy sebagai dua project Vercel te
 apps/web/                        Website publik, SEO, sitemap, robots, PPDB publik
 apps/admin/                      Panel admin, login, dashboard, pengelolaan data
 email-templates/                 Template email .hbs dan dokumentasi untuk backend
-assets/, pages/, layouts/        Root app legacy sementara selama migrasi split
 ```
 
 ## Setup Lokal
@@ -182,6 +180,6 @@ npm run build:admin
 
 ## Catatan Development
 
-- Project ini sedang dalam fase migrasi dari satu Nuxt app gabungan menuju dua app Vercel terpisah.
+- Project ini menggunakan dua Nuxt app terpisah dalam satu repository.
 - Jangan mengubah nama field request backend tanpa mengecek API docs terbaru.
 - Untuk perubahan alur pendaftaran, sinkronkan dengan backend karena sebagian proses final seperti PDF dan email berada di sisi backend.
