@@ -146,7 +146,41 @@ Root Directory : apps/admin
 Domain         : mdspanel.mdscendekia.oirul.com
 ```
 
+Pengaturan Vercel yang harus dijaga:
+
+```text
+Framework Preset : Nuxt
+Build Command    : npm run build
+Output Directory : tidak dioverride
+Install Command  : npm install
+```
+
 Setelah mengubah environment variable di Vercel, lakukan redeploy agar nilai env masuk ke deployment terbaru.
+
+Project Vercel lama yang menggabungkan web dan admin sudah retired. Jangan pakai root repository sebagai root app Nuxt baru; root repository hanya berfungsi sebagai monorepo wrapper.
+
+## Checklist Setelah Deploy
+
+Setelah deploy production, cek endpoint berikut:
+
+```text
+https://mdscendekia.oirul.com
+https://mdscendekia.oirul.com/robots.txt
+https://mdscendekia.oirul.com/sitemap.xml
+https://mdscendekia.oirul.com/admin
+https://mdspanel.mdscendekia.oirul.com/login
+https://mdspanel.mdscendekia.oirul.com/robots.txt
+```
+
+Ekspektasi hasil:
+
+- Public home terbuka normal.
+- Public `robots.txt` mencantumkan sitemap dan tidak lagi memakai rule `/admin`.
+- Public `sitemap.xml` hanya berisi halaman public.
+- Public `/admin` redirect permanen ke `https://mdspanel.mdscendekia.oirul.com/login`.
+- Admin login terbuka dan bisa masuk ke dashboard.
+- Admin `robots.txt` berisi `Disallow: /`.
+- Admin response memiliki perlindungan indexing melalui meta robots dan `X-Robots-Tag`.
 
 ## Email Templates
 
