@@ -1,27 +1,15 @@
 {
-  "name": "mds_cendekia",
+  "name": "@mds-cendekia/web",
   "type": "module",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
   "scripts": {
     "build": "nuxt build",
-    "build:web": "npm --prefix apps/web run build",
-    "build:admin": "npm --prefix apps/admin run build",
     "lint": "eslint .",
-    "lint:web": "npm --prefix apps/web run lint",
-    "lint:admin": "npm --prefix apps/admin run lint",
-    "lint:fix": "eslint . --fix",
     "dev": "nuxt dev",
-    "dev:web": "npm --prefix apps/web run dev",
-    "dev:admin": "npm --prefix apps/admin run dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "check": "nuxi typecheck",
-    "check:web": "npm --prefix apps/web run check",
-    "check:admin": "npm --prefix apps/admin run check"
+    "check": "nuxi typecheck"
   },
   "dependencies": {
     "@nuxtjs/google-fonts": "^3.2.0",
