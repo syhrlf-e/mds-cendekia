@@ -12,6 +12,19 @@ const buildAbsoluteUrl = (siteUrl: string, path: string) => {
   return `${siteUrl}${normalizedPath}`
 }
 
+const noindexRoutes = [
+  '/admin',
+  '/ppdb/daftar',
+  '/ppdb/cek-status',
+  '/ppdb/kartu-peserta',
+  '/ppdb/revisi-berkas'
+]
+
+const shouldNoindex = (path: string) => noindexRoutes.some((routePath) => {
+  if (path === routePath) return true
+  return path.startsWith(`${routePath}/`)
+})
+
 export default defineNuxtPlugin(() => {
   const route = useRoute()
   const config = useRuntimeConfig()
@@ -29,6 +42,10 @@ export default defineNuxtPlugin(() => {
       { property: 'og:locale', content: 'id_ID' },
       { property: 'og:type', content: 'website' },
       { property: 'og:description', content: siteDescription },
+      {
+        name: 'robots',
+        content: shouldNoindex(route.path) ? 'noindex, nofollow, noarchive' : 'index, follow'
+      },
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:description', content: siteDescription }
     ]

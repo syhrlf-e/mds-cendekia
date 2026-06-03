@@ -51,6 +51,33 @@ export default defineNuxtConfig({
     }
   },
 
+  routeRules: {
+    '/admin': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/admin/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/daftar': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/daftar/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/cek-status': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/kartu-peserta': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/revisi-berkas': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/revisi-berkas/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    }
+  },
+
   devServer: {
     host: '127.0.0.1',
     port: 3000
