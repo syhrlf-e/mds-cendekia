@@ -59,7 +59,7 @@ const footerLogoSrc = '/images/logonoteks.png'
           <div class="flex flex-col gap-[16px]">
             <div class="flex items-start gap-[16px] font-sans text-[16px] text-white/70">
               <MapPin class="mt-1 h-5 w-5 flex-shrink-0" />
-              <span>Jl. Pendidikan No. 123, Jakarta Selatan, 12345</span>
+              <span>Perum Bumi Gesya Cikarang, Desa Jayasampurna, Serang Baru, Kab. Bekasi, Jawa Barat 17330</span>
             </div>
             <div class="flex items-center gap-[16px] font-sans text-[16px] text-white/70">
               <Phone class="h-5 w-5 flex-shrink-0" />

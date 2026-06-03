@@ -92,6 +92,11 @@ const faqItems = [
 const ppdbUrl = useAbsoluteSiteUrl('/ppdb')
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 
+useBreadcrumbJsonLd([
+  { name: 'Beranda', path: '/' },
+  { name: 'PPDB', path: '/ppdb' }
+])
+
 useJsonLd(() => {
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',

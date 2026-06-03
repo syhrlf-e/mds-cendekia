@@ -8,15 +8,24 @@ const newsId = computed(() => String(route.params.id || ''))
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 const siteBaseUrl = siteHomeUrl.replace(/\/$/, '')
 const fallbackImageUrl = useAbsoluteSiteUrl('/images/beranda.jpg')
-const articlePath = computed(() => `/berita/${encodeURIComponent(newsItem.value?.slug || newsId.value)}`)
-const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}${articlePath.value}` : '')
-
 const { data: newsItem, pending: isLoading } = await useAsyncData(`public-news-detail-${newsId.value}`, async () => {
   const { data } = await getPublicNewsDetail(newsId.value)
   return data
 }, {
   watch: [newsId]
 })
+
+const articlePath = computed(() => `/berita/${encodeURIComponent(newsItem.value?.slug || newsId.value)}`)
+const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}${articlePath.value}` : '')
+
+useBreadcrumbJsonLd(() => [
+  { name: 'Beranda', path: '/' },
+  { name: 'Berita', path: '/#berita' },
+  {
+    name: newsItem.value?.title || 'Detail Berita',
+    path: articlePath.value
+  }
+])
 
 const formattedDate = computed(() => {
   const date = newsItem.value?.publishDate

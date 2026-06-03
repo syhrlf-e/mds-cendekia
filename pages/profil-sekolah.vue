@@ -28,6 +28,11 @@ useHead({
 const profileUrl = useAbsoluteSiteUrl('/profil-sekolah')
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 
+useBreadcrumbJsonLd([
+  { name: 'Beranda', path: '/' },
+  { name: 'Profil Sekolah', path: '/profil-sekolah' }
+])
+
 useJsonLd(() => {
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
