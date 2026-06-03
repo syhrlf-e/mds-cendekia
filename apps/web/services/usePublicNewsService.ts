@@ -79,65 +79,60 @@ const mapPublicNewsItem = (item: NewsDto, apiBaseUrl: string): PublicNewsItem | 
 
 export const usePublicNewsService = () => {
   const config = useRuntimeConfig()
-  const { get } = useApi()
 
   const listPublicNews = async (limit = 4) => {
-    const { data, error } = await get<any>(publicApiEndpoints.berita.list, {
-      query: { limit: String(limit) },
-      showErrorToast: false
-    })
+    try {
+      const data = await $fetch<any>(publicApiEndpoints.berita.list, {
+        query: { limit: String(limit) }
+      })
+      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+      const rows = readArrayPayload(data)
+      const mappedRows = rows
+        .map(item => mapPublicNewsItem(item, apiBaseUrl))
+        .filter((item): item is PublicNewsItem => Boolean(item))
 
-    if (error) {
+      return {
+        data: mappedRows,
+        error: null
+      }
+    } catch (error) {
       return {
         data: [],
         error
       }
     }
-
-    const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
-    const rows = readArrayPayload(data)
-    const mappedRows = rows
-      .map(item => mapPublicNewsItem(item, apiBaseUrl))
-      .filter((item): item is PublicNewsItem => Boolean(item))
-
-    return {
-      data: mappedRows,
-      error: null
-    }
   }
 
   const getPublicNewsDetail = async (identifier: string) => {
-    const { data, error } = await get<any>(publicApiEndpoints.berita.detail, {
-      query: { limit: '100' },
-      showErrorToast: false
-    })
+    try {
+      const data = await $fetch<any>(publicApiEndpoints.berita.detail, {
+        query: { limit: '100' }
+      })
+      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+      const rows = readArrayPayload(data)
+      const normalizedIdentifier = normalizeIdentifier(identifier)
+      const found = rows.find((item) => {
+        const candidates = [
+          item.slug,
+          item.id,
+          item.uuid,
+          item.news_id,
+          item.berita_id
+        ]
 
-    if (error) {
+        return candidates.some(candidate => normalizeIdentifier(candidate) === normalizedIdentifier)
+      })
+      const mappedItem = found ? mapPublicNewsItem(found, apiBaseUrl) : null
+
+      return {
+        data: mappedItem,
+        error: null
+      }
+    } catch (error) {
       return {
         data: null,
         error
       }
-    }
-
-    const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
-    const rows = readArrayPayload(data)
-    const normalizedIdentifier = normalizeIdentifier(identifier)
-    const found = rows.find((item) => {
-      const candidates = [
-        item.slug,
-        item.id,
-        item.uuid,
-        item.news_id,
-        item.berita_id
-      ]
-
-      return candidates.some(candidate => normalizeIdentifier(candidate) === normalizedIdentifier)
-    })
-    const mappedItem = found ? mapPublicNewsItem(found, apiBaseUrl) : null
-
-    return {
-      data: mappedItem,
-      error: null
     }
   }
 

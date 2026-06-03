@@ -60,36 +60,33 @@ const mapPublicGalleryItem = (item: GalleryDto, apiBaseUrl: string): GalleryItem
 
 export const usePublicGalleryService = () => {
   const config = useRuntimeConfig()
-  const { get } = useApi()
 
   const listPublicGallery = async (limit = 12) => {
-    const { data, error } = await get<any>(publicApiEndpoints.gallery.list, {
-      query: { limit: String(limit) },
-      showErrorToast: false
-    })
+    try {
+      const data = await $fetch<any>(publicApiEndpoints.gallery.list, {
+        query: { limit: String(limit) }
+      })
+      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+      const rows = readArrayPayload(data)
+      const mappedRows = rows
+        .map(item => mapPublicGalleryItem(item, apiBaseUrl))
+        .filter((item): item is GalleryItem => Boolean(item))
+        .sort((firstItem, secondItem) => {
+          if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
+          if (firstItem.urutan) return -1
+          if (secondItem.urutan) return 1
+          return 0
+        })
 
-    if (error) {
+      return {
+        data: mappedRows,
+        error: null
+      }
+    } catch (error) {
       return {
         data: [],
         error
       }
-    }
-
-    const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
-    const rows = readArrayPayload(data)
-    const mappedRows = rows
-      .map(item => mapPublicGalleryItem(item, apiBaseUrl))
-      .filter((item): item is GalleryItem => Boolean(item))
-      .sort((firstItem, secondItem) => {
-        if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
-        if (firstItem.urutan) return -1
-        if (secondItem.urutan) return 1
-        return 0
-      })
-
-    return {
-      data: mappedRows,
-      error: null
     }
   }
 

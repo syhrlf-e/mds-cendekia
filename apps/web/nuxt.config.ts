@@ -53,7 +53,13 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': {
-      swr: 300
+      prerender: true
+    },
+    '/profil-sekolah': {
+      prerender: true
+    },
+    '/ppdb': {
+      prerender: true
     },
     '/images/**': {
       headers: {
@@ -77,6 +83,17 @@ export default defineNuxtConfig({
     },
     '/ppdb/revisi-berkas/**': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    }
+  },
+
+  nitro: {
+    prerender: {
+      crawlLinks: false,
+      routes: [
+        '/',
+        '/profil-sekolah',
+        '/ppdb'
+      ]
     }
   },
 

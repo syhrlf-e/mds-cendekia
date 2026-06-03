@@ -1,9 +1,9 @@
 export const publicApiEndpoints = {
   berita: {
-    list: '/api/berita/all',
-    detail: '/api/berita/all'
+    list: '/api/public/news',
+    detail: '/api/public/news'
   },
   gallery: {
-    list: '/api/gallery/all'
+    list: '/api/public/gallery'
   }
 } as const
