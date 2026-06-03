@@ -24,13 +24,54 @@ useHead({
     }
   ]
 })
+
+const profileUrl = useAbsoluteSiteUrl('/profil-sekolah')
+const siteHomeUrl = useAbsoluteSiteUrl('/')
+
+useJsonLd(() => {
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'Profil Sekolah MDS Cendekia',
+    description: 'Profil resmi Yayasan Mukti Daris Sasmita Cendekia, visi, misi, legalitas, dan penggerak yayasan pendidikan kesetaraan.',
+    inLanguage: 'id-ID',
+    about: {
+      '@id': siteHomeUrl ? `${siteHomeUrl}#school` : '#school'
+    },
+    mainEntity: {
+      '@type': 'EducationalOrganization',
+      '@id': siteHomeUrl ? `${siteHomeUrl}#school` : '#school',
+      name: 'MDS Cendekia',
+      alternateName: 'Yayasan Mukti Daris Sasmita Cendekia',
+      foundingDate: '2026-03-04',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Perum Bumi Gesya Cikarang, Desa Jayasampurna',
+        addressLocality: 'Serang Baru',
+        addressRegion: 'Jawa Barat',
+        postalCode: '17330',
+        addressCountry: 'ID'
+      },
+      knowsAbout: [
+        'Pendidikan kesetaraan',
+        'Kejar Paket C',
+        'Pendidikan inklusif',
+        'Pemberdayaan masyarakat'
+      ]
+    }
+  }
+
+  if (profileUrl) schema.url = profileUrl
+
+  return schema
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-[#FFFFFF] font-sans">
     <section class="relative flex min-h-screen items-center overflow-hidden bg-[#FFFFFF] px-6 pt-[80px]">
       <div class="absolute bottom-0 right-0 z-0 flex items-end justify-end pointer-events-none h-[85%] w-1/2 translate-y-[15%]">
-        <img src="/images/gradasiprofile.png" alt="Aksen Merah" class="h-full w-auto object-contain object-right-bottom" />
+        <img src="/images/gradasiprofile.png" alt="" aria-hidden="true" class="h-full w-auto object-contain object-right-bottom" />
       </div>
 
       <div class="public-navbar-container relative z-10 w-full">
@@ -53,7 +94,7 @@ useHead({
         <div class="flex w-full max-w-[1000px] flex-col items-center gap-[40px] lg:flex-row lg:items-start lg:gap-[80px]">
           <div class="w-full lg:w-5/12 flex-shrink-0">
             <div class="aspect-[4/5] overflow-hidden rounded-[32px] bg-gray-200 shadow-md">
-              <img src="/images/beranda.jpg" alt="Pimpinan MDS Cendekia" class="h-full w-full object-cover" />
+              <img src="/images/beranda.jpg" alt="Sambutan pimpinan Yayasan Mukti Daris Sasmita Cendekia untuk pendidikan kesetaraan" class="h-full w-full object-cover" />
             </div>
           </div>
 

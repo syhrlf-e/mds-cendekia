@@ -228,7 +228,7 @@ const formatNewsDate = (date: string) => {
         <!-- Card -->
         <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-[24px] border border-border-soft bg-[#FFFFFF] px-[40px] text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
           <!-- Card Background -->
-          <img src="/images/cardgradasi.png" alt="Card Background" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
+          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
           
           <!-- Icon Top Right -->
           <div class="absolute right-[40px] top-[40px] z-10">
@@ -373,7 +373,7 @@ const formatNewsDate = (date: string) => {
     <section class="relative flex flex-col items-center justify-center bg-[#FFFFFF] px-6 pt-[240px] pb-[100px]">
       <div class="relative flex h-[356px] w-full max-w-[1435px] flex-col items-center justify-center overflow-hidden rounded-[32px] bg-brand text-center shadow-lg">
         <!-- Background Image -->
-        <img src="/images/cardgradasi.png" alt="CTA Background" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
+        <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
         
         <!-- Content -->
         <div class="relative z-10 flex flex-col items-center px-4">
@@ -384,7 +384,7 @@ const formatNewsDate = (date: string) => {
             Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
           </p>
           <NuxtLink to="/ppdb" class="flex h-[58px] w-[315px] cursor-pointer items-center justify-center rounded-full bg-white font-sans text-[20px] font-medium text-brand transition-opacity hover:opacity-90">
-            Daftarkan Dirikamu Disini
+            Daftarkan Diri Kamu di Sini
           </NuxtLink>
         </div>
       </div>

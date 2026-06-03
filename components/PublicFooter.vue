@@ -13,7 +13,7 @@ const footerLogoSrc = '/images/logonoteks.png'
         <div class="lg:col-span-4 flex flex-col items-start">
           <!-- White square wrapper for the icon-only logo -->
           <div class="mb-[24px] flex h-[88px] w-[88px] items-center justify-center rounded-[20px] bg-white p-[8px]">
-            <img :src="footerLogoSrc" alt="MDS Cendekia Logo" class="h-full w-full object-contain" />
+            <img :src="footerLogoSrc" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain" />
           </div>
           <p class="mb-[32px] font-sans text-[16px] leading-relaxed text-white/70">
             Membangun manusia seutuhnya melalui pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan berlandaskan nilai-nilai Pancasila.

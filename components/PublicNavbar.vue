@@ -228,7 +228,7 @@ const handleNavClick = async (item: NavItem) => {
           <NuxtLink to="/" class="group flex cursor-pointer items-center gap-3" aria-label="Ke beranda" @click.prevent="goToHome">
             <img
               src="/images/logo-mds-main.png"
-              alt="Logo MDS Cendekia"
+              alt="Logo Yayasan Mukti Daris Sasmita Cendekia"
               class="h-10 w-10 object-contain"
               fetchpriority="high"
               loading="eager"
