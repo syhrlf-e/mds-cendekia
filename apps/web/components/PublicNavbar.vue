@@ -67,6 +67,21 @@ const deactivateScrollListener = () => {
 const itemRefs = ref<HTMLElement[]>([])
 const indicatorStyle = ref<any>({ width: '0px', transform: 'translateX(0px)', opacity: 0 })
 
+const setItemRef = (el: Element | { $el?: Element } | null, index: number) => {
+  if (!el) return
+
+  const componentElement = '$el' in el ? el.$el : null
+  const element = el instanceof HTMLElement
+    ? el
+    : componentElement instanceof HTMLElement
+      ? componentElement
+      : null
+
+  if (element) {
+    itemRefs.value[index] = element
+  }
+}
+
 const updateIndicator = async () => {
   if (!import.meta.client) return
   await nextTick()
@@ -79,7 +94,7 @@ const updateIndicator = async () => {
       opacity: 1
     }
   } else {
-    indicatorStyle.value.opacity = 0
+    indicatorStyle.value = { width: '0px', transform: 'translateX(0px)', opacity: 0 }
   }
 }
 
@@ -237,7 +252,7 @@ const handleNavClick = async (item: NavItem) => {
             <NuxtLink
               v-for="(item, index) in menuItems"
               :key="item.id"
-              :ref="(el) => { if (el) itemRefs[index] = el as HTMLElement }"
+              :ref="(el) => setItemRef(el, index)"
               :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
               class="group relative cursor-pointer py-2 text-[16px] font-medium font-heading transition-colors duration-300"
               :class="
