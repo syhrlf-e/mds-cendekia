@@ -62,6 +62,33 @@ const landingInfo = ref({
   active_wave: { name: 'Gelombang 1', fee: 5000000 }
 })
 
+const faqItems = [
+  {
+    question: 'Apa program yang dibuka pada PPDB MDS Cendekia?',
+    answer: 'PPDB MDS Cendekia membuka pendaftaran pendidikan kesetaraan Kejar Paket C setara SMA untuk tahun ajaran 2026/2027.'
+  },
+  {
+    question: 'Siapa yang bisa mendaftar ke MDS Cendekia?',
+    answer: 'Calon peserta didik dari berbagai usia dan latar belakang dapat mendaftar selama memenuhi persyaratan dokumen yang diminta untuk program pendidikan kesetaraan.'
+  },
+  {
+    question: 'Dokumen apa saja yang perlu disiapkan?',
+    answer: 'Dokumen utama yang perlu disiapkan meliputi foto siswa 3x4 berwarna, rapor SMP, surat keterangan nilai rapor semester I sampai V, ijazah atau SKL, akta kelahiran, dan kartu keluarga.'
+  },
+  {
+    question: 'Kapan jadwal PPDB MDS Cendekia dibuka?',
+    answer: 'Gelombang 1 dibuka pada 1 sampai 15 Juli 2026, sedangkan Gelombang 2 dibuka pada 16 sampai 31 Juli 2026. Pengumuman hasil seleksi dijadwalkan pada 5 Agustus 2026.'
+  },
+  {
+    question: 'Berapa biaya pendaftaran dan biaya pendidikan?',
+    answer: 'Biaya formulir sebesar Rp 250.000, uang pangkal Gelombang 1 sebesar Rp 5.000.000, dan SPP bulanan sebesar Rp 850.000.'
+  },
+  {
+    question: 'Bagaimana cara mengecek status pendaftaran?',
+    answer: 'Status pendaftaran dapat dicek melalui halaman Cek Status Pendaftaran setelah calon peserta didik mengirimkan formulir pendaftaran online.'
+  }
+] as const
+
 const ppdbUrl = useAbsoluteSiteUrl('/ppdb')
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 
@@ -95,6 +122,27 @@ useJsonLd(() => {
         availability: isDaftarDisabled.value ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
       }
     }
+  }
+
+  if (ppdbUrl) schema.url = ppdbUrl
+
+  return schema
+})
+
+useJsonLd(() => {
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    name: 'FAQ PPDB MDS Cendekia',
+    inLanguage: 'id-ID',
+    mainEntity: faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer
+      }
+    }))
   }
 
   if (ppdbUrl) schema.url = ppdbUrl
@@ -231,6 +279,34 @@ const formatDateRange = (startDate: string, endDate: string) => {
               </div>
             </div>
 
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="bg-[#FFFFFF] px-6 py-[120px] border-t border-[#E5E5E5]">
+      <div class="public-navbar-container">
+        <div class="flex flex-col lg:flex-row gap-[80px]">
+          <div class="lg:w-1/3">
+            <h2 class="sticky top-[120px] font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
+              Pertanyaan<br/>PPDB.
+            </h2>
+            <p class="mt-[24px] font-sans text-[20px] leading-relaxed text-[#525252]">
+              Jawaban ringkas seputar pendaftaran, program, dokumen, jadwal, biaya, dan pengecekan status calon peserta didik.
+            </p>
+          </div>
+          <div class="lg:w-2/3 flex flex-col">
+            <div
+              v-for="item in faqItems"
+              :key="item.question"
+              class="border-b border-[#E5E5E5] py-8 first:pt-0"
+            >
+              <h3 class="font-heading text-[24px] font-medium leading-snug text-[#3B3B3B]">
+                {{ item.question }}
+              </h3>
+              <p class="mt-4 font-sans text-[18px] leading-relaxed text-[#525252]">
+                {{ item.answer }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
