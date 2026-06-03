@@ -5,7 +5,26 @@ import { Calendar, FileText, Wallet, Download } from 'lucide-vue-next'
 useHead({
   title: 'PPDB | MDS Cendekia',
   meta: [
-    { name: 'description', content: 'Pendaftaran Peserta Didik Baru MDS Cendekia. Membangun generasi cerdas, berakhlak mulia, dan berwawasan global.' }
+    {
+      name: 'description',
+      content: 'Informasi PPDB MDS Cendekia 2026/2027 untuk program pendidikan kesetaraan Kejar Paket C, termasuk jadwal, persyaratan, biaya, dan pendaftaran online.'
+    },
+    {
+      property: 'og:title',
+      content: 'PPDB MDS Cendekia 2026/2027'
+    },
+    {
+      property: 'og:description',
+      content: 'Daftar pendidikan kesetaraan Kejar Paket C di MDS Cendekia. Lihat jadwal, persyaratan dokumen, biaya, dan alur pendaftaran.'
+    },
+    {
+      name: 'twitter:title',
+      content: 'PPDB MDS Cendekia 2026/2027'
+    },
+    {
+      name: 'twitter:description',
+      content: 'Daftar pendidikan kesetaraan Kejar Paket C di MDS Cendekia. Lihat jadwal, persyaratan dokumen, biaya, dan alur pendaftaran.'
+    }
   ]
 })
 
@@ -41,6 +60,46 @@ const landingInfo = ref({
     { label: 'Daftar Ulang', value: '6 - 10 Agustus 2026' }
   ],
   active_wave: { name: 'Gelombang 1', fee: 5000000 }
+})
+
+const ppdbUrl = useAbsoluteSiteUrl('/ppdb')
+const siteHomeUrl = useAbsoluteSiteUrl('/')
+
+useJsonLd(() => {
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: `PPDB MDS Cendekia Tahun ${academicYear.value}`,
+    description: 'Halaman resmi PPDB MDS Cendekia untuk informasi jadwal, persyaratan dokumen, rincian biaya, dan pendaftaran pendidikan kesetaraan.',
+    inLanguage: 'id-ID',
+    about: {
+      '@type': 'EducationalOccupationalProgram',
+      name: 'Program Pendidikan Kesetaraan Kejar Paket C',
+      educationalCredentialAwarded: 'Ijazah setara SMA',
+      provider: {
+        '@id': siteHomeUrl ? `${siteHomeUrl}#school` : '#school'
+      }
+    },
+    mainEntity: {
+      '@type': 'Course',
+      name: 'Kejar Paket C MDS Cendekia',
+      description: 'Program pendidikan kesetaraan setara Sekolah Menengah Atas dengan sistem belajar adaptif.',
+      provider: {
+        '@id': siteHomeUrl ? `${siteHomeUrl}#school` : '#school'
+      },
+      offers: {
+        '@type': 'Offer',
+        category: 'PPDB',
+        priceCurrency: 'IDR',
+        price: landingInfo.value.active_wave.fee,
+        availability: isDaftarDisabled.value ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
+      }
+    }
+  }
+
+  if (ppdbUrl) schema.url = ppdbUrl
+
+  return schema
 })
 
 const documents = ref([

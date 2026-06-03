@@ -5,6 +5,10 @@ import { usePublicNewsService } from '~/services/usePublicNewsService'
 const route = useRoute()
 const { getPublicNewsDetail } = usePublicNewsService()
 const newsId = computed(() => String(route.params.id || ''))
+const siteHomeUrl = useAbsoluteSiteUrl('/')
+const siteBaseUrl = siteHomeUrl.replace(/\/$/, '')
+const fallbackImageUrl = useAbsoluteSiteUrl('/images/beranda.jpg')
+const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}/berita/${newsId.value}` : '')
 
 const { data: newsItem, pending: isLoading } = await useAsyncData(`public-news-detail-${newsId.value}`, async () => {
   const { data } = await getPublicNewsDetail(newsId.value)
@@ -40,9 +44,83 @@ useHead(() => ({
     {
       name: 'description',
       content: newsItem.value?.excerpt || 'Berita dan informasi terbaru MDS Cendekia.'
-    }
+    },
+    {
+      property: 'og:type',
+      content: 'article'
+    },
+    {
+      property: 'og:title',
+      content: newsItem.value?.title || 'Berita MDS Cendekia'
+    },
+    {
+      property: 'og:description',
+      content: newsItem.value?.excerpt || 'Berita dan informasi terbaru MDS Cendekia.'
+    },
+    {
+      name: 'twitter:title',
+      content: newsItem.value?.title || 'Berita MDS Cendekia'
+    },
+    {
+      name: 'twitter:description',
+      content: newsItem.value?.excerpt || 'Berita dan informasi terbaru MDS Cendekia.'
+    },
+    ...(articleUrl.value
+      ? [
+          { property: 'og:url', content: articleUrl.value },
+          { name: 'twitter:url', content: articleUrl.value }
+        ]
+      : []),
+    ...(newsItem.value?.imageUrl || fallbackImageUrl
+      ? [
+          { property: 'og:image', content: newsItem.value?.imageUrl || fallbackImageUrl },
+          { name: 'twitter:image', content: newsItem.value?.imageUrl || fallbackImageUrl }
+        ]
+      : []),
+    ...(newsItem.value?.publishDate
+      ? [
+          { property: 'article:published_time', content: newsItem.value.publishDate }
+        ]
+      : []),
+    ...(newsItem.value?.authorName
+      ? [
+          { property: 'article:author', content: newsItem.value.authorName }
+        ]
+      : [])
   ]
 }))
+
+useJsonLd(() => {
+  if (!newsItem.value) return null
+
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: newsItem.value.title,
+    description: newsItem.value.excerpt || 'Berita dan informasi terbaru MDS Cendekia.',
+    inLanguage: 'id-ID',
+    author: {
+      '@type': 'Person',
+      name: newsItem.value.authorName || 'MDS Cendekia'
+    },
+    publisher: {
+      '@id': siteHomeUrl ? `${siteHomeUrl}#school` : '#school'
+    }
+  }
+
+  if (articleUrl.value) {
+    schema.url = articleUrl.value
+    schema.mainEntityOfPage = articleUrl.value
+  }
+
+  if (newsItem.value.imageUrl || fallbackImageUrl) schema.image = newsItem.value.imageUrl || fallbackImageUrl
+  if (newsItem.value.publishDate) schema.datePublished = newsItem.value.publishDate
+  if (newsItem.value.publishDate) schema.dateModified = newsItem.value.publishDate
+  if (newsItem.value.category) schema.articleSection = newsItem.value.category
+  if (newsItem.value.tags.length) schema.keywords = newsItem.value.tags.join(', ')
+
+  return schema
+})
 </script>
 
 <template>

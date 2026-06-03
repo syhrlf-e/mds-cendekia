@@ -7,8 +7,54 @@ import { usePublicNewsService } from '~/services/usePublicNewsService'
 useHead({
   title: 'Beranda | MDS Cendekia',
   meta: [
-    { name: 'description', content: 'Yayasan Mukti Desa Sasmita Cendekia. Solusi pendidikan kesetaraan terbaik.' }
+    {
+      name: 'description',
+      content: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif dan adaptif melalui program Kejar Paket C untuk membantu peserta didik meraih ijazah resmi.'
+    },
+    {
+      property: 'og:title',
+      content: 'MDS Cendekia | Pendidikan Kesetaraan dan PPDB Paket C'
+    },
+    {
+      property: 'og:description',
+      content: 'Sekolah pendidikan kesetaraan inklusif dengan sistem belajar adaptif untuk semua usia bersama Yayasan Mukti Daris Sasmita Cendekia.'
+    },
+    {
+      name: 'twitter:title',
+      content: 'MDS Cendekia | Pendidikan Kesetaraan dan PPDB Paket C'
+    },
+    {
+      name: 'twitter:description',
+      content: 'Sekolah pendidikan kesetaraan inklusif dengan sistem belajar adaptif untuk semua usia bersama Yayasan Mukti Daris Sasmita Cendekia.'
+    }
   ]
+})
+
+useMdsOrganizationJsonLd()
+useWebsiteJsonLd()
+
+const homeUrl = useAbsoluteSiteUrl('/')
+
+useJsonLd(() => {
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Beranda MDS Cendekia',
+    description: 'Informasi resmi MDS Cendekia tentang pendidikan kesetaraan, profil yayasan, galeri, berita, dan PPDB.',
+    inLanguage: 'id-ID',
+    about: {
+      '@id': homeUrl ? `${homeUrl}#school` : '#school'
+    }
+  }
+
+  if (homeUrl) {
+    schema.url = homeUrl
+    schema.isPartOf = {
+      '@id': `${homeUrl}#website`
+    }
+  }
+
+  return schema
 })
 
 const { listPublicNews } = usePublicNewsService()
