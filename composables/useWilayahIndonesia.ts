@@ -30,6 +30,7 @@ export const useWilayahIndonesia = () => {
   }
 
   const loadProvinsi = async () => {
+
     provinsiOptions.value = await fetchRegion('provinces.json')
   }
 
