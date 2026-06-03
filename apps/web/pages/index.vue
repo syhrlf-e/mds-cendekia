@@ -85,7 +85,7 @@ const galleryFallbackItems: GalleryItem[] = [
     id: 'fallback-1',
     nama: 'Galeri Lingkungan',
     deskripsi: '',
-    gambar: '/images/beranda.jpg',
+    gambar: '/images/logo-mds-main.png',
     isUtama: true,
     urutan: 1,
     createdAt: '',
@@ -319,7 +319,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
             ></div>
             <img
               v-else
-              :src="activeGalleryItem?.gambar || '/images/beranda.jpg'"
+              :src="activeGalleryItem?.gambar || '/images/logo-mds-main.png'"
               :alt="activeGalleryItem?.nama || 'Galeri Lingkungan'"
               loading="lazy"
               decoding="async"
@@ -356,7 +356,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               @click="setActiveGallery(item)"
             >
               <img
-                :src="item.gambar || '/images/beranda.jpg'"
+                :src="item.gambar || '/images/logo-mds-main.png'"
                 :alt="item.nama"
                 loading="lazy"
                 decoding="async"
@@ -426,7 +426,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               :to="buildNewsPath(item)"
               class="flex cursor-pointer flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
             >
-              <img :src="item.imageUrl || '/images/beranda.jpg'" :alt="item.title" loading="lazy" decoding="async" class="h-[250px] w-full object-cover" />
+              <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-[250px] w-full object-cover" />
               <div class="flex flex-col p-[32px]">
                 <div class="mb-[24px] flex items-center justify-between gap-4">
                   <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">

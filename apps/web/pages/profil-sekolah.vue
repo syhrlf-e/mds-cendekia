@@ -99,7 +99,7 @@ useJsonLd(() => {
         <div class="flex w-full max-w-[1000px] flex-col items-center gap-[40px] lg:flex-row lg:items-start lg:gap-[80px]">
           <div class="w-full lg:w-5/12 flex-shrink-0">
             <div class="aspect-[4/5] overflow-hidden rounded-[32px] bg-gray-200 shadow-md">
-              <img src="/images/beranda.jpg" alt="Sambutan pimpinan Yayasan Mukti Daris Sasmita Cendekia untuk pendidikan kesetaraan" class="h-full w-full object-cover" />
+              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-10" />
             </div>
           </div>
 

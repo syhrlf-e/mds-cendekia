@@ -7,7 +7,7 @@ const { getPublicNewsDetail } = usePublicNewsService()
 const newsId = computed(() => String(route.params.id || ''))
 const siteHomeUrl = useAbsoluteSiteUrl('/')
 const siteBaseUrl = siteHomeUrl.replace(/\/$/, '')
-const fallbackImageUrl = useAbsoluteSiteUrl('/images/beranda.jpg')
+const fallbackImageUrl = useAbsoluteSiteUrl('/images/logo-mds-main.png')
 const { data: newsItem, pending: isLoading } = await useAsyncData(`public-news-detail-${newsId.value}`, async () => {
   const { data } = await getPublicNewsDetail(newsId.value)
   return data
@@ -170,7 +170,7 @@ useJsonLd(() => {
       </p>
 
       <img
-        :src="newsItem.imageUrl || '/images/beranda.jpg'"
+        :src="newsItem.imageUrl || '/images/logo-mds-main.png'"
         :alt="newsItem.title"
         class="mb-12 aspect-[16/9] w-full rounded-[24px] object-cover"
       >
