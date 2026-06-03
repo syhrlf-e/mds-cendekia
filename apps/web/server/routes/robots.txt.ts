@@ -14,8 +14,6 @@ export default defineEventHandler((event) => {
 
   return [
     'User-Agent: *',
-    'Disallow: /admin',
-    'Disallow: /admin/',
     'Disallow: /ppdb/daftar',
     'Disallow: /ppdb/daftar/',
     'Disallow: /ppdb/cek-status',

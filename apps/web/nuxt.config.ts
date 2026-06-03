@@ -52,12 +52,6 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/admin': {
-      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
-    },
-    '/admin/**': {
-      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
-    },
     '/ppdb/daftar': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },
