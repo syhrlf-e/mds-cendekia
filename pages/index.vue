@@ -125,38 +125,33 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
 <template>
   <div class="min-h-screen bg-[#FFFFFF] font-sans">
-    <!-- Hero Section -->
-    <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-[80px]">
+    <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-20">
       <div class="public-navbar-container relative z-10 flex flex-col items-center text-center">
-        <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[1680px] max-w-[190vw] -translate-x-1/2 -translate-y-1/2">
+        <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-420 max-w-[190vw] -translate-x-1/2 -translate-y-1/2">
           <span class="absolute inset-0 rounded-full border border-brand/10" />
           <span class="absolute inset-[10%] rounded-full border border-brand/10" />
           <span class="absolute inset-[20%] rounded-full border border-brand/10" />
           <span class="absolute inset-[40%] rounded-full border border-brand/10" />
         </div>
 
-        <!-- Hero Headline -->
-        <h1 class="mb-[38px] max-w-5xl font-heading text-[64px] font-medium leading-tight text-[#3B3B3B]">
+        <h1 class="mb-9.5 max-w-5xl font-heading text-[64px] font-medium leading-tight text-[#3B3B3B]">
           Tidak ada kata terlambat <br />
           <span class="text-[#A7221B]">untuk belajar.</span>
         </h1>
 
-        <!-- Subheadline -->
-        <p class="mb-[58px] max-w-3xl font-heading text-[16px] font-normal leading-normal text-[#3B3B3B]">
+        <p class="mb-14.5 max-w-3xl font-heading text-[16px] font-normal leading-normal text-[#3B3B3B]">
           Kami membuka pintu bagi semua usia untuk mendapatkan pendidikan kesetaraan dan vokasi resmi secara inklusif dan berkelanjutan.
         </p>
 
-        <!-- CTA Button -->
         <NuxtLink
           to="/ppdb"
-          class="flex h-[56px] w-[250px] cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-[16px] font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
+          class="flex h-14 w-62.5 cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-[16px] font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
         >
           Daftarkan Diri Kamu
         </NuxtLink>
       </div>
     </section>
 
-    <!-- Profil / Legalitas Section -->
     <section id="profil" class="relative flex flex-col items-center justify-center bg-[#FFFFFF] pt-[599px] pb-[100px] px-6">
       <div class="public-navbar-container flex flex-col items-center text-center">
         <!-- Headline -->
@@ -231,7 +226,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-[24px] border border-border-soft bg-[#FFFFFF] px-[40px] text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
           <!-- Card Background -->
           <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
-          
+
           <!-- Icon Top Right -->
           <div class="absolute right-[40px] top-[40px] z-10">
             <ArrowRight class="h-8 w-8 text-white transition-transform duration-300 group-hover:-rotate-45" />
@@ -259,7 +254,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     <!-- Section 5: Alur Pendaftaran -->
     <section class="relative flex flex-col items-center justify-center bg-[#FFFFFF] px-6 pt-[370px]">
       <div class="public-navbar-container flex w-full items-start justify-between gap-10">
-        
+
         <!-- Left Column -->
         <div class="sticky top-[120px] max-w-[600px]">
           <h2 class="font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
@@ -327,7 +322,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               class="h-full w-full object-cover"
             />
           </div>
-          
+
           <!-- Kolom Kanan: Teks -->
           <div class="flex-1">
             <h2 class="font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
@@ -376,7 +371,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       <div class="relative flex h-[356px] w-full max-w-[1435px] flex-col items-center justify-center overflow-hidden rounded-[32px] bg-brand text-center shadow-lg">
         <!-- Background Image -->
         <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
-        
+
         <!-- Content -->
         <div class="relative z-10 flex flex-col items-center px-4">
           <h2 class="mb-[42px] font-heading text-[48px] font-semibold text-white">

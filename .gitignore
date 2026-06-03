@@ -6,14 +6,11 @@
 .cache
 dist
 
-# Node dependencies
 node_modules
 
-# Logs
 logs
 *.log
 
-# Misc
 .DS_Store
 .fleet
 .idea
@@ -21,19 +18,15 @@ logs
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Local env files
 .env
 .env.*
 !.env.example
 !.env.production
 
-# Local AI/IDE metadata
 .antigravitycli/
 
-# Internal product/design notes
 context/
 DESIGN.md
 REFERENSI/
 
-# Source favicon export folder; production-ready assets live in public/
 favicon_mds/

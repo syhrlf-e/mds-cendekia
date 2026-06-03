@@ -186,10 +186,10 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
 <template>
   <div class="min-h-screen bg-[#FFFFFF] font-sans">
-    <section class="relative bg-[#FFFFFF] px-6 py-[160px] lg:pt-[200px] lg:pb-[120px]">
+    <section class="relative bg-[#FFFFFF] px-6 py-40 lg:pt-50 lg:pb-30">
       <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="mb-[24px] flex h-[35px] w-fit px-6 items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent font-heading text-[14px] font-medium text-[#525252] z-20">
+        <div class="mb-6 flex h-[35px] w-fit px-6 items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent font-heading text-[14px] font-medium text-[#525252] z-20">
           {{ landingInfo.active_wave.name }}
         </div>
         <h1 class="font-heading text-[48px] lg:text-[64px] font-medium leading-[1.1] tracking-tight lg:whitespace-nowrap z-20">
