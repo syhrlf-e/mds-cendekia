@@ -16,7 +16,7 @@ const clickedHashLabel = ref<string | null>(null)
 const menuItems: NavItem[] = [
   { id: 1, label: 'Beranda', to: '/' },
   { id: 2, label: 'Galeri', to: '#galeri' },
-  { id: 3, label: 'Berita', to: '#berita' },
+  { id: 3, label: 'Berita', to: '/berita' },
   { id: 4, label: 'Profil', to: '/profil-sekolah' },
   { id: 5, label: 'PPDB', to: '/ppdb' }
 ]
@@ -24,6 +24,7 @@ const menuItems: NavItem[] = [
 const getRouteActiveLabel = () => {
   if (route.path.startsWith('/ppdb')) return 'PPDB'
   if (route.path.startsWith('/profil-sekolah')) return 'Profil'
+  if (route.path.startsWith('/berita')) return 'Berita'
 
   if (route.path === '/') {
     if (clickedHashLabel.value && route.hash) return clickedHashLabel.value
@@ -41,13 +42,9 @@ const setActiveFromScroll = () => {
 
   const activationLine = window.scrollY + window.innerHeight * 0.42
   const galeri = document.getElementById('galeri')
-  const berita = document.getElementById('berita')
   const galeriTop = galeri ? galeri.getBoundingClientRect().top + window.scrollY : Number.POSITIVE_INFINITY
-  const beritaTop = berita ? berita.getBoundingClientRect().top + window.scrollY : Number.POSITIVE_INFINITY
 
-  if (activationLine >= beritaTop) {
-    activeMenuLabel.value = 'Berita'
-  } else if (activationLine >= galeriTop) {
+  if (activationLine >= galeriTop) {
     activeMenuLabel.value = 'Galeri'
   } else {
     activeMenuLabel.value = 'Beranda'

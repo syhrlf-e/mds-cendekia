@@ -20,7 +20,7 @@ const articleUrl = computed(() => siteBaseUrl ? `${siteBaseUrl}${articlePath.val
 
 useBreadcrumbJsonLd(() => [
   { name: 'Beranda', path: '/' },
-  { name: 'Berita', path: '/#berita' },
+  { name: 'Berita', path: '/berita' },
   {
     name: newsItem.value?.title || 'Detail Berita',
     path: articlePath.value
@@ -149,7 +149,7 @@ useJsonLd(() => {
     </article>
 
     <article v-else-if="newsItem" class="mx-auto w-full max-w-[860px]">
-      <NuxtLink to="/#berita" class="mb-12 inline-flex items-center gap-2 font-sans text-[15px] font-medium text-[#525252] transition-colors hover:text-brand">
+      <NuxtLink to="/berita" class="mb-12 inline-flex items-center gap-2 font-sans text-[15px] font-medium text-[#525252] transition-colors hover:text-brand">
         <ArrowLeft class="h-4 w-4" />
         Kembali ke Berita
       </NuxtLink>
@@ -197,7 +197,7 @@ useJsonLd(() => {
       <p class="mb-8 max-w-md font-sans text-[16px] leading-relaxed text-[#6B7280]">
         Berita yang kamu cari belum tersedia atau sudah tidak dapat diakses.
       </p>
-      <NuxtLink to="/#berita" class="inline-flex h-[48px] cursor-pointer items-center justify-center rounded-full border border-brand px-6 font-sans text-[16px] font-medium text-brand transition-colors hover:bg-brand hover:text-white">
+      <NuxtLink to="/berita" class="inline-flex h-[48px] cursor-pointer items-center justify-center rounded-full border border-brand px-6 font-sans text-[16px] font-medium text-brand transition-colors hover:bg-brand hover:text-white">
         Kembali ke Berita
       </NuxtLink>
     </section>

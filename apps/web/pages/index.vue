@@ -452,12 +452,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           </div>
         </div>
 
-        <button
+        <NuxtLink
           v-if="hasMorePublicNews"
+          to="/berita"
           class="mt-[80px] flex h-[48px] cursor-pointer items-center justify-center rounded-full border border-[#3B82F6] bg-transparent px-8 font-sans text-[16px] font-medium text-[#3B82F6] transition-colors hover:bg-[#3B82F6] hover:text-white"
         >
           Lihat Lebih Banyak
-        </button>
+        </NuxtLink>
       </div>
     </section>
   </div>
