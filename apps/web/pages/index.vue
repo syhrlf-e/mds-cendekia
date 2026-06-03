@@ -60,20 +60,22 @@ useJsonLd(() => {
 const { listPublicNews } = usePublicNewsService()
 const { listPublicGallery } = usePublicGalleryService()
 
-const { data: publicNewsItems, pending: isNewsLoading } = await useAsyncData('public-news-home', async () => {
+const { data: publicNewsItems, pending: isNewsLoading } = useLazyAsyncData('public-news-home', async () => {
   const { data } = await listPublicNews(5)
   return data
 }, {
+  server: false,
   default: () => []
 })
 
 const visiblePublicNewsItems = computed(() => publicNewsItems.value.slice(0, 4))
 const hasMorePublicNews = computed(() => publicNewsItems.value.length > 4)
 
-const { data: publicGalleryItems, pending: isGalleryLoading } = await useAsyncData('public-gallery-home', async () => {
+const { data: publicGalleryItems, pending: isGalleryLoading } = useLazyAsyncData('public-gallery-home', async () => {
   const { data } = await listPublicGallery(12)
   return data
 }, {
+  server: false,
   default: () => []
 })
 
@@ -225,7 +227,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <!-- Card -->
         <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-[24px] border border-border-soft bg-[#FFFFFF] px-[40px] text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
           <!-- Card Background -->
-          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
+          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
 
           <!-- Icon Top Right -->
           <div class="absolute right-[40px] top-[40px] z-10">
@@ -319,6 +321,8 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               v-else
               :src="activeGalleryItem?.gambar || '/images/beranda.jpg'"
               :alt="activeGalleryItem?.nama || 'Galeri Lingkungan'"
+              loading="lazy"
+              decoding="async"
               class="h-full w-full object-cover"
             />
           </div>
@@ -354,6 +358,8 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               <img
                 :src="item.gambar || '/images/beranda.jpg'"
                 :alt="item.nama"
+                loading="lazy"
+                decoding="async"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <span
@@ -370,7 +376,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     <section class="relative flex flex-col items-center justify-center bg-[#FFFFFF] px-6 pt-[240px] pb-[100px]">
       <div class="relative flex h-[356px] w-full max-w-[1435px] flex-col items-center justify-center overflow-hidden rounded-[32px] bg-brand text-center shadow-lg">
         <!-- Background Image -->
-        <img src="/images/cardgradasi.png" alt="" aria-hidden="true" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
+        <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
 
         <!-- Content -->
         <div class="relative z-10 flex flex-col items-center px-4">
@@ -420,7 +426,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               :to="buildNewsPath(item)"
               class="flex cursor-pointer flex-col overflow-hidden rounded-[32px] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
             >
-              <img :src="item.imageUrl || '/images/beranda.jpg'" :alt="item.title" class="h-[250px] w-full object-cover" />
+              <img :src="item.imageUrl || '/images/beranda.jpg'" :alt="item.title" loading="lazy" decoding="async" class="h-[250px] w-full object-cover" />
               <div class="flex flex-col p-[32px]">
                 <div class="mb-[24px] flex items-center justify-between gap-4">
                   <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">

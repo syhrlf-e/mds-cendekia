@@ -52,6 +52,14 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/': {
+      swr: 300
+    },
+    '/images/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400'
+      }
+    },
     '/ppdb/daftar': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },
