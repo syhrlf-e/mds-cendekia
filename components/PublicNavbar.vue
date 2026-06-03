@@ -208,11 +208,6 @@ const handleNavClick = async (item: NavItem) => {
   }
 }
 
-const handlePendaftaran = () => {
-  mobileMenuOpen.value = false
-  router.push('/ppdb')
-}
-
 </script>
 
 <template>
@@ -230,7 +225,7 @@ const handlePendaftaran = () => {
       >
         <div class="flex items-center justify-between">
           <!-- Logo -->
-          <button type="button" class="group flex cursor-pointer items-center gap-3" aria-label="Ke beranda" @click="goToHome">
+          <NuxtLink to="/" class="group flex cursor-pointer items-center gap-3" aria-label="Ke beranda" @click.prevent="goToHome">
             <img
               src="/images/logo-mds-main.png"
               alt="Logo MDS Cendekia"
@@ -238,15 +233,15 @@ const handlePendaftaran = () => {
               fetchpriority="high"
               loading="eager"
             />
-          </button>
+          </NuxtLink>
 
           <!-- Desktop Menu -->
           <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[64px] lg:flex">
-            <button
+            <NuxtLink
               v-for="(item, index) in menuItems"
               :key="item.id"
               :ref="(el) => { if (el) itemRefs[index] = el as HTMLElement }"
-              type="button"
+              :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
               class="group relative cursor-pointer py-2 text-[16px] font-medium font-heading transition-colors duration-300"
               :class="
                 activeMenuLabel === item.label
@@ -254,10 +249,10 @@ const handlePendaftaran = () => {
                   : 'text-[#3A3A3A] hover:text-brand'
               "
               :aria-current="activeMenuLabel === item.label ? 'page' : undefined"
-              @click="handleNavClick(item)"
+              @click.prevent="handleNavClick(item)"
             >
               <span>{{ item.label }}</span>
-            </button>
+            </NuxtLink>
 
             <span
               class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
@@ -267,13 +262,13 @@ const handlePendaftaran = () => {
 
           <!-- Actions -->
           <div class="flex items-center gap-3">
-            <button
-              type="button"
+            <NuxtLink
+              to="/ppdb"
               class="hidden cursor-pointer items-center justify-center rounded-full border border-brand bg-[#FFFFFF] px-6 py-2.5 text-[16px] font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
-              @click="handlePendaftaran"
+              @click="mobileMenuOpen = false"
             >
               <span>Daftarkan Diri Kamu</span>
-            </button>
+            </NuxtLink>
 
             <!-- Mobile Toggle -->
             <div class="flex items-center gap-3 lg:hidden">
@@ -293,10 +288,10 @@ const handlePendaftaran = () => {
         <!-- Mobile Menu Panel -->
         <div v-show="mobileMenuOpen" class="mt-4 border-t border-border-soft lg:hidden">
           <div class="space-y-2 pb-4 pt-4">
-            <button
+            <NuxtLink
               v-for="(item, index) in menuItems"
               :key="item.id"
-              type="button"
+              :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
               :style="{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : '0ms' }"
               class="group flex w-full translate-y-2 cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left opacity-0 transition-all duration-300"
               :class="[
@@ -305,23 +300,23 @@ const handlePendaftaran = () => {
                   : 'text-[#3A3A3A] hover:bg-bg-base',
                 mobileMenuOpen ? 'animate-slide-in' : ''
               ]"
-              @click="handleNavClick(item)"
+              @click.prevent="handleNavClick(item)"
             >
               <span class="font-medium font-heading text-[16px] transition-transform group-hover:translate-x-1">{{ item.label }}</span>
               <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
-            </button>
+            </NuxtLink>
           </div>
 
           <div class="border-t border-border-soft pb-2 pt-4">
-            <button
-              type="button"
+            <NuxtLink
+              to="/ppdb"
               class="flex w-full translate-y-2 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-[#FFFFFF] px-4 py-3 font-medium font-heading text-[16px] text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
               :class="mobileMenuOpen ? 'animate-slide-in' : ''"
               style="transition-delay: 300ms"
-              @click="handlePendaftaran"
+              @click="mobileMenuOpen = false"
             >
               <span>Daftarkan Diri Kamu</span>
-            </button>
+            </NuxtLink>
           </div>
         </div>
       </div>

@@ -89,19 +89,26 @@ const formatDateRange = (startDate: string, endDate: string) => {
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <NuxtLink
+            v-if="!isDaftarDisabled"
+            to="/ppdb/daftar"
+            class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-[18px] font-medium text-white transition-opacity hover:opacity-90"
+          >
+            {{ daftarLabel }}
+          </NuxtLink>
           <button
+            v-else
             :disabled="isDaftarDisabled"
-            @click="$router.push('/ppdb/daftar')"
             class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-[18px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {{ daftarLabel }}
           </button>
-          <button
-            @click="$router.push('/ppdb/cek-status')"
+          <NuxtLink
+            to="/ppdb/cek-status"
             class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent px-8 font-heading text-[18px] font-medium text-[#3B3B3B] transition-colors hover:bg-[#F9FAFB]"
           >
             Cek Status Pendaftaran
-          </button>
+          </NuxtLink>
         </div>
 
       </div>

@@ -99,12 +99,12 @@ const formatNewsDate = (date: string) => {
         </p>
 
         <!-- CTA Button -->
-        <button
-          @click="$router.push('/ppdb')"
+        <NuxtLink
+          to="/ppdb"
           class="flex h-[56px] w-[250px] cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-[16px] font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
         >
           Daftarkan Diri Kamu
-        </button>
+        </NuxtLink>
       </div>
     </section>
 
@@ -122,12 +122,12 @@ const formatNewsDate = (date: string) => {
         </p>
 
         <!-- CTA Button -->
-        <button 
-          @click="$router.push('/profil-sekolah')"
+        <NuxtLink
+          to="/profil-sekolah"
           class="flex h-[48px] w-[252px] cursor-pointer items-center justify-center rounded-full border border-border font-heading text-[16px] font-normal text-[#3B3B3B] transition-colors hover:bg-gray-50 focus:outline-none"
         >
           Selengkapnya tentang kami
-        </button>
+        </NuxtLink>
       </div>
     </section>
     <!-- Section 3: Fitur / Sistem Belajar -->
@@ -337,9 +337,9 @@ const formatNewsDate = (date: string) => {
           <p class="mb-[42px] max-w-[800px] font-sans text-[20px] font-medium text-white">
             Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
           </p>
-          <button class="flex h-[58px] w-[315px] cursor-pointer items-center justify-center rounded-full bg-white font-sans text-[20px] font-medium text-brand transition-opacity hover:opacity-90">
+          <NuxtLink to="/ppdb" class="flex h-[58px] w-[315px] cursor-pointer items-center justify-center rounded-full bg-white font-sans text-[20px] font-medium text-brand transition-opacity hover:opacity-90">
             Daftarkan Dirikamu Disini
-          </button>
+          </NuxtLink>
         </div>
       </div>
     </section>
