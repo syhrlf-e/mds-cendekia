@@ -1,5 +1,5 @@
-import { adminApiEndpoints } from '~/services/adminApiEndpoints'
-import type { GalleryDto, GalleryItem } from '~/types/adminGallery'
+import { publicApiEndpoints } from '~/services/publicApiEndpoints'
+import type { GalleryDto, GalleryItem } from '~/types/gallery'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -63,7 +63,7 @@ export const usePublicGalleryService = () => {
   const { get } = useApi()
 
   const listPublicGallery = async (limit = 12) => {
-    const { data, error } = await get<any>(adminApiEndpoints.gallery.list, {
+    const { data, error } = await get<any>(publicApiEndpoints.gallery.list, {
       query: { limit: String(limit) },
       showErrorToast: false
     })

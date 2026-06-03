@@ -1,9 +1,5 @@
 import type { NewsDto, PublicNewsItem } from '~/types/news'
-
-export const publicNewsEndpoints = {
-  list: '/api/berita/all',
-  detail: '/api/berita/all'
-} as const
+import { publicApiEndpoints } from '~/services/publicApiEndpoints'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -86,7 +82,7 @@ export const usePublicNewsService = () => {
   const { get } = useApi()
 
   const listPublicNews = async (limit = 4) => {
-    const { data, error } = await get<any>(publicNewsEndpoints.list, {
+    const { data, error } = await get<any>(publicApiEndpoints.berita.list, {
       query: { limit: String(limit) },
       showErrorToast: false
     })
@@ -111,7 +107,7 @@ export const usePublicNewsService = () => {
   }
 
   const getPublicNewsDetail = async (identifier: string) => {
-    const { data, error } = await get<any>(publicNewsEndpoints.detail, {
+    const { data, error } = await get<any>(publicApiEndpoints.berita.detail, {
       query: { limit: '100' },
       showErrorToast: false
     })

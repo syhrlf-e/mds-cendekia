@@ -1,23 +1,20 @@
 <p align="center">
-  <img src="./public/images/logo-mds-main.png" alt="Logo MDS Cendekia" width="150" />
+  <img src="./apps/web/public/images/logo-mds-main.png" alt="Logo MDS Cendekia" width="150" />
 </p>
 
-<h1 align="center">MDS Cendekia PPDB</h1>
+<h1 align="center">MDS Cendekia</h1>
 
 <p align="center">
-  Aplikasi frontend PPDB MDS Cendekia berbasis Nuxt 4 untuk alur pendaftaran calon siswa, cek status pendaftaran, dan panel administrasi.
-</p>
-
-<p align="center">
-  <img src="./public/favicon-32x32.png" alt="MDS Cendekia icon" width="24" height="24" />
+  Monorepo frontend MDS Cendekia berbasis Nuxt 4 untuk website publik sekolah dan panel administrasi terpisah.
 </p>
 
 ## Ringkasan
 
-Project ini berisi frontend PPDB MDS Cendekia dengan dua area utama:
+Project ini berisi dua aplikasi Nuxt yang dideploy sebagai dua project Vercel terpisah:
 
-- Area publik untuk pendaftaran, upload berkas, cek status, dan kartu peserta.
-- Area admin untuk login, dashboard, pengelolaan pendaftar, dan pengaturan.
+- `apps/web` untuk website publik di `https://mdscendekia.oirul.com`.
+- `apps/admin` untuk panel admin di `https://mdspanel.mdscendekia.oirul.com`.
+- Root app lama masih dipertahankan sementara sebagai fallback selama migrasi split.
 - Template email Handlebars untuk kebutuhan backend NestJS + Resend.
 - Integrasi API langsung dari browser ke backend melalui `NUXT_PUBLIC_API_BASE_URL`.
 
@@ -34,34 +31,11 @@ Project ini berisi frontend PPDB MDS Cendekia dengan dua area utama:
 ## Struktur Penting
 
 ```text
-assets/css/main.css              Global style dan Tailwind entry
-components/                      Reusable UI components
-composables/                     Logic reusable untuk API, form PPDB, wilayah, toast
+apps/web/                        Website publik, SEO, sitemap, robots, PPDB publik
+apps/admin/                      Panel admin, login, dashboard, pengelolaan data
 email-templates/                 Template email .hbs dan dokumentasi untuk backend
-layouts/admin.vue                Layout khusus admin
-middleware/admin-auth.ts         Guard halaman admin
-pages/                           Route Nuxt untuk publik dan admin
-public/                          Asset publik, logo, favicon, manifest
+assets/, pages/, layouts/        Root app legacy sementara selama migrasi split
 ```
-
-Dokumen PRD, catatan desain eksploratif, dan source export favicon disimpan sebagai dokumen internal lokal dan tidak ikut dipublikasikan ke repository.
-
-## Asset Publik
-
-Logo utama dan favicon sudah tersedia di folder `public` agar bisa langsung dipakai oleh browser dan GitHub README:
-
-```text
-public/images/logo-mds-main.png
-public/favicon.ico
-public/favicon-16x16.png
-public/favicon-32x32.png
-public/apple-touch-icon.png
-public/android-chrome-192x192.png
-public/android-chrome-512x512.png
-public/site.webmanifest
-```
-
-Konfigurasi favicon sudah didaftarkan di `nuxt.config.ts` melalui `app.head`.
 
 ## Setup Lokal
 
@@ -71,49 +45,56 @@ Install dependency:
 npm install
 ```
 
-Jalankan development server:
+Jalankan website publik:
 
 ```bash
-npm run dev
+npm run dev:web
+```
+
+Jalankan panel admin:
+
+```bash
+npm run dev:admin
 ```
 
 Secara default dev server berjalan di:
 
 ```text
-http://127.0.0.1:3000
+Web   : http://127.0.0.1:3000
+Admin : http://127.0.0.1:3001
 ```
 
-## Environment dan Konfigurasi API
+## Environment dan API
 
-Konfigurasi publik saat ini berada di `nuxt.config.ts`:
+Base API production saat ini memakai:
 
-```ts
-runtimeConfig: {
-  public: {
-    apiBaseUrl: 'https://api.oirul.com',
-    apiTimeoutMs: '15000',
-    ppdbProgramId: '1',
-    ppdbGelombangId: '3'
-  }
-}
+```text
+https://api.oirul.com
 ```
 
-Catatan untuk backend:
+Environment variable yang wajib ada di project web dan admin:
 
-- Base API production saat ini memakai `https://api.oirul.com`.
-- Endpoint backend dipanggil langsung dari browser melalui `NUXT_PUBLIC_API_BASE_URL`.
-- Endpoint registrasi siswa, cek status, upload berkas, dan revisi berkas langsung dikirim ke backend `/register/*`.
+```text
+NUXT_PUBLIC_API_BASE_URL=https://api.oirul.com
+```
+
+Catatan backend:
+
+- Endpoint backend dipanggil langsung dari browser.
+- Endpoint registrasi siswa, cek status, upload berkas, dan revisi berkas dikirim ke backend `/register/*`.
 - PDF kartu peserta digenerate oleh backend, bukan frontend.
 
 ## Script
 
 ```bash
-npm run dev       # menjalankan dev server
-npm run build     # build production
-npm run preview   # preview hasil build
-npm run lint      # cek lint
-npm run lint:fix  # perbaiki lint otomatis
-npm run check     # typecheck Nuxt
+npm run dev:web       # menjalankan website publik
+npm run dev:admin     # menjalankan panel admin
+npm run build:web     # build website publik
+npm run build:admin   # build panel admin
+npm run lint:web      # lint website publik
+npm run lint:admin    # lint panel admin
+npm run check:web     # typecheck website publik
+npm run check:admin   # typecheck panel admin
 ```
 
 ## Alur PPDB Publik
@@ -135,33 +116,39 @@ Alur pendaftaran:
 5. Calon siswa mengupload berkas persyaratan.
 6. Backend memproses data, berkas, email, dan PDF kartu peserta.
 
-## Endpoint Backend Yang Digunakan
-
-Endpoint utama yang dipakai frontend:
-
-```text
-POST /auth/login
-POST /register/siswa
-POST /register/cek-status
-POST /register/berkas
-```
-
-Untuk dokumentasi detail backend, gunakan API docs backend:
-
-```text
-https://api.oirul.com/api-docs
-```
-
 ## Admin
 
-Halaman admin:
+Admin berada di subdomain panel, sehingga route admin tidak lagi memakai prefix `/admin`.
 
-- `/admin/login`
-- `/admin/dashboard`
-- `/admin/pendaftaran`
-- `/admin/pengaturan`
+Halaman admin utama:
 
-Admin login menggunakan endpoint backend `/auth/login`.
+- `/login`
+- `/dashboard`
+- `/pendaftaran`
+- `/siswa`
+- `/berita`
+- `/timeline-ppdb`
+- `/galeri`
+- `/paket-sekolah`
+- `/pengaturan`
+
+Admin login menggunakan endpoint backend `/auth/login`. Panel admin diberi `noindex` melalui konfigurasi Nuxt agar tidak masuk indeks Google.
+
+## Deploy Vercel
+
+Gunakan dua project Vercel dari repository yang sama:
+
+```text
+Project web
+Root Directory : apps/web
+Domain         : mdscendekia.oirul.com
+
+Project admin
+Root Directory : apps/admin
+Domain         : mdspanel.mdscendekia.oirul.com
+```
+
+Setelah mengubah environment variable di Vercel, lakukan redeploy agar nilai env masuk ke deployment terbaru.
 
 ## Email Templates
 
@@ -178,21 +165,23 @@ Isi utama:
 - `registrasi_ditolak.hbs`
 - `README.md`
 
-Backend NestJS + Resend dapat membaca file `.hbs`, mengisi variabel, lalu mengirim email melalui Resend. Detail implementasi backend ada di `email-templates/README.md`.
+Backend NestJS + Resend dapat membaca file `.hbs`, mengisi variabel, lalu mengirim email melalui Resend.
 
 ## Quality Check
 
 Sebelum push ke GitHub, jalankan:
 
 ```bash
-npm run lint
-npm run check
-npm run build
+npm run lint:web
+npm run lint:admin
+npm run check:web
+npm run check:admin
+npm run build:web
+npm run build:admin
 ```
 
 ## Catatan Development
 
-- Project ini desktop focused untuk halaman admin.
-- UI mengikuti design language internal MDS Cendekia yang dijaga konsisten di komponen aplikasi.
+- Project ini sedang dalam fase migrasi dari satu Nuxt app gabungan menuju dua app Vercel terpisah.
 - Jangan mengubah nama field request backend tanpa mengecek API docs terbaru.
 - Untuk perubahan alur pendaftaran, sinkronkan dengan backend karena sebagian proses final seperti PDF dan email berada di sisi backend.

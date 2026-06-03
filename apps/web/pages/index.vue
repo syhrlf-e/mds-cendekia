@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, Instagram, Facebook, Youtube, MapPin, Phone, Mail } from 'lucide-vue-next'
-import type { GalleryItem } from '~/types/adminGallery'
+import type { GalleryItem } from '~/types/gallery'
 import { usePublicGalleryService } from '~/services/usePublicGalleryService'
 import { usePublicNewsService } from '~/services/usePublicNewsService'
 

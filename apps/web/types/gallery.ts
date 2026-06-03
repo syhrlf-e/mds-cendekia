@@ -23,11 +23,3 @@ export type GalleryItem = {
   createdAt: string
   updatedAt: string
 }
-
-export type GalleryFormState = {
-  nama: string
-  deskripsi: string
-  gambar: File | null
-  isUtama?: boolean
-  urutan?: number
-}
