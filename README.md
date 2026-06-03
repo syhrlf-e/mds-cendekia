@@ -2,7 +2,7 @@
   <img src="./apps/web/public/images/logo-mds-main.png" alt="Logo MDS Cendekia" width="150" />
 </p>
 
-<h1 align="center">MDS Cendekia</h1>
+<h1 align="center">Yayasan Mukti Daris Sasmita Cendekia</h1>
 
 <p align="center">
   Frontend website profil sekolah dan panel administrasi MDS Cendekia berbasis Nuxt.
