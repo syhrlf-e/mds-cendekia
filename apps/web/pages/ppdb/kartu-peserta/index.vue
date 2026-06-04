@@ -13,7 +13,7 @@ useHead({ title: 'Kartu Peserta | PPDB MDS Cendekia' })
       <h1 class="mb-2 font-heading text-2xl font-semibold text-text-primary">
         Kartu Peserta Belum Tersedia
       </h1>
-      <p class="mb-6 text-sm leading-[1.6] text-text-secondary">
+      <p class="mb-6 text-sm leading-relaxed text-text-secondary">
         Data kartu peserta harus diterbitkan dari API resmi. Halaman ini tidak lagi menampilkan data lokal.
       </p>
       <AppButton variant="secondary" @click="$router.push('/ppdb')">

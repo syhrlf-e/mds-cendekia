@@ -18,15 +18,15 @@ defineEmits(['click'])
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'rounded-full bg-brand px-[22px] py-[11px] text-[15px] text-white hover:bg-brand-hover focus:ring-brand'
+      return 'rounded-full bg-brand px-5 py-3 text-sm text-white hover:bg-brand-hover focus:ring-brand'
     case 'secondary':
-      return 'rounded-full border-[1.5px] border-brand bg-transparent px-[22px] py-[11px] text-[15px] text-brand hover:bg-primary-50 focus:ring-brand'
+      return 'rounded-full border-2 border-brand bg-transparent px-5 py-3 text-sm text-brand hover:bg-primary-50 focus:ring-brand'
     case 'ghost':
-      return 'rounded-lg border border-border-soft bg-[#fafafc] px-4 py-2 text-[13px] text-text-primary hover:bg-bg-parchment focus:ring-brand'
+      return 'rounded-lg border border-border-soft bg-bg-surface px-4 py-2 text-sm text-text-primary hover:bg-bg-parchment focus:ring-brand'
     case 'danger':
-      return 'rounded-full bg-error px-[22px] py-[11px] text-[15px] text-white hover:bg-red-700 focus:ring-error'
+      return 'rounded-full bg-error px-5 py-3 text-sm text-white hover:bg-red-700 focus:ring-error'
     case 'success':
-      return 'rounded-full bg-success px-[22px] py-[11px] text-[15px] text-white hover:bg-green-700 focus:ring-success'
+      return 'rounded-full bg-success px-5 py-3 text-sm text-white hover:bg-green-700 focus:ring-success'
     default:
       return ''
   }

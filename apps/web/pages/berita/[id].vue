@@ -135,47 +135,47 @@ useJsonLd(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FFFFFF] px-6 pb-[120px] pt-[150px]">
+  <main class="min-h-screen bg-white px-6 pb-30 pt-[150px]">
     <article v-if="isLoading" class="mx-auto w-full max-w-[860px]">
-      <div class="mb-8 h-6 w-40 animate-pulse rounded-full bg-[#E5E7EB]" />
-      <div class="mb-5 h-14 animate-pulse rounded-2xl bg-[#E5E7EB]" />
-      <div class="mb-10 h-6 w-72 animate-pulse rounded-full bg-[#E5E7EB]" />
-      <div class="mb-12 aspect-[16/9] animate-pulse rounded-[24px] bg-[#E5E7EB]" />
+      <div class="mb-8 h-6 w-40 animate-pulse rounded-full bg-gray-200" />
+      <div class="mb-5 h-14 animate-pulse rounded-2xl bg-gray-200" />
+      <div class="mb-10 h-6 w-72 animate-pulse rounded-full bg-gray-200" />
+      <div class="mb-12 aspect-[16/9] animate-pulse rounded-3xl bg-gray-200" />
       <div class="space-y-4">
-        <div class="h-5 animate-pulse rounded-full bg-[#E5E7EB]" />
-        <div class="h-5 animate-pulse rounded-full bg-[#E5E7EB]" />
-        <div class="h-5 w-10/12 animate-pulse rounded-full bg-[#E5E7EB]" />
+        <div class="h-5 animate-pulse rounded-full bg-gray-200" />
+        <div class="h-5 animate-pulse rounded-full bg-gray-200" />
+        <div class="h-5 w-10/12 animate-pulse rounded-full bg-gray-200" />
       </div>
     </article>
 
     <article v-else-if="newsItem" class="mx-auto w-full max-w-[860px]">
-      <NuxtLink to="/berita" class="mb-12 inline-flex items-center gap-2 font-sans text-[15px] font-medium text-[#525252] transition-colors hover:text-brand">
+      <NuxtLink to="/berita" class="mb-12 inline-flex items-center gap-2 font-sans text-sm font-medium text-neutral-600 transition-colors hover:text-brand">
         <ArrowLeft class="h-4 w-4" />
         Kembali ke Berita
       </NuxtLink>
 
       <div class="mb-6 flex flex-wrap items-center gap-3">
-        <span class="rounded-full border border-[#3B82F6] px-4 py-1 font-sans text-[14px] font-medium text-[#3B82F6]">
+        <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
           {{ newsItem.category || 'Berita' }}
         </span>
-        <span class="font-sans text-[14px] text-[#9CA3AF]">{{ formattedDate }}</span>
+        <span class="font-sans text-sm text-gray-400">{{ formattedDate }}</span>
       </div>
 
-      <h1 class="mb-6 font-heading text-[48px] font-medium leading-tight text-[#3B3B3B]">
+      <h1 class="mb-6 font-heading text-5xl font-medium leading-tight text-text-public-heading">
         {{ newsItem.title }}
       </h1>
 
-      <p v-if="newsItem.authorName" class="mb-10 font-sans text-[16px] text-[#6B7280]">
+      <p v-if="newsItem.authorName" class="mb-10 font-sans text-base text-gray-500">
         Ditulis oleh {{ newsItem.authorName }}
       </p>
 
       <img
         :src="newsItem.imageUrl || '/images/logo-mds-main.png'"
         :alt="newsItem.title"
-        class="mb-12 aspect-[16/9] w-full rounded-[24px] object-cover"
+        class="mb-12 aspect-[16/9] w-full rounded-3xl object-cover"
       >
 
-      <div class="space-y-6 font-sans text-[20px] leading-[1.9] text-[#3B3B3B]">
+      <div class="space-y-6 font-sans text-xl leading-[1.9] text-text-public-heading">
         <p v-for="paragraph in articleParagraphs" :key="paragraph">
           {{ paragraph }}
         </p>
@@ -185,7 +185,7 @@ useJsonLd(() => {
         <span
           v-for="tag in newsItem.tags"
           :key="tag"
-          class="rounded-full bg-[#F3F4F6] px-4 py-2 font-sans text-[14px] text-[#525252]"
+          class="rounded-full bg-gray-100 px-4 py-2 font-sans text-sm text-neutral-600"
         >
           #{{ tag }}
         </span>
@@ -193,11 +193,11 @@ useJsonLd(() => {
     </article>
 
     <section v-else class="mx-auto flex min-h-[480px] w-full max-w-[860px] flex-col items-center justify-center text-center">
-      <h1 class="mb-4 font-heading text-[40px] font-medium text-[#3B3B3B]">Berita tidak ditemukan</h1>
-      <p class="mb-8 max-w-md font-sans text-[16px] leading-relaxed text-[#6B7280]">
+      <h1 class="mb-4 font-heading text-4xl font-medium text-text-public-heading">Berita tidak ditemukan</h1>
+      <p class="mb-8 max-w-md font-sans text-base leading-relaxed text-gray-500">
         Berita yang kamu cari belum tersedia atau sudah tidak dapat diakses.
       </p>
-      <NuxtLink to="/berita" class="inline-flex h-[48px] cursor-pointer items-center justify-center rounded-full border border-brand px-6 font-sans text-[16px] font-medium text-brand transition-colors hover:bg-brand hover:text-white">
+      <NuxtLink to="/berita" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full border border-brand px-6 font-sans text-base font-medium text-brand transition-colors hover:bg-brand hover:text-white">
         Kembali ke Berita
       </NuxtLink>
     </section>

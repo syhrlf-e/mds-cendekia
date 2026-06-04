@@ -68,7 +68,7 @@ onMounted(() => {
           ]"
         >
           <div v-if="showHeader" class="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
-            <h3 v-if="title" class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
+            <h3 v-if="title" class="text-base font-semibold leading-tight tracking-normal text-text-primary">
               {{ title }}
             </h3>
             <slot name="header" v-else></slot>

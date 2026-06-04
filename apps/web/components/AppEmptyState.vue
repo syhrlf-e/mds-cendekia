@@ -16,11 +16,11 @@ withDefaults(defineProps<{
       </slot>
     </div>
 
-    <h3 class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
+    <h3 class="text-base font-semibold leading-tight tracking-normal text-text-primary">
       {{ title }}
     </h3>
 
-    <p v-if="description" class="max-w-70 text-sm leading-[1.43] tracking-[-0.15px] text-text-secondary">
+    <p v-if="description" class="max-w-70 text-sm leading-snug tracking-normal text-text-secondary">
       {{ description }}
     </p>
 

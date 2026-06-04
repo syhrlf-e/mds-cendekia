@@ -101,11 +101,11 @@ const handleInput = (event: Event) => {
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'h-11 w-full rounded-lg border bg-bg-surface text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
+          'h-11 w-full rounded-lg border bg-bg-surface text-base leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted',
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
-            ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
-            : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
+            ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
+            : 'border-border focus:border-brand focus:ring-3 focus:ring-brand/12',
           disabled
             ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100'
             : ''

@@ -37,7 +37,7 @@ const getToastClass = (type: string) => {
         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/22">
           <component :is="getIcon(toast.type)" class="h-5 w-5" />
         </span>
-        <span class="min-w-0 pr-2 text-sm font-medium leading-[1.4]">{{ toast.message }}</span>
+        <span class="min-w-0 pr-2 text-sm font-medium leading-snug">{{ toast.message }}</span>
       </div>
     </TransitionGroup>
   </div>

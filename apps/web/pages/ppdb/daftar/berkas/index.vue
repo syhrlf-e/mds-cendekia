@@ -604,7 +604,7 @@ const submitForm = async () => {
             class="flex items-center gap-3 text-sm"
           >
             <span
-              class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold"
+              class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-semibold"
               :class="[
                 step.done
                   ? 'border-success bg-status-approved-bg text-status-approved-text'

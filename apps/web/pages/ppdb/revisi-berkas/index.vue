@@ -13,7 +13,7 @@ useHead({ title: 'Revisi Berkas | PPDB MDS Cendekia' })
       <h1 class="mb-2 font-heading text-2xl font-semibold text-text-primary">
         Link Revisi Diperlukan
       </h1>
-      <p class="mb-6 text-sm leading-[1.6] text-text-secondary">
+      <p class="mb-6 text-sm leading-relaxed text-text-secondary">
         Revisi berkas hanya bisa dibuka melalui link resmi yang diterbitkan oleh API.
       </p>
       <AppButton variant="secondary" @click="$router.push('/ppdb')">

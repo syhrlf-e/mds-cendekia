@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
     <Teleport to="body">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[80] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+        class="fixed inset-0 z-80 flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       >
         <div class="w-full max-w-md rounded-t-3xl bg-bg-surface p-5 shadow-2xl sm:rounded-3xl">
           <div class="mb-5 text-center">
@@ -193,14 +193,14 @@ onBeforeUnmount(() => {
             </h3>
           </div>
 
-          <div class="relative grid h-[220px] grid-cols-[0.8fr_1.25fr_1fr] gap-2 overflow-hidden">
+          <div class="relative grid h-55 grid-cols-[0.8fr_1.25fr_1fr] gap-2 overflow-hidden">
             <div class="pointer-events-none absolute left-0 right-0 top-1/2 z-0 h-11 -translate-y-1/2 rounded-xl border border-brand bg-primary-50/70"></div>
             <div class="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-gradient-to-b from-white to-white/0"></div>
             <div class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-white to-white/0"></div>
 
             <div
               ref="dayScroller"
-              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-[88px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-22 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               @scroll="handleWheelScroll($event, dayOptions, (value) => draftDay = value)"
             >
               <button
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
 
             <div
               ref="monthScroller"
-              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-[88px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-22 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               @scroll="handleWheelScroll($event, monthOptions.map((item) => item.value), (value) => draftMonth = value)"
             >
               <button
@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
 
             <div
               ref="yearScroller"
-              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-[88px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              class="relative z-10 snap-y snap-mandatory overflow-y-auto py-22 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               @scroll="handleWheelScroll($event, yearOptions, (value) => draftYear = value)"
             >
               <button

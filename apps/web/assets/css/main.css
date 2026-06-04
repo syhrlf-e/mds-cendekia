@@ -28,6 +28,7 @@
   --color-bg-base: #f9fafb;
   --color-bg-surface: #ffffff;
   --color-bg-parchment: #f5f5f7;
+  --color-bg-public-muted: #f8f9fa;
   
   --color-brand: #a7221b;
   --color-brand-hover: #bb221a;
@@ -39,9 +40,12 @@
   --color-text-primary: #1d1d1f;
   --color-text-secondary: #6b7280;
   --color-text-muted: #86868b;
+  --color-text-public-heading: #3b3b3b;
+  --color-text-public-body: #525252;
   
   --color-border: #e5e7eb;
   --color-border-soft: rgba(0, 0, 0, 0.06);
+  --color-border-public-strong: #3b3b3b;
   
   --color-success: #16a34a;
   --color-error: #dc2626;

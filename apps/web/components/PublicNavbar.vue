@@ -223,7 +223,7 @@ const handleNavClick = async (item: NavItem) => {
 </script>
 
 <template>
-  <nav class="fixed left-0 right-0 top-0 z-[60] bg-white/80 backdrop-blur-md transition-all duration-300">
+  <nav class="fixed left-0 right-0 top-0 z-60 bg-white/80 backdrop-blur-md transition-all duration-300">
     <div
       class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
       :class="mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
@@ -254,11 +254,11 @@ const handleNavClick = async (item: NavItem) => {
               :key="item.id"
               :ref="(el) => setItemRef(el, index)"
               :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
-              class="group relative cursor-pointer py-2 text-[16px] font-medium font-heading transition-colors duration-300"
+              class="group relative cursor-pointer py-2 text-base font-medium font-heading transition-colors duration-300"
               :class="
                 activeMenuLabel === item.label
                   ? 'text-brand'
-                  : 'text-[#3A3A3A] hover:text-brand'
+                  : 'text-text-public-heading hover:text-brand'
               "
               :aria-current="activeMenuLabel === item.label ? 'page' : undefined"
               @click.prevent="handleNavClick(item)"
@@ -267,7 +267,7 @@ const handleNavClick = async (item: NavItem) => {
             </NuxtLink>
 
             <span
-              class="absolute -bottom-1 left-0 h-[3px] origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
+              class="absolute -bottom-1 left-0 h-0.75 origin-left rounded-t-sm bg-brand transition-all duration-300 ease-in-out"
               :style="indicatorStyle"
             />
           </div>
@@ -276,7 +276,7 @@ const handleNavClick = async (item: NavItem) => {
           <div class="flex items-center gap-3">
             <NuxtLink
               to="/ppdb"
-              class="hidden cursor-pointer items-center justify-center rounded-full border border-brand bg-[#FFFFFF] px-6 py-2.5 text-[16px] font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
+              class="hidden cursor-pointer items-center justify-center rounded-full border border-brand bg-white px-6 py-2.5 text-base font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
               @click="mobileMenuOpen = false"
             >
               <span>Daftarkan Diri Kamu</span>
@@ -309,12 +309,12 @@ const handleNavClick = async (item: NavItem) => {
               :class="[
                 activeMenuLabel === item.label
                   ? 'bg-primary-50 text-brand'
-                  : 'text-[#3A3A3A] hover:bg-bg-base',
+                  : 'text-text-public-heading hover:bg-bg-base',
                 mobileMenuOpen ? 'animate-slide-in' : ''
               ]"
               @click.prevent="handleNavClick(item)"
             >
-              <span class="font-medium font-heading text-[16px] transition-transform group-hover:translate-x-1">{{ item.label }}</span>
+              <span class="font-medium font-heading text-base transition-transform group-hover:translate-x-1">{{ item.label }}</span>
               <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
             </NuxtLink>
           </div>
@@ -322,7 +322,7 @@ const handleNavClick = async (item: NavItem) => {
           <div class="border-t border-border-soft pb-2 pt-4">
             <NuxtLink
               to="/ppdb"
-              class="flex w-full translate-y-2 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-[#FFFFFF] px-4 py-3 font-medium font-heading text-[16px] text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
+              class="flex w-full translate-y-2 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-white px-4 py-3 font-medium font-heading text-base text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
               :class="mobileMenuOpen ? 'animate-slide-in' : ''"
               style="transition-delay: 300ms"
               @click="mobileMenuOpen = false"

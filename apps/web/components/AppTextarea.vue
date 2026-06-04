@@ -52,10 +52,10 @@ const handleInput = (event: Event) => {
       :maxlength="maxlength"
       :rows="rows"
       :class="[
-        'min-h-30 w-full resize-y rounded-lg border bg-bg-surface p-4 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
+        'min-h-30 w-full resize-y rounded-lg border bg-bg-surface p-4 text-base leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted',
         error
-          ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
-          : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
+          ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
+          : 'border-border focus:border-brand focus:ring-3 focus:ring-brand/12',
         disabled ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100' : ''
       ]"
       @input="handleInput"

@@ -185,18 +185,18 @@ const formatDateRange = (startDate: string, endDate: string) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#FFFFFF] font-sans">
-    <section class="relative bg-[#FFFFFF] px-6 py-40 lg:pt-50 lg:pb-30">
+  <div class="min-h-screen bg-white font-sans">
+    <section class="relative bg-white px-6 py-40 lg:pt-50 lg:pb-30">
       <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="mb-6 flex h-[35px] w-fit px-6 items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent font-heading text-[14px] font-medium text-[#525252] z-20">
+        <div class="mb-6 flex h-9 w-fit px-6 items-center justify-center rounded-full border border-neutral-200 bg-transparent font-heading text-sm font-medium text-neutral-600 z-20">
           {{ landingInfo.active_wave.name }}
         </div>
-        <h1 class="font-heading text-[48px] lg:text-[64px] font-medium leading-[1.1] tracking-tight lg:whitespace-nowrap z-20">
-          <span class="text-[#3B3B3B]">Penerimaan Peserta Didik Baru</span><br/>
+        <h1 class="font-heading text-5xl lg:text-6xl font-medium leading-[1.1] tracking-tight lg:whitespace-nowrap z-20">
+          <span class="text-text-public-heading">Penerimaan Peserta Didik Baru</span><br/>
           <span class="text-brand">Tahun {{ academicYear }}</span>
         </h1>
-        <p class="mt-[24px] mb-[54px] max-w-lg font-sans text-[20px] leading-relaxed text-[#525252]">
+        <p class="mt-6 mb-14 max-w-lg font-sans text-xl leading-relaxed text-neutral-600">
           Membangun generasi cerdas, berakhlak mulia, dan berwawasan global. Mulai perjalanan pendidikan kesetaraan Anda bersama YMDSC hari ini.
         </p>
 
@@ -204,20 +204,20 @@ const formatDateRange = (startDate: string, endDate: string) => {
           <NuxtLink
             v-if="!isDaftarDisabled"
             to="/ppdb/daftar"
-            class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-[18px] font-medium text-white transition-opacity hover:opacity-90"
+            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-lg font-medium text-white transition-opacity hover:opacity-90"
           >
             {{ daftarLabel }}
           </NuxtLink>
           <button
             v-else
             :disabled="isDaftarDisabled"
-            class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-[18px] font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-lg font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {{ daftarLabel }}
           </button>
           <NuxtLink
             to="/ppdb/cek-status"
-            class="flex h-[56px] min-w-[200px] cursor-pointer items-center justify-center rounded-full border border-[#E5E5E5] bg-transparent px-8 font-heading text-[18px] font-medium text-[#3B3B3B] transition-colors hover:bg-[#F9FAFB]"
+            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-8 font-heading text-lg font-medium text-text-public-heading transition-colors hover:bg-bg-base"
           >
             Cek Status Pendaftaran
           </NuxtLink>
@@ -225,61 +225,61 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
       </div>
     </section>
-    <section class="bg-[#F9FAFB] px-6 py-[120px] border-t border-[#E5E5E5]">
+    <section class="bg-bg-base px-6 py-30 border-t border-neutral-200">
       <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-[80px]">
+        <div class="flex flex-col lg:flex-row gap-20">
           <div class="lg:w-1/3">
-            <h2 class="sticky top-[120px] font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
+            <h2 class="sticky top-30 font-heading text-5xl font-normal leading-tight text-text-public-heading">
               Informasi<br/>Pendaftaran.
             </h2>
           </div>
           <div class="lg:w-2/3 flex flex-col gap-16">
             <div>
               <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Jadwal & Gelombang</h3>
+                <div class="h-px flex-grow bg-border"></div>
+                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Jadwal & Gelombang</h3>
               </div>
 
               <div class="flex flex-col gap-6">
-                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <p class="font-heading text-[28px] font-medium text-[#3B3B3B]">{{ wave.name }}</p>
-                  <p class="font-sans text-[18px] text-[#525252] mt-2 sm:mt-0">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
+                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
+                  <p class="font-heading text-3xl font-medium text-text-public-heading">{{ wave.name }}</p>
+                  <p class="font-sans text-lg text-neutral-600 mt-2 sm:mt-0">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
                 </div>
-                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <p class="font-heading text-[24px] font-medium text-[#3B3B3B]">{{ jadwal.label }}</p>
-                  <p class="font-sans text-[18px] text-[#525252] mt-2 sm:mt-0">{{ jadwal.value }}</p>
+                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
+                  <p class="font-heading text-2xl font-medium text-text-public-heading">{{ jadwal.label }}</p>
+                  <p class="font-sans text-lg text-neutral-600 mt-2 sm:mt-0">{{ jadwal.value }}</p>
                 </div>
               </div>
             </div>
             <div>
               <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Persyaratan Dokumen</h3>
+                <div class="h-px flex-grow bg-border"></div>
+                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Persyaratan Dokumen</h3>
               </div>
               <ul class="flex flex-col gap-6">
-                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-[#E5E5E5] pb-6">
+                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-neutral-200 pb-6">
                   <div class="mt-2 h-3 w-3 rounded-full bg-brand shrink-0"></div>
-                  <span class="font-heading text-[24px] font-medium text-[#3B3B3B]">{{ item }}</span>
+                  <span class="font-heading text-2xl font-medium text-text-public-heading">{{ item }}</span>
                 </li>
               </ul>
             </div>
             <div>
               <div class="flex items-center gap-4 mb-8">
-                <div class="h-[1px] flex-grow bg-[#E5E5E5]"></div>
-                <h3 class="font-sans text-[16px] text-[#6B7280] capitalize font-medium">Rincian Biaya</h3>
+                <div class="h-px flex-grow bg-border"></div>
+                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Rincian Biaya</h3>
               </div>
               <div class="flex flex-col gap-6">
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <span class="font-sans text-[20px] text-[#525252]">Biaya Formulir</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
+                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
+                  <span class="font-sans text-xl text-neutral-600">Biaya Formulir</span>
+                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
                 </div>
-                <div v-if="landingInfo.active_wave" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-[#E5E5E5] pb-6">
-                  <span class="font-sans text-[20px] text-[#525252]">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
+                <div v-if="landingInfo.active_wave" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
+                  <span class="font-sans text-xl text-neutral-600">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
+                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-baseline justify-between pb-2">
-                  <span class="font-sans text-[20px] text-[#525252]">SPP Bulanan</span>
-                  <span class="font-heading text-[32px] font-medium text-[#3B3B3B]">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
+                  <span class="font-sans text-xl text-neutral-600">SPP Bulanan</span>
+                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
                 </div>
               </div>
             </div>
@@ -288,14 +288,14 @@ const formatDateRange = (startDate: string, endDate: string) => {
         </div>
       </div>
     </section>
-    <section class="bg-[#FFFFFF] px-6 py-[120px] border-t border-[#E5E5E5]">
+    <section class="bg-white px-6 py-30 border-t border-neutral-200">
       <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-[80px]">
+        <div class="flex flex-col lg:flex-row gap-20">
           <div class="lg:w-1/3">
-            <h2 class="sticky top-[120px] font-heading text-[48px] font-normal leading-tight text-[#3B3B3B]">
+            <h2 class="sticky top-30 font-heading text-5xl font-normal leading-tight text-text-public-heading">
               Pertanyaan<br/>PPDB.
             </h2>
-            <p class="mt-[24px] font-sans text-[20px] leading-relaxed text-[#525252]">
+            <p class="mt-6 font-sans text-xl leading-relaxed text-neutral-600">
               Jawaban ringkas seputar pendaftaran, program, dokumen, jadwal, biaya, dan pengecekan status calon peserta didik.
             </p>
           </div>
@@ -303,12 +303,12 @@ const formatDateRange = (startDate: string, endDate: string) => {
             <div
               v-for="item in faqItems"
               :key="item.question"
-              class="border-b border-[#E5E5E5] py-8 first:pt-0"
+              class="border-b border-neutral-200 py-8 first:pt-0"
             >
-              <h3 class="font-heading text-[24px] font-medium leading-snug text-[#3B3B3B]">
+              <h3 class="font-heading text-2xl font-medium leading-snug text-text-public-heading">
                 {{ item.question }}
               </h3>
-              <p class="mt-4 font-sans text-[18px] leading-relaxed text-[#525252]">
+              <p class="mt-4 font-sans text-lg leading-relaxed text-neutral-600">
                 {{ item.answer }}
               </p>
             </div>

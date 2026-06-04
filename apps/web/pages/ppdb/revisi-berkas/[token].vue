@@ -201,7 +201,7 @@ onMounted(validateMagicUrl)
           <h2 class="mb-2 font-heading text-xl font-semibold text-text-primary">
             Link Tidak Valid
           </h2>
-          <p class="mb-6 text-sm leading-[1.6] text-text-secondary">
+          <p class="mb-6 text-sm leading-relaxed text-text-secondary">
             {{ errorMessage }}
           </p>
           <AppButton variant="secondary" @click="validateMagicUrl">
@@ -232,7 +232,7 @@ onMounted(validateMagicUrl)
         />
 
         <div>
-          <p class="mb-2 text-sm font-medium leading-[1.43] tracking-[-0.15px] text-text-primary">
+          <p class="mb-2 text-sm font-medium leading-snug tracking-normal text-text-primary">
             Dokumen Revisi
           </p>
           <label
