@@ -90,24 +90,24 @@ useJsonLd(() => {
         </div>
       </div>
     </section>
-    <section class="bg-white px-6 py-30">
-      <div class="public-navbar-container flex flex-col items-center">
-        <h2 class="mb-25 max-w-4xl text-center font-heading text-4xl font-normal leading-tight text-text-public-heading lg:text-5xl">
+    <section class="bg-white px-0 py-24 md:py-28 lg:py-30 2xl:py-30">
+      <div class="public-container flex flex-col items-center">
+        <h2 class="mb-14 max-w-3xl text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-25 2xl:max-w-4xl 2xl:text-5xl">
           Membuka pintu masa depan yang lebih inklusif untuk semua.
         </h2>
 
-        <div class="flex w-full max-w-[1000px] flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-20">
-          <div class="w-full lg:w-5/12 flex-shrink-0">
-            <div class="aspect-[4/5] overflow-hidden rounded-4xl bg-gray-200 shadow-md">
-              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-10" />
+        <div class="flex w-full max-w-[920px] flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-14 2xl:max-w-[1000px] 2xl:gap-20">
+          <div class="w-full flex-shrink-0 lg:w-5/12">
+            <div class="aspect-[4/5] overflow-hidden rounded-3xl bg-gray-200 shadow-md 2xl:rounded-4xl">
+              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-8 2xl:p-10" />
             </div>
           </div>
 
-          <div class="flex w-full flex-col lg:w-7/12 pt-4">
-            <h3 class="mb-6 font-heading text-3xl font-semibold text-text-public-heading">
+          <div class="flex w-full flex-col pt-2 lg:w-7/12 2xl:pt-4">
+            <h3 class="mb-5 font-heading text-2xl font-semibold text-text-public-heading 2xl:mb-6 2xl:text-3xl">
               Sambutan Pimpinan Kami
             </h3>
-            <div class="mb-12 space-y-6 font-sans text-lg leading-relaxed text-neutral-600">
+            <div class="mb-8 space-y-5 font-sans text-base leading-relaxed text-neutral-600 lg:text-lg 2xl:mb-12 2xl:space-y-6">
               <p>
                 Selamat datang di Yayasan Mukti Daris Sasmita Cendekia. Kami percaya bahwa pendidikan adalah hak fundamental yang tidak boleh dibatasi oleh usia, waktu, maupun latar belakang ekonomi.
               </p>
@@ -116,7 +116,7 @@ useJsonLd(() => {
               </p>
             </div>
 
-            <div class="self-start rounded-full border border-brand px-8 py-3 font-sans text-xl font-medium text-brand">
+            <div class="self-start rounded-full border border-brand px-6 py-2.5 font-sans text-base font-medium text-brand 2xl:px-8 2xl:py-3 2xl:text-xl">
               Bpk. Yusuf Mansur S.pd, NPD
             </div>
           </div>
