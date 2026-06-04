@@ -136,18 +136,18 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           <span class="absolute inset-[40%] rounded-full border border-brand/10" />
         </div>
 
-        <h1 class="mb-8 max-w-5xl font-heading text-4xl font-medium leading-tight text-text-public-heading sm:text-5xl lg:text-6xl">
+        <h1 class="mb-7 max-w-4xl font-heading text-4xl font-medium leading-tight text-text-public-heading sm:text-5xl lg:text-5xl xl:mb-8 2xl:max-w-5xl 2xl:text-6xl">
           Tidak ada kata terlambat <br />
           <span class="text-brand">untuk belajar.</span>
         </h1>
 
-        <p class="mb-12 max-w-3xl font-heading text-base font-normal leading-normal text-text-public-heading lg:mb-14.5">
+        <p class="mb-10 max-w-2xl font-heading text-sm font-normal leading-relaxed text-text-public-heading md:text-base lg:mb-12 2xl:mb-14.5 2xl:max-w-3xl">
           Kami membuka pintu bagi semua usia untuk mendapatkan pendidikan kesetaraan dan vokasi resmi secara inklusif dan berkelanjutan.
         </p>
 
         <NuxtLink
           to="/ppdb"
-          class="flex h-14 w-62.5 cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-base font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none"
+          class="flex h-12 w-56 cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-sm font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none md:w-60 2xl:h-14 2xl:w-62.5 2xl:text-base"
         >
           Daftarkan Diri Kamu
         </NuxtLink>
