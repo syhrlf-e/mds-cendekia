@@ -248,7 +248,7 @@ const handleNavClick = async (item: NavItem) => {
           </NuxtLink>
 
           <!-- Desktop Menu -->
-          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[64px] lg:flex">
+          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-16 lg:flex">
             <NuxtLink
               v-for="(item, index) in menuItems"
               :key="item.id"
