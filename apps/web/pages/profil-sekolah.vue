@@ -195,50 +195,50 @@ useJsonLd(() => {
 
       </div>
     </section>
-    <section class="bg-white px-6 py-30 border-t border-neutral-200">
-      <div class="public-navbar-container flex flex-col items-center">
-        <h2 class="mb-20 font-heading text-5xl font-normal leading-tight text-text-public-heading text-center">
+    <section class="border-t border-neutral-200 bg-white px-0 py-24 md:py-28 lg:py-30">
+      <div class="public-container flex flex-col items-center">
+        <h2 class="mb-14 text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
           Penggerak Yayasan Kami
         </h2>
 
-        <div class="flex w-full flex-col items-center gap-20">
+        <div class="flex w-full flex-col items-center gap-14 2xl:gap-20">
           <div class="flex flex-col items-center">
-            <div class="flex h-[180px] w-[180px] items-center justify-center rounded-full bg-neutral-100 mb-6 overflow-hidden border border-neutral-200">
-              <svg class="w-16 h-16 text-neutral-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="mb-5 flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-[180px] 2xl:w-[180px]">
+              <svg class="h-14 w-14 text-neutral-300 2xl:h-16 2xl:w-16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="font-heading text-2xl font-medium text-text-public-heading text-center">Bpk. Muhammad Djody Satriani</h3>
-            <p class="font-sans text-lg text-brand font-medium mt-2">Ketua Pembina</p>
+            <h3 class="text-center font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">Bpk. Muhammad Djody Satriani</h3>
+            <p class="mt-2 font-sans text-base font-medium text-brand 2xl:text-lg">Ketua Pembina</p>
           </div>
           <div class="flex flex-col items-center">
-            <div class="flex h-40 w-40 items-center justify-center rounded-full bg-neutral-100 mb-6 overflow-hidden border border-neutral-200">
-              <svg class="w-12 h-12 text-neutral-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
+              <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="font-heading text-xl font-medium text-text-public-heading text-center">Bpk. Buya Hamka</h3>
-            <p class="font-sans text-base text-neutral-600 font-medium mt-2">Ketua Pengawas</p>
+            <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Bpk. Buya Hamka</h3>
+            <p class="mt-2 font-sans text-base font-medium text-neutral-600">Ketua Pengawas</p>
           </div>
-          <div class="flex w-full flex-wrap justify-center gap-15 pt-10 border-t border-neutral-200 max-w-[1000px]">
-            <div class="flex flex-col items-center w-[280px]">
-              <div class="flex h-40 w-40 items-center justify-center rounded-full bg-neutral-100 mb-6 overflow-hidden border border-neutral-200">
-                <svg class="w-12 h-12 text-neutral-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          <div class="grid w-full max-w-[900px] grid-cols-1 gap-10 border-t border-neutral-200 pt-10 sm:grid-cols-3 2xl:max-w-[1000px] 2xl:gap-15">
+            <div class="flex flex-col items-center">
+              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="font-heading text-xl font-medium text-text-public-heading text-center">Bpk. Rio Nurfajri</h3>
-              <p class="font-sans text-base text-gray-500 mt-2">Ketua Umum</p>
+              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Bpk. Rio Nurfajri</h3>
+              <p class="mt-2 font-sans text-base text-gray-500">Ketua Umum</p>
             </div>
 
-            <div class="flex flex-col items-center w-[280px]">
-              <div class="flex h-40 w-40 items-center justify-center rounded-full bg-neutral-100 mb-6 overflow-hidden border border-neutral-200">
-                <svg class="w-12 h-12 text-neutral-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="flex flex-col items-center">
+              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="font-heading text-xl font-medium text-text-public-heading text-center">Ibu Vena Adrianti Ningrum</h3>
-              <p class="font-sans text-base text-gray-500 mt-2">Sekretaris</p>
+              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Ibu Vena Adrianti Ningrum</h3>
+              <p class="mt-2 font-sans text-base text-gray-500">Sekretaris</p>
             </div>
 
-            <div class="flex flex-col items-center w-[280px]">
-              <div class="flex h-40 w-40 items-center justify-center rounded-full bg-neutral-100 mb-6 overflow-hidden border border-neutral-200">
-                <svg class="w-12 h-12 text-neutral-300" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="flex flex-col items-center">
+              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="font-heading text-xl font-medium text-text-public-heading text-center">Ibu Rizalina Nurazizah</h3>
-              <p class="font-sans text-base text-gray-500 mt-2">Bendahara</p>
+              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Ibu Rizalina Nurazizah</h3>
+              <p class="mt-2 font-sans text-base text-gray-500">Bendahara</p>
             </div>
           </div>
 
