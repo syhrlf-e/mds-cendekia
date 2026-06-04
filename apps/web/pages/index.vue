@@ -249,50 +249,50 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 5: Alur Pendaftaran -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-56 xl:pt-72 2xl:pt-[370px]">
-      <div class="public-container flex w-full flex-col items-start justify-between gap-12 lg:flex-row lg:gap-10">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[370px]">
+      <div class="public-container flex flex-col items-start justify-between gap-12 lg:flex-row lg:gap-10 2xl:gap-10">
 
         <!-- Left Column -->
-        <div class="w-full max-w-[600px] lg:sticky lg:top-30">
-          <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-5xl">
+        <div class="w-full max-w-120 lg:sticky lg:top-30 lg:max-w-100 xl:max-w-110 2xl:max-w-[600px]">
+          <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:text-5xl">
             Langkah mudah bergabung <br />
             <span class="text-brand">bersama kami.</span>
           </h2>
         </div>
 
         <!-- Right Column -->
-        <div class="flex w-full max-w-[708px] flex-col">
+        <div class="flex w-full max-w-[620px] flex-col 2xl:max-w-[708px]">
           <!-- Item 1 -->
-          <div class="border-t border-border-public-strong py-12">
-            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
-              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
+          <div class="border-t border-border-public-strong py-10 2xl:py-12">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-10 xl:gap-12 2xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">
                 Pendaftaran Awal
               </h3>
-              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
+              <p class="text-left font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-right lg:text-lg 2xl:text-xl">
                 Isi formulir online data diri singkat melalui tombol PPDB.
               </p>
             </div>
           </div>
 
           <!-- Item 2 -->
-          <div class="border-t border-border-public-strong py-12">
-            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
-              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
+          <div class="border-t border-border-public-strong py-10 2xl:py-12">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-10 xl:gap-12 2xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">
                 Verifikasi Pendaftaran
               </h3>
-              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
+              <p class="text-left font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-right lg:text-lg 2xl:text-xl">
                 Tim kami akan menghubungi untuk verifikasi dokumen.
               </p>
             </div>
           </div>
 
           <!-- Item 3 -->
-          <div class="border-y border-border-public-strong py-12">
-            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
-              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
+          <div class="border-y border-border-public-strong py-10 2xl:py-12">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-10 xl:gap-12 2xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">
                 Mulai Belajar
               </h3>
-              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
+              <p class="text-left font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-right lg:text-lg 2xl:text-xl">
                 Resmi bergabung sebagai siswa.
               </p>
             </div>
