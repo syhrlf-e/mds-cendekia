@@ -79,7 +79,6 @@ const { data: publicGalleryItems, pending: isGalleryLoading } = useLazyAsyncData
   default: () => []
 })
 
-const activeGalleryIndex = ref(-1)
 const galleryFallbackItems: GalleryItem[] = [
   {
     id: 'fallback-1',
@@ -94,20 +93,53 @@ const galleryFallbackItems: GalleryItem[] = [
 ]
 
 const displayGalleryItems = computed(() => publicGalleryItems.value.length ? publicGalleryItems.value : galleryFallbackItems)
-const primaryGalleryIndex = computed(() => 0)
+const primaryGalleryIndex = computed(() => {
+  const featuredIndex = displayGalleryItems.value.findIndex(item => item.isUtama)
+  return featuredIndex >= 0 ? featuredIndex : 0
+})
 const activeGalleryItem = computed(() => {
-  if (activeGalleryIndex.value >= 0) return displayGalleryItems.value[activeGalleryIndex.value] || displayGalleryItems.value[primaryGalleryIndex.value]
   return displayGalleryItems.value[primaryGalleryIndex.value] || displayGalleryItems.value[0]
 })
-const squareGalleryItems = computed(() => displayGalleryItems.value.filter(item => item.id !== activeGalleryItem.value?.id))
+const squareGalleryItems = computed(() => displayGalleryItems.value)
+const galleryTrackRef = ref<HTMLElement | null>(null)
+const currentGalleryIndex = ref(0)
 
-const setActiveGallery = (item: GalleryItem) => {
-  const nextIndex = displayGalleryItems.value.findIndex(galleryItem => galleryItem.id === item.id)
-  if (nextIndex >= 0) activeGalleryIndex.value = nextIndex
+const scrollGalleryItemIntoView = async (index: number) => {
+  await nextTick()
+
+  const target = galleryTrackRef.value?.querySelector<HTMLElement>(`[data-gallery-index="${index}"]`)
+  target?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
+}
+
+const selectGalleryIndex = (index: number) => {
+  currentGalleryIndex.value = index
+  scrollGalleryItemIntoView(index)
+}
+
+const handleGalleryScroll = () => {
+  const track = galleryTrackRef.value
+  if (!track) return
+
+  const trackCenter = track.scrollLeft + (track.clientWidth / 2)
+  const items = Array.from(track.querySelectorAll<HTMLElement>('[data-gallery-index]'))
+  const nearestItem = items.reduce<{ index: number, distance: number } | null>((nearest, item) => {
+    const itemIndex = Number(item.dataset.galleryIndex)
+    const itemCenter = item.offsetLeft + (item.offsetWidth / 2)
+    const distance = Math.abs(trackCenter - itemCenter)
+
+    if (!nearest || distance < nearest.distance) return { index: itemIndex, distance }
+    return nearest
+  }, null)
+
+  if (nearestItem) currentGalleryIndex.value = nearestItem.index
 }
 
 watch(publicGalleryItems, () => {
-  activeGalleryIndex.value = -1
+  currentGalleryIndex.value = 0
 })
 
 const formatNewsDate = (date: string) => {
@@ -220,7 +252,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </div>
 
         <!-- Card -->
-        <div class="group relative z-10 flex min-h-64 w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-6 py-8 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all md:px-8 lg:h-72 lg:py-0 2xl:h-[331px] 2xl:px-10">
+        <div class="group relative z-10 flex min-h-64 w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-6 py-8 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all md:px-8 lg:h-72 lg:max-w-[980px] lg:py-0 xl:max-w-[1040px] 2xl:h-[331px] 2xl:max-w-[1196px] 2xl:px-10">
           <!-- Card Background -->
           <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
 
@@ -331,8 +363,9 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </div>
 
         <!-- Baris Kedua: Carousel Foto Kecil -->
-        <div class="mt-6 w-full overflow-hidden">
-          <div class="gallery-swipe-track flex gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6">
+        <div class="mt-6 w-full">
+          <div class="overflow-hidden">
+            <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6" @scroll.passive="handleGalleryScroll">
             <template v-if="isGalleryLoading">
               <div
                 v-for="index in 3"
@@ -341,14 +374,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               ></div>
             </template>
 
-            <button
+            <div
               v-for="item in squareGalleryItems"
               v-else
               :key="item.id"
-              type="button"
+              :data-gallery-index="displayGalleryItems.findIndex(galleryItem => galleryItem.id === item.id)"
               class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
-              :aria-label="`Tampilkan ${item.nama}`"
-              @click="setActiveGallery(item)"
             >
               <img
                 :src="item.gambar || '/images/logo-mds-main.png'"
@@ -357,11 +388,29 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                 decoding="async"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              <span
-                class="absolute inset-0 border-3 border-transparent transition-colors"
-                :class="activeGalleryItem?.id === item.id ? 'border-brand' : 'group-hover:border-white/70'"
-              ></span>
-            </button>
+              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-5 pt-14 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <h3 class="truncate font-heading text-base font-semibold">
+                  {{ item.nama }}
+                </h3>
+                <p class="mt-1 truncate font-sans text-sm text-white/80">
+                  {{ item.deskripsi || 'Galeri lingkungan belajar MDS Cendekia' }}
+                </p>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <div v-if="displayGalleryItems.length > 1 && !isGalleryLoading" class="mt-5 flex items-center justify-center gap-2">
+            <button
+              v-for="(item, index) in displayGalleryItems"
+              :key="`gallery-dot-${item.id}`"
+              type="button"
+              class="h-2 rounded-full transition-all"
+              :class="currentGalleryIndex === index ? 'w-6 bg-brand' : 'w-2 bg-text-public-heading/20 hover:bg-brand/50'"
+              :aria-label="`Lihat posisi galeri ${index + 1}`"
+              :aria-current="currentGalleryIndex === index ? 'true' : undefined"
+              @click="selectGalleryIndex(index)"
+            ></button>
           </div>
         </div>
       </div>

@@ -52,23 +52,23 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
 <template>
   <div class="min-h-screen bg-bg-public-muted font-sans">
-    <section class="relative flex flex-col items-center justify-center px-6 py-40">
-      <div class="public-navbar-container flex w-full flex-col items-center">
+    <section class="relative flex flex-col items-center justify-center px-0 py-24 md:py-32 lg:py-32 xl:py-36 2xl:py-40">
+      <div class="public-container flex flex-col items-center">
         <!-- Headline -->
-        <h2 class="mb-20 text-center font-heading text-5xl font-normal leading-tight text-text-public-heading">
+        <h2 class="mb-12 text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:mb-14 md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
           Kabar terbaru dan informasi edukasi.
         </h2>
 
-        <div class="flex w-full flex-wrap justify-center gap-6">
+        <div class="grid w-full grid-cols-1 justify-center gap-5 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-6">
           <template v-if="isNewsLoading">
             <div
               v-for="index in 8"
               :key="`news-skeleton-${index}`"
-              class="news-card flex min-h-[460px] animate-pulse flex-col overflow-hidden rounded-4xl bg-white shadow-sm"
+              class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
             >
-              <div class="h-[250px] w-full bg-gray-200"></div>
-              <div class="flex flex-col p-8">
-                <div class="mb-6 flex items-center justify-between gap-4">
+              <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
+              <div class="flex flex-col p-6 2xl:p-8">
+                <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
                   <span class="h-7 w-24 rounded-full bg-gray-200"></span>
                   <span class="h-4 w-28 rounded-full bg-gray-200"></span>
                 </div>
@@ -83,11 +83,11 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               v-for="item in publicNewsItems"
               :key="item.id"
               :to="buildNewsPath(item)"
-              class="news-card flex cursor-pointer flex-col overflow-hidden rounded-4xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+              class="flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md 2xl:rounded-4xl"
             >
-              <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-[250px] w-full object-cover" />
-              <div class="flex flex-col p-8">
-                <div class="mb-6 flex items-center justify-between gap-4">
+              <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]" />
+              <div class="flex flex-col p-6 2xl:p-8">
+                <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
                   <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
                     {{ item.category || 'Berita' }}
                   </span>
@@ -115,10 +115,3 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
   </div>
 </template>
-
-<style scoped>
-.news-card {
-  flex: 0 0 calc((100% - 72px) / 4);
-  max-width: calc((100% - 72px) / 4);
-}
-</style>
