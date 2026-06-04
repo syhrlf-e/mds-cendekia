@@ -128,7 +128,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 <template>
   <div class="min-h-screen bg-white font-sans">
     <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-20">
-      <div class="public-navbar-container relative z-10 flex flex-col items-center text-center">
+      <div class="public-container relative z-10 flex flex-col items-center text-center">
         <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-420 max-w-[190vw] -translate-x-1/2 -translate-y-1/2">
           <span class="absolute inset-0 rounded-full border border-brand/10" />
           <span class="absolute inset-[10%] rounded-full border border-brand/10" />
@@ -136,12 +136,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           <span class="absolute inset-[40%] rounded-full border border-brand/10" />
         </div>
 
-        <h1 class="mb-9.5 max-w-5xl font-heading text-6xl font-medium leading-tight text-text-public-heading">
+        <h1 class="mb-8 max-w-5xl font-heading text-4xl font-medium leading-tight text-text-public-heading sm:text-5xl lg:text-6xl">
           Tidak ada kata terlambat <br />
           <span class="text-brand">untuk belajar.</span>
         </h1>
 
-        <p class="mb-14.5 max-w-3xl font-heading text-base font-normal leading-normal text-text-public-heading">
+        <p class="mb-12 max-w-3xl font-heading text-base font-normal leading-normal text-text-public-heading lg:mb-14.5">
           Kami membuka pintu bagi semua usia untuk mendapatkan pendidikan kesetaraan dan vokasi resmi secara inklusif dan berkelanjutan.
         </p>
 
@@ -154,15 +154,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
-    <section id="profil" class="relative flex flex-col items-center justify-center bg-white pt-[599px] pb-25 px-6">
-      <div class="public-navbar-container flex flex-col items-center text-center">
-        <!-- Headline -->
-        <h2 class="mb-28 max-w-5xl font-heading text-5xl font-normal leading-tight text-text-public-heading">
+    <section id="profil" class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-32 md:pt-44 lg:pt-60 xl:pt-80 2xl:pb-25 2xl:pt-[599px]">
+      <div class="public-container flex flex-col items-center text-center">
+        <h2 class="mb-14 max-w-5xl font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl 2xl:mb-28">
           Berdiri untuk mengabdi, bergerak dengan <span class="text-brand font-medium">legalitas resmi.</span>
         </h2>
-
-        <!-- Description -->
-        <p class="mb-13 max-w-5xl font-sans text-2xl font-normal leading-relaxed text-text-public-heading">
+        <p class="mb-12 max-w-5xl font-sans text-lg font-normal leading-relaxed text-text-public-heading md:text-xl lg:text-2xl">
           Didirikan resmi pada Maret 2026, Yayasan Mukti Daris Sasmita Cendekia (YMDSC) hadir sebagai bentuk nyata kepedulian sosial untuk membangun manusia seutuhnya. Kami berkomitmen membuka akses pendidikan kesetaraan yang inklusif, nirlaba yang berkelanjutan bagi semua kelompok usia. Menjadikan pusat pemberdayaan masyarakat yang berlandaskan nilai-nilai Pancasila untuk membangun manusia seutuhnya.
         </p>
 
@@ -176,34 +173,34 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
     <!-- Section 3: Fitur / Sistem Belajar -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-6 pb-25 pt-[326px]">
-      <div class="public-navbar-container flex w-full flex-col">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-28 md:pt-36 lg:pt-44 xl:pt-56 2xl:pb-25 2xl:pt-[326px]">
+      <div class="public-container flex w-full flex-col">
         <!-- Headline -->
-        <h2 class="mb-20 max-w-4xl text-left font-heading text-5xl font-normal leading-tight text-text-public-heading">
+        <h2 class="mb-14 max-w-4xl text-left font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl">
           Sistem belajar adaptif, tidak mengorbankan aktivitas harianmu.
         </h2>
 
         <!-- Divider & Content Area -->
-        <div class="flex h-[360px] w-full border-y border-border-public-strong">
+        <div class="flex w-full flex-col border-y border-border-public-strong lg:h-[360px] lg:flex-row">
           <!-- Left Column -->
-          <div class="flex flex-1 flex-col items-center justify-center px-4 text-center">
-            <h3 class="mb-8 font-heading text-3xl font-normal text-text-public-heading">
+          <div class="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center lg:py-0">
+            <h3 class="mb-6 font-heading text-2xl font-normal text-text-public-heading lg:mb-8 lg:text-3xl">
               Waktu Belajar Fleksibel
             </h3>
-            <p class="max-w-[500px] font-sans text-xl font-normal leading-relaxed text-text-public-heading">
+            <p class="max-w-125 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-xl">
               Pilihan waktu kelas yang adaptif dan dapat disesuaikan di sela-sela kesibukan kerja atau aktivitas harianmu.
             </p>
           </div>
 
           <!-- Vertical Divider -->
-          <div class="mx-8 my-10 w-px self-stretch bg-border-public-strong"></div>
+          <div class="h-px w-full bg-border-public-strong lg:mx-8 lg:my-10 lg:h-auto lg:w-px lg:self-stretch"></div>
 
           <!-- Right Column -->
-          <div class="flex flex-1 flex-col items-center justify-center px-4 text-center">
-            <h3 class="mb-8 font-heading text-3xl font-normal text-text-public-heading">
+          <div class="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center lg:py-0">
+            <h3 class="mb-6 font-heading text-2xl font-normal text-text-public-heading lg:mb-8 lg:text-3xl">
               Metode Hybrid Modern
             </h3>
-            <p class="max-w-[500px] font-sans text-xl font-normal leading-relaxed text-text-public-heading">
+            <p class="max-w-125 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-xl">
               Kombinasi pembelajaran mandiri secara daring (online) yang praktis dan tatap muka berkala untuk pendalaman materi.
             </p>
           </div>
@@ -212,10 +209,10 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 4: Program / Solusi Pendidikan -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-6 pt-[281px]">
-      <div class="public-navbar-container flex w-full flex-col items-center">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-28 md:pt-36 lg:pt-48 xl:pt-60 2xl:pt-[281px]">
+      <div class="public-container flex w-full flex-col items-center">
         <!-- Headline -->
-        <h2 class="mb-8 max-w-5xl text-center font-heading text-5xl font-normal leading-tight text-text-public-heading">
+        <h2 class="mb-8 max-w-5xl text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-5xl">
           Kami hadir membawa <span class="text-brand">solusi pendidikan</span> kesetaraan terlengkap untukmu.
         </h2>
 
@@ -225,7 +222,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </div>
 
         <!-- Card -->
-        <div class="group relative z-10 flex h-[331px] w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-10 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all">
+        <div class="group relative z-10 flex min-h-72 w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-6 py-8 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all md:px-10 lg:h-[331px] lg:py-0">
           <!-- Card Background -->
           <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
 
@@ -235,13 +232,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           </div>
 
           <!-- Card Content -->
-          <h3 class="relative z-10 mb-4 font-heading text-3xl font-medium text-text-public-heading">
+          <h3 class="relative z-10 mb-4 font-heading text-2xl font-medium text-text-public-heading lg:text-3xl">
             Kejar Paket C
           </h3>
-          <p class="relative z-10 mb-[124px] font-sans text-xl font-normal text-text-public-heading">
+          <p class="relative z-10 mb-16 font-sans text-lg font-normal text-text-public-heading lg:mb-[124px] lg:text-xl">
             Setara Sekolah Menengah Atas
           </p>
-          <p class="relative z-10 max-w-[700px] font-sans text-xl font-normal text-text-public-heading">
+          <p class="relative z-10 max-w-[700px] font-sans text-base font-normal text-text-public-heading md:text-lg lg:text-xl">
             Raih ijazah resmi setara SMA tanpa harus mengorbankan waktu produktifmu.
           </p>
         </div>
@@ -254,26 +251,26 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 5: Alur Pendaftaran -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-6 pt-[370px]">
-      <div class="public-navbar-container flex w-full items-start justify-between gap-10">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-56 xl:pt-72 2xl:pt-[370px]">
+      <div class="public-container flex w-full flex-col items-start justify-between gap-12 lg:flex-row lg:gap-10">
 
         <!-- Left Column -->
-        <div class="sticky top-30 max-w-[600px]">
-          <h2 class="font-heading text-5xl font-normal leading-tight text-text-public-heading">
+        <div class="w-full max-w-[600px] lg:sticky lg:top-30">
+          <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-5xl">
             Langkah mudah bergabung <br />
             <span class="text-brand">bersama kami.</span>
           </h2>
         </div>
 
         <!-- Right Column -->
-        <div class="flex w-[708px] flex-col">
+        <div class="flex w-full max-w-[708px] flex-col">
           <!-- Item 1 -->
           <div class="border-t border-border-public-strong py-12">
-            <div class="flex items-start justify-between gap-[162px]">
-              <h3 class="flex-shrink-0 text-left font-heading text-2xl font-medium text-text-public-heading">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
                 Pendaftaran Awal
               </h3>
-              <p class="text-right font-sans text-xl font-normal text-text-public-heading">
+              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
                 Isi formulir online data diri singkat melalui tombol PPDB.
               </p>
             </div>
@@ -281,11 +278,11 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
           <!-- Item 2 -->
           <div class="border-t border-border-public-strong py-12">
-            <div class="flex items-start justify-between gap-[162px]">
-              <h3 class="flex-shrink-0 text-left font-heading text-2xl font-medium text-text-public-heading">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
                 Verifikasi Pendaftaran
               </h3>
-              <p class="text-right font-sans text-xl font-normal text-text-public-heading">
+              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
                 Tim kami akan menghubungi untuk verifikasi dokumen.
               </p>
             </div>
@@ -293,11 +290,11 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
           <!-- Item 3 -->
           <div class="border-y border-border-public-strong py-12">
-            <div class="flex items-start justify-between gap-[162px]">
-              <h3 class="flex-shrink-0 text-left font-heading text-2xl font-medium text-text-public-heading">
+            <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-12 xl:gap-40">
+              <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading lg:text-2xl">
                 Mulai Belajar
               </h3>
-              <p class="text-right font-sans text-xl font-normal text-text-public-heading">
+              <p class="text-left font-sans text-base font-normal text-text-public-heading md:text-right lg:text-xl">
                 Resmi bergabung sebagai siswa.
               </p>
             </div>
@@ -307,12 +304,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 6: Galeri / Lingkungan -->
-    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-6 pt-[303px]">
-      <div class="public-navbar-container flex w-full flex-col">
+    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-56 xl:pt-64 2xl:pt-[303px]">
+      <div class="public-container flex w-full flex-col">
         <!-- Baris Pertama -->
-        <div class="flex w-full items-center gap-6">
+        <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-center lg:gap-6">
           <!-- Kolom Kiri: Gambar -->
-          <div class="h-[342px] w-[707px] flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200">
+          <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[58%]">
             <div
               v-if="isGalleryLoading"
               class="h-full w-full animate-pulse bg-gray-200"
@@ -329,7 +326,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
           <!-- Kolom Kanan: Teks -->
           <div class="flex-1">
-            <h2 class="font-heading text-5xl font-normal leading-tight text-text-public-heading">
+            <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-5xl">
               Lingkungan belajar yang dirancang untuk tumbuh
             </h2>
           </div>
@@ -342,7 +339,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               <div
                 v-for="index in 3"
                 :key="`gallery-skeleton-${index}`"
-                class="aspect-square h-[341px] w-[341px] flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200"
+                class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-80 xl:w-[341px]"
               ></div>
             </template>
 
@@ -351,7 +348,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               v-else
               :key="item.id"
               type="button"
-              class="group relative aspect-square h-[341px] w-[341px] flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left"
+              class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-80 xl:w-[341px]"
               :aria-label="`Tampilkan ${item.nama}`"
               @click="setActiveGallery(item)"
             >
@@ -373,35 +370,37 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 7: CTA Banner -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-6 pt-60 pb-25">
-      <div class="relative flex h-[356px] w-full max-w-[1435px] flex-col items-center justify-center overflow-hidden rounded-4xl bg-brand text-center shadow-lg">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-32 md:pt-44 lg:pt-60 2xl:pb-25">
+      <div class="public-container">
+      <div class="relative flex min-h-80 w-full flex-col items-center justify-center overflow-hidden rounded-4xl bg-brand px-4 py-12 text-center shadow-lg lg:h-[356px] lg:py-0">
         <!-- Background Image -->
         <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
 
         <!-- Content -->
         <div class="relative z-10 flex flex-col items-center px-4">
-          <h2 class="mb-10 font-heading text-5xl font-semibold text-white">
+          <h2 class="mb-8 font-heading text-3xl font-semibold text-white md:text-4xl lg:mb-10 lg:text-5xl">
             Siap mengambil kesempatan ini?
           </h2>
-          <p class="mb-10 max-w-[800px] font-sans text-xl font-medium text-white">
+          <p class="mb-8 max-w-[800px] font-sans text-base font-medium text-white md:text-lg lg:mb-10 lg:text-xl">
             Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
           </p>
-          <NuxtLink to="/ppdb" class="flex h-[58px] w-[315px] cursor-pointer items-center justify-center rounded-full bg-white font-sans text-xl font-medium text-brand transition-opacity hover:opacity-90">
+          <NuxtLink to="/ppdb" class="flex h-14 w-full max-w-[315px] cursor-pointer items-center justify-center rounded-full bg-white px-6 font-sans text-base font-medium text-brand transition-opacity hover:opacity-90 lg:h-[58px] lg:text-xl">
             Daftarkan Diri Kamu di Sini
           </NuxtLink>
         </div>
       </div>
+      </div>
     </section>
 
     <!-- Section 8: Berita / Blog -->
-    <section id="berita" class="relative flex flex-col items-center justify-center bg-bg-public-muted px-6 py-40">
-      <div class="public-navbar-container flex w-full flex-col items-center">
+    <section id="berita" class="relative flex flex-col items-center justify-center bg-bg-public-muted px-0 py-24 md:py-32 lg:py-40">
+      <div class="public-container flex w-full flex-col items-center">
         <!-- Headline -->
-        <h2 class="mb-20 text-center font-heading text-5xl font-normal leading-tight text-text-public-heading">
+        <h2 class="mb-14 text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl">
           Kabar terbaru dan informasi edukasi.
         </h2>
 
-        <div class="grid w-full grid-cols-4 gap-6">
+        <div class="grid w-full grid-cols-1 justify-center gap-6 sm:grid-cols-2 xl:grid-cols-4">
           <template v-if="isNewsLoading">
             <div
               v-for="index in 4"
@@ -445,7 +444,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               </div>
             </NuxtLink>
           </template>
-          <div v-else class="col-span-4 flex min-h-40 items-center justify-center px-8 text-center">
+          <div v-else class="col-span-full flex min-h-40 items-center justify-center px-8 text-center">
             <p class="font-sans text-lg leading-relaxed text-gray-500">
               Belum ada berita atau informasi yang dibuat
             </p>
