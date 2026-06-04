@@ -173,32 +173,32 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
-    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-28 md:pt-36 lg:pt-44 xl:pt-56 2xl:pb-25 2xl:pt-[326px]">
-      <div class="public-container flex w-full flex-col">
-        <h2 class="mb-14 max-w-4xl text-left font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-28 md:pt-36 lg:pt-40 xl:pt-48 2xl:pb-25 2xl:pt-[326px]">
+      <div class="public-container flex flex-col">
+        <h2 class="mb-12 max-w-3xl text-left font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 2xl:mb-20 2xl:max-w-4xl 2xl:text-5xl">
           Sistem belajar adaptif, tidak mengorbankan aktivitas harianmu.
         </h2>
 
-        <div class="flex w-full flex-col border-y border-border-public-strong lg:h-[360px] lg:flex-row">
+        <div class="flex w-full flex-col border-y border-border-public-strong lg:h-80 lg:flex-row 2xl:h-[360px]">
           <!-- Left Column -->
           <div class="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center lg:py-0">
-            <h3 class="mb-6 font-heading text-2xl font-normal text-text-public-heading lg:mb-8 lg:text-3xl">
+            <h3 class="mb-5 font-heading text-2xl font-normal text-text-public-heading lg:mb-6 2xl:mb-8 2xl:text-3xl">
               Waktu Belajar Fleksibel
             </h3>
-            <p class="max-w-125 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-xl">
+            <p class="max-w-110 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-lg 2xl:max-w-125 2xl:text-xl">
               Pilihan waktu kelas yang adaptif dan dapat disesuaikan di sela-sela kesibukan kerja atau aktivitas harianmu.
             </p>
           </div>
 
           <!-- Vertical Divider -->
-          <div class="h-px w-full bg-border-public-strong lg:mx-8 lg:my-10 lg:h-auto lg:w-px lg:self-stretch"></div>
+          <div class="h-px w-full bg-border-public-strong lg:mx-6 lg:my-8 lg:h-auto lg:w-px lg:self-stretch 2xl:mx-8 2xl:my-10"></div>
 
           <!-- Right Column -->
           <div class="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center lg:py-0">
-            <h3 class="mb-6 font-heading text-2xl font-normal text-text-public-heading lg:mb-8 lg:text-3xl">
+            <h3 class="mb-5 font-heading text-2xl font-normal text-text-public-heading lg:mb-6 2xl:mb-8 2xl:text-3xl">
               Metode Hybrid Modern
             </h3>
-            <p class="max-w-125 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-xl">
+            <p class="max-w-110 font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:text-lg 2xl:max-w-125 2xl:text-xl">
               Kombinasi pembelajaran mandiri secara daring (online) yang praktis dan tatap muka berkala untuk pendalaman materi.
             </p>
           </div>
