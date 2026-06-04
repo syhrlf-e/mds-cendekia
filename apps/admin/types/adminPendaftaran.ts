@@ -48,6 +48,7 @@ export type Registration = {
   gelombang: number | null
   orangTua: ParentData[]
   berkasFiles: RegistrationFile[]
+  riwayatPendidikan: AdminRiwayatPendidikanDto | null
   program?: string
   program_paket?: string
 }
@@ -91,6 +92,14 @@ export type AdminOrangTuaDto = {
   penghasilan?: string
 }
 
+export type AdminRiwayatPendidikanDto = {
+  nama_sekolah_asal?: string
+  npsn_sekolah_asal?: string
+  alamat_sekolah_asal?: string
+  tahun_lulus?: string
+  no_ijazah?: string
+}
+
 export type AdminPendaftarDto = {
   id: string
   nama: string
@@ -116,15 +125,7 @@ export type AdminPendaftarDto = {
   asal_sekolah?: string
   sekolah_asal?: string
   nama_sekolah_asal?: string
-  riwayat_pendidikan?: {
-    nama_sekolah_asal?: string
-    npsn_sekolah_asal?: string
-    alamat_sekolah_asal?: string
-    tahun_lulus?: string
-    no_ijazah?: string
-    asal_sekolah?: string
-    sekolah_asal?: string
-  }
+  riwayat_pendidikan?: AdminRiwayatPendidikanDto
   tempat_lahir: string
   tanggal_lahir: string
   jenis_kelamin: string

@@ -17,8 +17,11 @@ export const adminApiEndpoints = {
     active: '/api/paket-sekolah/aktif'
   },
   timelinePpdb: {
-    list: '/api/timeline-ppdb',
-    publicList: '/api/timeline-ppdb/publik'
+    list: '/api/timeline/all',
+    detail: '/api/timeline',
+    create: '/api/timeline/create',
+    delete: (id: string | number) => `/api/timeline/${id}`,
+    publicList: '/api/timeline/all'
   },
   gallery: {
     list: '/api/gallery/all',

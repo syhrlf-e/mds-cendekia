@@ -12,3 +12,17 @@ export type AdminLoginResponse = {
     username?: string
   }
 }
+
+export type AdminLogoutResponse = {
+  success?: boolean
+  message?: string
+}
+
+export type AdminVerifyResponse = {
+  success?: boolean
+  message?: string
+  data?: {
+    id?: number
+    username?: string
+  }
+}

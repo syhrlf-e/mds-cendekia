@@ -1,16 +1,33 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
-import type { AdminLoginPayload, AdminLoginResponse } from '~/types/adminAuth'
+import type { AdminLoginPayload, AdminLoginResponse, AdminLogoutResponse, AdminVerifyResponse } from '~/types/adminAuth'
 
 export const useAdminAuthService = () => {
-  const { post } = useApi()
+  const { get, post } = useApi()
 
   const login = (payload: AdminLoginPayload) => {
     return post<AdminLoginResponse>(adminApiEndpoints.auth.login, payload, {
+      handleUnauthorized: false,
+      showErrorToast: false
+    })
+  }
+
+  const logout = () => {
+    return get<AdminLogoutResponse>(adminApiEndpoints.auth.logout, {
+      handleUnauthorized: false,
+      showErrorToast: false
+    })
+  }
+
+  const verify = () => {
+    return get<AdminVerifyResponse>(adminApiEndpoints.auth.verify, {
+      handleUnauthorized: false,
       showErrorToast: false
     })
   }
 
   return {
-    login
+    login,
+    logout,
+    verify
   }
 }

@@ -111,16 +111,10 @@ const getBerkasUrl = (file: AdminBerkasDto | undefined, apiBaseUrl: string): str
 }
 
 const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
-  const directUrl = item.pass_photo || item.foto_url || item.url_foto || item.foto || item.pas_foto || item.file_foto || item.path_foto
+  const directUrl = item.pass_photo
   if (directUrl) return normalizeAssetUrl(directUrl, apiBaseUrl)
 
-  const berkasList = [
-    ...asBerkasArray(item.berkas),
-    ...asBerkasArray(item.berkas_pendaftaran),
-    ...asBerkasArray(item.berkas_persyaratan),
-    ...asBerkasArray(item.dokumen),
-    ...asBerkasArray(item.files)
-  ]
+  const berkasList = asBerkasArray(item.berkas_persyaratan)
   const fotoBerkas = berkasList.find(file => {
     const label = getBerkasLabel(file)
     return label.includes('foto') || label.includes('photo') || label.includes('pas')
@@ -130,13 +124,7 @@ const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
 }
 
 const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string): RegistrationFile[] => {
-  const berkasList = [
-    ...asBerkasArray(item.berkas),
-    ...asBerkasArray(item.berkas_pendaftaran),
-    ...asBerkasArray(item.berkas_persyaratan),
-    ...asBerkasArray(item.dokumen),
-    ...asBerkasArray(item.files)
-  ]
+  const berkasList = asBerkasArray(item.berkas_persyaratan)
 
   const uploadedFiles = berkasList
     .map((file, index) => ({
@@ -171,11 +159,7 @@ const getParentTitle = (parent: AdminOrangTuaDto, index: number) => {
 }
 
 const getPendaftarOrangTua = (item: AdminPendaftarDto): ParentData[] => {
-  return [
-    ...asOrangTuaArray(item.orang_tua),
-    ...asOrangTuaArray(item.orangtua),
-    ...asOrangTuaArray(item.wali)
-  ]
+  return asOrangTuaArray(item.orang_tua)
     .filter(parent => Object.values(parent).some(Boolean))
     .map((parent, index) => ({
       id: `${parent.peran || 'orang-tua'}-${parent.hubungan || index}`,
@@ -198,7 +182,7 @@ export const mapPendaftar = (item: AdminPendaftarDto, apiBaseUrl: string): Regis
   nama: item.nama,
   fotoUrl: getFotoUrl(item, apiBaseUrl),
   nisn: item.nisn,
-  sekolah: item.asal_sekolah || item.nama_sekolah_asal || item.sekolah_asal || item.riwayat_pendidikan?.nama_sekolah_asal || item.riwayat_pendidikan?.asal_sekolah || item.riwayat_pendidikan?.sekolah_asal || '-',
+  sekolah: item.riwayat_pendidikan?.nama_sekolah_asal || '-',
   tanggal: item.created_at,
   status: normalizeStatus(item.status_pendaftaran),
   statusText: item.status_pendaftaran || 'Menunggu verifikasi',
@@ -214,13 +198,14 @@ export const mapPendaftar = (item: AdminPendaftarDto, apiBaseUrl: string): Regis
   rtRw: `${item.rt || '-'} / ${item.rw || '-'}`,
   kodePos: item.kode_pos,
   provinsi: item.provinsi,
-  kota: item.kota || item.kabupaten || item.kota_kabupaten || item.kabupaten_kota || item.kota_kab || '-',
+  kota: item.kabupaten_kota || '-',
   kecamatan: item.kecamatan,
   kelurahan: item.kelurahan,
   gelombang: item.gelombang ?? null,
   orangTua: getPendaftarOrangTua(item),
   berkasFiles: getPendaftarBerkasFiles(item, apiBaseUrl),
-  program: item.program_paket || item.program || '-'
+  riwayatPendidikan: item.riwayat_pendidikan || null,
+  program: item.program_paket || '-'
 })
 
 export const mapPendaftarList = (response: unknown, apiBaseUrl: string): Registration[] => {

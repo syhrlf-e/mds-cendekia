@@ -1,13 +1,15 @@
-import { adminApiEndpoints } from '~/services/adminApiEndpoints'
+import { useAdminAuthService } from '~/services/useAdminAuthService'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
 
   if (to.path.startsWith('/') && to.path !== '/login') {
-    const { get } = useApi()
-    const { data, error } = await get<{ success?: boolean, status?: boolean }>(adminApiEndpoints.auth.verify, { showErrorToast: false })
+    const { verify } = useAdminAuthService()
+    const { clearAdminDataCache } = useAdminDataCache()
+    const { data, error } = await verify()
 
-    if (error || (!data?.success && !data?.status)) {
+    if (error || !data?.success) {
+      clearAdminDataCache()
       return navigateTo('/login')
     }
   }

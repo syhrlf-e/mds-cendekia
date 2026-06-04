@@ -1,5 +1,7 @@
-import { useRuntimeConfig, useRequestHeaders } from '#app'
+import { navigateTo, useCookie, useRequestHeaders, useRoute, useRuntimeConfig, useState } from '#app'
 import { useToast } from './useToast'
+
+let isHandlingUnauthorized = false
 
 export const useApi = () => {
   const config = useRuntimeConfig()
@@ -15,8 +17,43 @@ export const useApi = () => {
   const baseURL = normalizeBaseUrl(config.public.apiBaseUrl)
   const defaultTimeout = Number(config.public.apiTimeoutMs || 15000)
 
+  const clearLocalSession = () => {
+    const legacyAdminToken = useCookie('admin_token')
+    const localCendekiaToken = useCookie('cendekia_token')
+    legacyAdminToken.value = null
+    localCendekiaToken.value = null
+
+    useState('admin-cache:pendaftar', () => []).value = []
+    useState('admin-cache:pendaftar-loaded-at', () => 0).value = 0
+    useState('admin-cache:pendaftar-error', () => '').value = ''
+    useState('admin-cache:students', () => []).value = []
+    useState('admin-cache:students-loaded-at', () => 0).value = 0
+    useState('admin-cache:students-error', () => '').value = ''
+  }
+
+  const handleUnauthorizedResponse = async (showErrorToast: boolean) => {
+    if (isHandlingUnauthorized) return
+
+    isHandlingUnauthorized = true
+
+    try {
+      clearLocalSession()
+
+      if (showErrorToast) {
+        addToast('Sesi telah habis. Silakan login kembali.', 'error')
+      }
+
+      const route = useRoute()
+      if (route.path !== '/login') {
+        await navigateTo('/login')
+      }
+    } finally {
+      isHandlingUnauthorized = false
+    }
+  }
+
   const customFetch = async <T>(endpoint: string, options: any = {}) => {
-    const { showErrorToast = true, ...fetchOptions } = options
+    const { showErrorToast = true, handleUnauthorized = true, ...fetchOptions } = options
     const reqHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {}
 
     const headers = {
@@ -31,15 +68,17 @@ export const useApi = () => {
         timeout: defaultTimeout,
         ...fetchOptions,
         headers,
-        onResponseError({ response }) {
-          if (import.meta.client && showErrorToast) {
-            const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
+        async onResponseError({ response }) {
+          if (!import.meta.client) return
 
-            if (response.status === 401) {
-              addToast('Sesi telah habis. Silakan login kembali.', 'error')
-            } else {
-              addToast(errorMsg, 'error')
-            }
+          if (response.status === 401 && handleUnauthorized) {
+            await handleUnauthorizedResponse(showErrorToast)
+            return
+          }
+
+          if (showErrorToast) {
+            const errorMsg = response._data?.message || response.statusText || 'Terjadi kesalahan pada server.'
+            addToast(errorMsg, 'error')
           }
         }
       })

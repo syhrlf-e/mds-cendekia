@@ -144,6 +144,18 @@ const formatDate = (date: string) => {
   }).format(parsedDate)
 }
 
+const formatAddress = (item: Student) => {
+  return [
+    item.alamat,
+    item.rt && item.rw ? `RT ${item.rt}/RW ${item.rw}` : '',
+    item.kelurahan,
+    item.kecamatan,
+    item.kabupatenKota,
+    item.provinsi,
+    item.kodePos
+  ].filter(Boolean).join(', ') || '-'
+}
+
 onMounted(loadStudents)
 
 watch([filterProgram, perPage], () => {
@@ -403,6 +415,18 @@ watch(totalPages, value => {
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.jenisKelamin || '-' }}</p>
                   </div>
                   <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Tempat Lahir</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.tempatLahir || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Tanggal Lahir</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ formatDate(selectedItem.tanggalLahir) }}</p>
+                  </div>
+                  <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Agama</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.agama || '-' }}</p>
+                  </div>
+                  <div>
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Program</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.program }}</p>
                   </div>
@@ -425,6 +449,88 @@ watch(totalPages, value => {
                   <div>
                     <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Email</p>
                     <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.email || '-' }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Alamat</p>
+                    <p class="text-[15px] font-medium leading-[1.5] text-text-primary">{{ formatAddress(selectedItem) }}</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-6 overflow-hidden rounded-2xl border border-border bg-bg-surface">
+                <div class="border-b border-border bg-bg-base px-6 py-3">
+                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Orang Tua / Wali</h3>
+                </div>
+                <div class="divide-y divide-border-soft">
+                  <div
+                    v-for="parent in selectedItem.orangTua"
+                    :key="`${parent.nik}-${parent.hubungan}-${parent.peran}`"
+                    class="grid grid-cols-2 gap-x-8 gap-y-5 p-6"
+                  >
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Nama</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.nama || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Hubungan</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.hubungan || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Peran</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.peran || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">NIK</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.nik || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">No. HP</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.no_telepon || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Email</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.email || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Pekerjaan</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.pekerjaan || '-' }}</p>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Pendidikan</p>
+                      <p class="text-[15px] font-medium text-text-primary">{{ parent.pendidikan || '-' }}</p>
+                    </div>
+                  </div>
+
+                  <div v-if="selectedItem.orangTua.length === 0" class="p-6 text-sm text-text-secondary">
+                    Data orang tua atau wali belum tersedia.
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-6 overflow-hidden rounded-2xl border border-border bg-bg-surface">
+                <div class="border-b border-border bg-bg-base px-6 py-3">
+                  <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">Riwayat Pendidikan</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-x-8 gap-y-5 p-6">
+                  <div class="col-span-2">
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Sekolah Asal</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.riwayatPendidikan?.nama_sekolah_asal || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">NPSN</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.riwayatPendidikan?.npsn_sekolah_asal || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Tahun Lulus</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.riwayatPendidikan?.tahun_lulus || '-' }}</p>
+                  </div>
+                  <div>
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">No. Ijazah</p>
+                    <p class="text-[15px] font-medium text-text-primary">{{ selectedItem.riwayatPendidikan?.no_ijazah || '-' }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-text-muted">Alamat Sekolah Asal</p>
+                    <p class="text-[15px] font-medium leading-[1.5] text-text-primary">{{ selectedItem.riwayatPendidikan?.alamat_sekolah_asal || '-' }}</p>
                   </div>
                 </div>
               </section>

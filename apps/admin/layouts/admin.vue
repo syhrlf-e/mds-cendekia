@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { Bell, CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, MonitorX, Newspaper, PackageOpen, School, Settings, Users } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
+import { useAdminAuthService } from '~/services/useAdminAuthService'
 
 const route = useRoute()
 const router = useRouter()
 const { clearAdminDataCache } = useAdminDataCache()
+const { logout } = useAdminAuthService()
+const { addToast } = useToast()
 const isAdminMenuOpen = ref(false)
+const isLoggingOut = ref(false)
 
 const menu = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -26,14 +30,28 @@ const pageTitle = computed(() => {
   return activeMenu?.pageTitle || activeMenu?.name || 'Admin'
 })
 
-const handleLogout = async () => {
+const clearLocalSession = () => {
   const legacyAdminToken = useCookie('admin_token')
   const localCendekiaToken = useCookie('cendekia_token')
   legacyAdminToken.value = null
   localCendekiaToken.value = null
   clearAdminDataCache()
+}
 
-  router.push('/login')
+const handleLogout = async () => {
+  if (isLoggingOut.value) return
+
+  isLoggingOut.value = true
+  const { error } = await logout()
+
+  if (error) {
+    addToast('Sesi lokal ditutup, tetapi logout server belum dapat dikonfirmasi.', 'warning')
+  }
+
+  clearLocalSession()
+  await router.push('/login')
+
+  isLoggingOut.value = false
 }
 </script>
 
@@ -142,11 +160,12 @@ const handleLogout = async () => {
               </div>
               <button
                 type="button"
-                class="flex h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold text-error transition-colors hover:bg-status-rejected-bg"
+                class="flex h-12 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-bold text-error transition-colors hover:bg-status-rejected-bg disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="isLoggingOut"
                 @click="handleLogout"
               >
                 <LogOut class="h-4 w-4 shrink-0" />
-                Keluar Sistem
+                {{ isLoggingOut ? 'Keluar...' : 'Keluar Sistem' }}
               </button>
             </div>
           </div>

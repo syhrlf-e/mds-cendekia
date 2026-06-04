@@ -302,6 +302,16 @@ const fieldSections = computed(() => {
         ['Kecamatan', selectedItem.value.kecamatan],
         ['Kelurahan', selectedItem.value.kelurahan]
       ]
+    },
+    {
+      title: 'Riwayat Pendidikan',
+      fields: [
+        ['Sekolah Asal', selectedItem.value.riwayatPendidikan?.nama_sekolah_asal || '-'],
+        ['NPSN', selectedItem.value.riwayatPendidikan?.npsn_sekolah_asal || '-'],
+        ['Tahun Lulus', selectedItem.value.riwayatPendidikan?.tahun_lulus || '-'],
+        ['No. Ijazah', selectedItem.value.riwayatPendidikan?.no_ijazah || '-'],
+        ['Alamat Sekolah Asal', selectedItem.value.riwayatPendidikan?.alamat_sekolah_asal || '-', 'full']
+      ]
     }
   ]
 })
