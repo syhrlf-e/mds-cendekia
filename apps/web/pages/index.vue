@@ -159,11 +159,11 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <h2 class="mb-14 max-w-5xl font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl 2xl:mb-28">
           Berdiri untuk mengabdi, bergerak dengan <span class="text-brand font-medium">legalitas resmi.</span>
         </h2>
+
         <p class="mb-12 max-w-5xl font-sans text-lg font-normal leading-relaxed text-text-public-heading md:text-xl lg:text-2xl">
           Didirikan resmi pada Maret 2026, Yayasan Mukti Daris Sasmita Cendekia (YMDSC) hadir sebagai bentuk nyata kepedulian sosial untuk membangun manusia seutuhnya. Kami berkomitmen membuka akses pendidikan kesetaraan yang inklusif, nirlaba yang berkelanjutan bagi semua kelompok usia. Menjadikan pusat pemberdayaan masyarakat yang berlandaskan nilai-nilai Pancasila untuk membangun manusia seutuhnya.
         </p>
 
-        <!-- CTA Button -->
         <NuxtLink
           to="/profil-sekolah"
           class="flex h-12 w-[252px] cursor-pointer items-center justify-center rounded-full border border-border font-heading text-base font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none"
@@ -172,15 +172,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </NuxtLink>
       </div>
     </section>
-    <!-- Section 3: Fitur / Sistem Belajar -->
+
     <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-28 md:pt-36 lg:pt-44 xl:pt-56 2xl:pb-25 2xl:pt-[326px]">
       <div class="public-container flex w-full flex-col">
-        <!-- Headline -->
         <h2 class="mb-14 max-w-4xl text-left font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl">
           Sistem belajar adaptif, tidak mengorbankan aktivitas harianmu.
         </h2>
 
-        <!-- Divider & Content Area -->
         <div class="flex w-full flex-col border-y border-border-public-strong lg:h-[360px] lg:flex-row">
           <!-- Left Column -->
           <div class="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center lg:py-0">
