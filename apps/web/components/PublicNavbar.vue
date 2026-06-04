@@ -248,13 +248,13 @@ const handleNavClick = async (item: NavItem) => {
           </NuxtLink>
 
           <!-- Desktop Menu -->
-          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-16 lg:flex">
+          <div class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 xl:gap-12 2xl:gap-16 lg:flex">
             <NuxtLink
               v-for="(item, index) in menuItems"
               :key="item.id"
               :ref="(el) => setItemRef(el, index)"
               :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
-              class="group relative cursor-pointer py-2 text-base font-medium font-heading transition-colors duration-300"
+              class="group relative cursor-pointer py-2 font-heading text-sm font-medium transition-colors duration-300 xl:text-base"
               :class="
                 activeMenuLabel === item.label
                   ? 'text-brand'
@@ -273,13 +273,13 @@ const handleNavClick = async (item: NavItem) => {
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center gap-3">
+          <div class="relative z-10 flex items-center gap-3">
             <NuxtLink
               to="/ppdb"
-              class="hidden cursor-pointer items-center justify-center rounded-full border border-brand bg-white px-6 py-2.5 text-base font-medium font-heading text-brand transition-colors duration-300 hover:bg-brand hover:text-white lg:flex"
+              class="public-navbar-cta cursor-pointer items-center justify-center rounded-full border border-brand bg-white px-4 py-2 font-heading text-sm font-medium text-brand transition-colors duration-300 hover:bg-brand hover:text-white xl:px-5 xl:py-2.5 xl:text-base"
               @click="mobileMenuOpen = false"
             >
-              <span>Daftarkan Diri Kamu</span>
+              <span>Daftar PPDB</span>
             </NuxtLink>
 
             <!-- Mobile Toggle -->
@@ -350,5 +350,15 @@ const handleNavClick = async (item: NavItem) => {
 
 .animate-slide-in {
   animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.public-navbar-cta {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .public-navbar-cta {
+    display: inline-flex;
+  }
 }
 </style>
