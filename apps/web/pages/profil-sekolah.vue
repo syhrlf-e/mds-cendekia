@@ -123,69 +123,69 @@ useJsonLd(() => {
         </div>
       </div>
     </section>
-    <section class="bg-white px-6 py-30">
-      <div class="public-navbar-container flex flex-col items-center">
-        <div class="mb-13 flex max-w-[1100px] flex-col items-center text-center">
-          <div class="mb-3 flex h-11 w-21 items-center justify-center rounded-full bg-brand font-heading text-xl font-normal text-white">
+    <section class="bg-white px-0 py-24 md:py-28 lg:py-30">
+      <div class="public-container flex flex-col items-center">
+        <div class="mb-12 flex max-w-4xl flex-col items-center text-center 2xl:mb-13 2xl:max-w-[1100px]">
+          <div class="mb-3 flex h-10 w-20 items-center justify-center rounded-full bg-brand font-heading text-lg font-normal text-white 2xl:h-11 2xl:w-21 2xl:text-xl">
             Visi
           </div>
-          <h2 class="mb-3 font-heading text-5xl font-normal leading-tight text-text-public-heading">
+          <h2 class="mb-3 font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:text-5xl">
             Pembangunan Manusia Seutuhnya<br />Berlandaskan Nilai Pancasila.
           </h2>
-          <p class="font-sans text-xl font-normal leading-relaxed text-neutral-600">
+          <p class="font-sans text-base font-normal leading-relaxed text-neutral-600 md:text-lg 2xl:text-xl">
             Berperan aktif dalam pembangunan manusia seutuhnya melalui kegiatan sosial, pendidikan, kesehatan, kebudayaan, kebangsaan, dan pemberdayaan masyarakat secara nirlaba, berkelanjutan, inklusif, dan berlandaskan nilai-nilai Pancasila, Undang-Undang Dasar Negara Republik Indonesia Tahun 1945, serta mendukung proses demokrasi dan penguatan partisipasi publik dalam pemilu.
           </p>
         </div>
         <div class="flex w-full flex-col items-center">
-          <div class="mb-8 flex h-11 w-21 items-center justify-center rounded-full bg-brand font-heading text-xl font-normal text-white">
+          <div class="mb-8 flex h-10 w-20 items-center justify-center rounded-full bg-brand font-heading text-lg font-normal text-white 2xl:h-11 2xl:w-21 2xl:text-xl">
             Misi
           </div>
 
-          <div class="flex w-full max-w-[1440px] flex-wrap justify-center gap-6">
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Pendidikan Komprehensif</h3>
+          <div class="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 2xl:gap-6">
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Pendidikan Komprehensif</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan pendidikan formal, nonformal, dan informal pada seluruh jenjang dan kelompok usia, termasuk namun tidak terbatas pada sekolah umum dan kejuruan, pendidikan kesetaraan, pendidikan anak usia dini, pendidikan agama, pondok pesantren, madrasah, pusat kegiatan belajar masyarakat, kursus, pelatihan, serta pendidikan teologi.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Kesejahteraan Sosial</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Kesejahteraan Sosial</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan kegiatan sosial dan kesejahteraan masyarakat, termasuk pendirian dan pengelolaan panti asuhan, panti jompo/wreda, serta kegiatan pendampingan dan perlindungan bagi kelompok rentan.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Pemberdayaan Keagamaan</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Pemberdayaan Keagamaan</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan kegiatan keagamaan, termasuk pendirian dan pengelolaan sarana ibadah, syiar dan dakwah agama, peningkatan pemahaman dan pengamalan nilai-nilai keagamaan, serta penerimaan, pengelolaan, dan penyaluran zakat, infak, sedekah, dan wakaf sesuai dengan ketentuan peraturan perundang-undangan.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Kesehatan Masyarakat</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Kesehatan Masyarakat</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan kegiatan kesehatan masyarakat yang bersifat promotif, preventif, dan edukatif, termasuk pengelolaan fasilitas pelayanan kesehatan sesuai dengan ketentuan peraturan perundang-undangan.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Riset & Pengkajian Publik</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Riset & Pengkajian Publik</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan kegiatan penelitian, pengkajian, dan pengembangan ilmu pengetahuan, kebijakan publik, serta kajian strategis untuk kepentingan pembangunan masyarakat.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Pengembangan SDM</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Pengembangan SDM</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menyelenggarakan kegiatan pemberdayaan masyarakat, pengembangan kewirausahaan sosial, peningkatan kapasitas sumber daya manusia, serta pembinaan kepemudaan dan perempuan.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Kemitraan Strategis Negara</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Kemitraan Strategis Negara</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menjalin kerja sama dan kemitraan dengan pemerintah pusat dan daerah, Dewan Perwakilan Rakyat Republik Indonesia, Dewan Perwakilan Daerah Republik Indonesia, kementerian/lembaga, Tentara Nasional Indonesia, Kepolisian Negara Republik Indonesia, serta lembaga negara lainnya sesuai dengan ketentuan peraturan perundang-undangan.
               </p>
             </div>
-            <div class="flex h-[249px] w-[342px] flex-col rounded-4xl border border-neutral-200 bg-white p-6">
-              <h3 class="mb-4 font-heading text-xl font-medium text-text-public-heading">Kolaborasi Global</h3>
+            <div class="flex min-h-[236px] flex-col rounded-3xl border border-neutral-200 bg-white p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
+              <h3 class="mb-4 font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Kolaborasi Global</h3>
               <p class="font-heading text-xs font-medium leading-relaxed text-gray-500">
                 Menjalin kerja sama dengan lembaga donor, organisasi internasional, dan mitra pembangunan nasional maupun internasional dalam rangka pelaksanaan program sosial dan pembangunan berkelanjutan.
               </p>
