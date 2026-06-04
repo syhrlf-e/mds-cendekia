@@ -71,7 +71,7 @@ const formatSize = (bytes: number) => {
       >
       <div :class="[
         'hidden sm:flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition-colors bg-bg-surface',
-        error ? 'border-error bg-error/5' : 'border-border hover:border-brand hover:bg-bg-base/50'
+        error ? 'border-error bg-error/5' : 'border-border hover:border-text-primary/30 hover:bg-bg-base/50'
       ]">
         <UploadCloud :class="['w-8 h-8 mb-2', error ? 'text-error' : 'text-text-secondary']" />
         <p class="text-sm text-text-primary font-medium text-center">Klik atau seret file ke sini</p>

@@ -55,7 +55,7 @@ const handleInput = (event: Event) => {
         'min-h-30 w-full resize-y rounded-lg border bg-bg-surface p-4 text-base leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted',
         error
           ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
-          : 'border-border focus:border-brand focus:ring-3 focus:ring-brand/12',
+          : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
         disabled ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100' : ''
       ]"
       @input="handleInput"

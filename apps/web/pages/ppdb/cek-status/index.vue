@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { SearchX } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
-definePageMeta({ hideFooter: true })
+
+definePageMeta({ layout: 'ppdb-form' })
 
 type CheckState = 'initial' | 'loading' | 'success' | 'not-found'
 type StatusResult = {

@@ -4,6 +4,8 @@ import { computed, onMounted, ref } from 'vue'
 
 useHead({ title: 'Revisi Berkas | PPDB MDS Cendekia' })
 
+definePageMeta({ layout: 'ppdb-form' })
+
 type MagicUrlState = 'loading' | 'valid' | 'invalid'
 
 type RevisionDocumentType = {

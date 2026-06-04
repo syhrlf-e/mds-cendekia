@@ -2,6 +2,8 @@
 import { AlertCircle } from 'lucide-vue-next'
 
 useHead({ title: 'Kartu Peserta | PPDB MDS Cendekia' })
+
+definePageMeta({ layout: 'ppdb-form' })
 </script>
 
 <template>

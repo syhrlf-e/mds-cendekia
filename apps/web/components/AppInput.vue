@@ -105,7 +105,7 @@ const handleInput = (event: Event) => {
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
             ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
-            : 'border-border focus:border-brand focus:ring-3 focus:ring-brand/12',
+            : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
           disabled
             ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100'
             : ''

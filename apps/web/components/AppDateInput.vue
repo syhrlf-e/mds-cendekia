@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
       :disabled="disabled"
       :class="[
         'flex h-12 w-full items-center justify-between rounded-xl border bg-bg-surface px-4 text-left outline-none transition-colors',
-        error ? 'border-error focus:border-error focus:ring-1 focus:ring-error' : 'border-border focus:border-brand focus:ring-1 focus:ring-brand',
+        error ? 'border-error focus:border-error focus:ring-1 focus:ring-error' : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
         disabled ? 'cursor-not-allowed bg-bg-base opacity-60' : 'cursor-pointer',
         selectedLabel ? 'text-text-primary' : 'text-text-secondary'
       ]"

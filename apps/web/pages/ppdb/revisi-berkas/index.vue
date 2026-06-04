@@ -2,6 +2,8 @@
 import { AlertCircle } from 'lucide-vue-next'
 
 useHead({ title: 'Revisi Berkas | PPDB MDS Cendekia' })
+
+definePageMeta({ layout: 'ppdb-form' })
 </script>
 
 <template>

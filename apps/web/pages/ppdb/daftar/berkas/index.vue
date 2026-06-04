@@ -4,6 +4,8 @@ import { Check } from 'lucide-vue-next'
 
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
+definePageMeta({ layout: 'ppdb-form' })
+
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -544,15 +546,16 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-8 md:py-12 px-4">
-    <div class="w-full lg:w-1/2 mx-auto flex flex-col gap-6">
+  <div class="min-h-screen bg-bg-base py-8 md:py-10 xl:py-12">
+    <div class="public-navbar-container">
+      <div class="mx-auto flex w-full max-w-4xl flex-col gap-5 md:gap-6">
 
-      <div class="mb-2">
-        <h1 class="text-2xl md:text-3xl font-heading font-bold text-text-primary">Upload Berkas</h1>
-        <p class="text-text-secondary mt-1">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
+      <div class="mb-1 md:mb-2">
+        <h1 class="font-heading text-2xl font-bold text-text-primary md:text-3xl">Upload Berkas</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-relaxed text-text-secondary md:text-base">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
       </div>
 
-      <div class="bg-bg-surface border border-border rounded-2xl p-5 md:p-8 flex flex-col gap-6 shadow-sm">
+      <div class="flex flex-col gap-5 rounded-2xl border border-border bg-bg-surface p-4 shadow-sm md:gap-6 md:p-6 xl:p-8">
         <AppFileUpload v-model="berkas.foto" label="1. Foto Siswa (3x4 berwarna)" accept=".jpg,.png" :maxSize="1" />
         <AppFileUpload v-model="berkas.rapor" label="2. Buku Rapor SMP" accept=".pdf" :maxSize="2" />
         <AppFileUpload v-model="berkas.skRapor" label="3. Surat Keterangan Nilai Rapor Semester I–V" accept=".pdf" :maxSize="2" />
@@ -580,6 +583,7 @@ const submitForm = async () => {
         </AppButton>
       </div>
 
+      </div>
     </div>
   </div>
 

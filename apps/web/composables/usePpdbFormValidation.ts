@@ -9,6 +9,60 @@ type UsePpdbFormValidationParams = {
   maxBirthYear: number
 }
 
+const biodataFieldLabels: Record<string, string> = {
+  nama: 'Nama Lengkap',
+  nisn: 'NISN',
+  nik: 'NIK',
+  email: 'Email',
+  no_telepon: 'No. Telepon',
+  tanggal_lahir: 'Tanggal Lahir',
+  tempat_lahir: 'Tempat Lahir',
+  jenis_kelamin: 'Jenis Kelamin',
+  agama: 'Agama',
+  id_program: 'Program Pilihan',
+  alamat: 'Alamat Lengkap',
+  rt: 'RT',
+  rw: 'RW',
+  provinsi: 'Provinsi',
+  kabupaten_kota: 'Kota/Kabupaten',
+  kecamatan: 'Kecamatan',
+  kelurahan: 'Kelurahan',
+  kode_pos: 'Kode Pos'
+}
+
+const sekolahFieldLabels: Record<string, string> = {
+  nama_sekolah_asal: 'Nama Sekolah Asal',
+  npsn_sekolah_asal: 'NPSN',
+  alamat_sekolah_asal: 'Alamat Sekolah Asal',
+  tahun_lulus: 'Tahun Lulus',
+  no_ijazah: 'No. Ijazah'
+}
+
+const orangTuaFieldLabels: Record<string, string> = {
+  nama: 'Nama Lengkap',
+  nik: 'NIK',
+  agama: 'Agama',
+  hubungan: 'Hubungan dengan Siswa',
+  hubungan_lainnya: 'Hubungan Wali Lainnya',
+  peran: 'Peran',
+  no_telepon: 'No. HP'
+}
+
+const orangTuaContextLabels = ['Ayah', 'Ibu', 'Wali']
+
+const requiredMessage = (label: string | undefined, fallback = 'Field') => `${label || fallback} wajib diisi`
+
+const getOrangTuaFieldLabel = (index: number, field: string) => {
+  const baseLabel = orangTuaFieldLabels[field] || field
+  const contextLabel = orangTuaContextLabels[index]
+
+  if (!contextLabel) return baseLabel
+  if (baseLabel.includes(contextLabel)) return baseLabel
+  if (field === 'hubungan' || field === 'hubungan_lainnya' || field === 'peran') return baseLabel
+
+  return `${baseLabel} ${contextLabel}`
+}
+
 export const usePpdbFormValidation = ({
   form,
   formSekolah,
@@ -26,25 +80,25 @@ export const usePpdbFormValidation = ({
       switch (field) {
         case 'nama':
         case 'tempat_lahir':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (val.length < 3) errors[field] = 'Minimal 3 karakter'
           else if (!/^[a-zA-Z\s]*$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan spasi'
           break
 
         case 'nik':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^\d{16}$/.test(val)) errors[field] = 'NIK harus 16 digit angka'
           else if (val === '1234567812345678') errors[field] = 'NIK ini sudah terdaftar dalam sistem'
           break
 
         case 'nisn':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^\d{10}$/.test(val)) errors[field] = 'NISN harus 10 digit angka'
           break
 
         case 'tanggal_lahir':
           if (!val) {
-            errors[field] = 'Field ini wajib diisi'
+            errors[field] = requiredMessage(biodataFieldLabels[field])
           } else {
             const selectedDate = new Date(val)
             if (selectedDate > new Date()) errors[field] = 'Tanggal lahir tidak boleh di masa depan'
@@ -59,32 +113,32 @@ export const usePpdbFormValidation = ({
         case 'kabupaten_kota':
         case 'kecamatan':
         case 'kelurahan':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           break
 
         case 'alamat':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (val.length < 10) errors[field] = 'Minimal 10 karakter'
           break
 
         case 'rt':
         case 'rw':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^\d{3}$/.test(val)) errors[field] = `${field.toUpperCase()} harus 3 digit angka`
           break
 
         case 'kode_pos':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^\d{5}$/.test(val)) errors[field] = 'Kode pos harus 5 digit angka'
           break
 
         case 'no_telepon':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^08\d{10,11}$/.test(val)) errors[field] = 'Nomor HP harus 12-13 digit dan diawali 08'
           break
 
         case 'email':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(biodataFieldLabels[field])
           else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[field] = 'Format email tidak valid'
           else if (val === 'test@test.com') errors[field] = 'Email ini sudah terdaftar dalam sistem'
           break
@@ -95,29 +149,29 @@ export const usePpdbFormValidation = ({
       const val = String(formSekolah[field as keyof typeof formSekolah]).trim()
       switch (field) {
         case 'nama_sekolah_asal':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(sekolahFieldLabels[field])
           else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
           else if (!/^[a-zA-Z0-9\s]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf dan angka'
           break
 
         case 'npsn_sekolah_asal':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(sekolahFieldLabels[field])
           else if (!/^\d{8}$/.test(val)) errors[field] = 'NPSN harus 8 digit angka'
           break
 
         case 'alamat_sekolah_asal':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(sekolahFieldLabels[field])
           else if (val.length < 10) errors[field] = 'Minimal 10 karakter'
           break
 
         case 'tahun_lulus':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(sekolahFieldLabels[field])
           else if (!/^\d{4}$/.test(val)) errors[field] = 'Tahun harus 4 digit angka'
           else if (Number(val) > new Date().getFullYear()) errors[field] = 'Tahun lulus tidak boleh di masa depan'
           break
 
         case 'no_ijazah':
-          if (!val) errors[field] = 'Field ini wajib diisi'
+          if (!val) errors[field] = requiredMessage(sekolahFieldLabels[field])
           else if (val.length < 5) errors[field] = 'Minimal 5 karakter'
           else if (val.length > 25) errors[field] = 'Maksimal 25 karakter'
           else if (!/^[a-zA-Z0-9/-]+$/.test(val)) errors[field] = 'Hanya boleh berisi huruf, angka, tanda - dan /'
@@ -143,7 +197,7 @@ export const usePpdbFormValidation = ({
       : requiredFields.includes(field)
 
     if (isRequired && !val) {
-      errors[errorKey] = 'Field ini wajib diisi'
+      errors[errorKey] = requiredMessage(getOrangTuaFieldLabel(index, field))
       return
     }
 

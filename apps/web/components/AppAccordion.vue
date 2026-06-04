@@ -11,12 +11,14 @@ const props = withDefaults(defineProps<{
   isCompleted?: boolean
   status?: AccordionStatus
   showStatusText?: boolean
+  lockedText?: string
 }>(), {
   isOpen: false,
   isLocked: false,
   isCompleted: false,
   status: undefined,
-  showStatusText: false
+  showStatusText: false,
+  lockedText: 'Lengkapi tahap sebelumnya'
 })
 
 const emit = defineEmits(['toggle'])
@@ -35,7 +37,7 @@ watch(() => props.isOpen, () => {
   if (timeoutId) clearTimeout(timeoutId)
   timeoutId = window.setTimeout(() => {
     isTransitioning.value = false
-  }, 300)
+  }, 500)
 })
 
 const effectiveStatus = computed<AccordionStatus>(() => {
@@ -54,24 +56,25 @@ const statusIcon = computed(() => {
 const iconClass = computed(() => {
   if (effectiveStatus.value === 'locked') return 'text-text-secondary w-5 h-5'
   if (effectiveStatus.value === 'complete') return 'text-success w-5 h-5'
-  return `text-text-secondary w-5 h-5 transition-transform duration-300 ${props.isOpen ? 'rotate-180' : ''}`
+  return `text-text-secondary w-5 h-5 transition-transform duration-500 ${props.isOpen ? 'rotate-180' : ''}`
 })
 
 const statusText = computed(() => {
-  if (effectiveStatus.value === 'locked') return ''
+  if (effectiveStatus.value === 'locked') return props.lockedText
   if (effectiveStatus.value === 'complete') return 'Lengkap'
   return 'Belum lengkap'
 })
 
 const statusTextClass = computed(() => {
+  if (effectiveStatus.value === 'locked') return 'text-text-secondary'
   if (effectiveStatus.value === 'complete') return 'text-success'
   return 'text-text-secondary'
 })
 
 const headerClass = computed(() => {
   return [
-    'flex items-center justify-between w-full p-4 md:p-6 text-left transition-colors select-none relative z-10',
-    props.isLocked ? 'cursor-not-allowed bg-bg-base text-text-secondary' : 'cursor-pointer bg-bg-surface hover:bg-primary-50 rounded-t-2xl',
+    'flex items-center justify-between w-full p-4 md:p-5 xl:p-6 text-left transition-colors duration-300 select-none relative z-10',
+    props.isLocked ? 'cursor-not-allowed bg-bg-base text-text-secondary' : 'cursor-pointer bg-bg-surface hover:bg-bg-base rounded-t-2xl',
     props.isOpen ? 'border-b border-border rounded-t-2xl' : 'rounded-2xl'
   ]
 })
@@ -79,7 +82,7 @@ const headerClass = computed(() => {
 
 <template>
   <div
-    class="w-full bg-bg-surface border border-border rounded-2xl transition-all duration-300 relative"
+    class="relative w-full rounded-2xl border border-border bg-bg-surface transition-all duration-500"
     :class="[
       isOpen && !isLocked ? 'z-20' : 'z-10',
       isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''
@@ -92,7 +95,10 @@ const headerClass = computed(() => {
       @click="handleToggle"
       :aria-expanded="isOpen"
     >
-      <span class="font-heading font-semibold text-text-primary text-base md:text-lg">
+      <span
+        class="font-heading text-base font-semibold md:text-lg"
+        :class="effectiveStatus === 'locked' ? 'text-text-secondary' : 'text-text-primary'"
+      >
         {{ title }}
       </span>
       <span class="flex items-center gap-2">
@@ -108,15 +114,11 @@ const headerClass = computed(() => {
     </button>
 
     <div
-      class="grid transition-all duration-300 ease-in-out relative"
-      :style="{
-        gridTemplateRows: (isOpen && !isLocked) ? '1fr' : '0fr',
-        opacity: (isOpen && !isLocked) ? '1' : '0',
-        visibility: (isOpen && !isLocked) ? 'visible' : 'hidden'
-      }"
+      class="relative grid transition-all duration-500 ease-in-out"
+      :class="isOpen && !isLocked ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
     >
-      <div :class="isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''">
-        <div class="p-4 md:p-6">
+      <div class="min-h-0" :class="isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''">
+        <div class="p-4 md:p-5 xl:p-6">
           <slot></slot>
         </div>
       </div>
