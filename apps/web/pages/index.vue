@@ -154,19 +154,19 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
-    <section id="profil" class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-32 md:pt-44 lg:pt-60 xl:pt-80 2xl:pb-25 2xl:pt-[599px]">
+    <section id="profil" class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-[599px]">
       <div class="public-container flex flex-col items-center text-center">
-        <h2 class="mb-14 max-w-5xl font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-20 lg:text-5xl 2xl:mb-28">
+        <h2 class="mb-12 max-w-4xl font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 2xl:mb-28 2xl:max-w-5xl 2xl:text-5xl">
           Berdiri untuk mengabdi, bergerak dengan <span class="text-brand font-medium">legalitas resmi.</span>
         </h2>
 
-        <p class="mb-12 max-w-5xl font-sans text-lg font-normal leading-relaxed text-text-public-heading md:text-xl lg:text-2xl">
+        <p class="mb-10 max-w-4xl font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:mb-12 lg:text-xl 2xl:mb-13 2xl:max-w-5xl 2xl:text-2xl">
           Didirikan resmi pada Maret 2026, Yayasan Mukti Daris Sasmita Cendekia (YMDSC) hadir sebagai bentuk nyata kepedulian sosial untuk membangun manusia seutuhnya. Kami berkomitmen membuka akses pendidikan kesetaraan yang inklusif, nirlaba yang berkelanjutan bagi semua kelompok usia. Menjadikan pusat pemberdayaan masyarakat yang berlandaskan nilai-nilai Pancasila untuk membangun manusia seutuhnya.
         </p>
 
         <NuxtLink
           to="/profil-sekolah"
-          class="flex h-12 w-[252px] cursor-pointer items-center justify-center rounded-full border border-border font-heading text-base font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none"
+          class="flex h-12 w-60 cursor-pointer items-center justify-center rounded-full border border-border font-heading text-sm font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none 2xl:w-62.5 2xl:text-base"
         >
           Selengkapnya tentang kami
         </NuxtLink>
