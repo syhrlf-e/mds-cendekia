@@ -100,7 +100,7 @@ const primaryGalleryIndex = computed(() => {
 const activeGalleryItem = computed(() => {
   return displayGalleryItems.value[primaryGalleryIndex.value] || displayGalleryItems.value[0]
 })
-const squareGalleryItems = computed(() => displayGalleryItems.value)
+const squareGalleryItems = computed(() => displayGalleryItems.value.filter(item => item.id !== activeGalleryItem.value?.id))
 const galleryTrackRef = ref<HTMLElement | null>(null)
 const currentGalleryIndex = ref(0)
 
@@ -325,7 +325,6 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[370px]">
       <div class="public-container flex flex-col items-start justify-between gap-12 lg:flex-row lg:gap-10 2xl:gap-10">
 
-        <!-- Left Column -->
         <div class="w-full max-w-120 lg:sticky lg:top-30 lg:max-w-100 xl:max-w-110 2xl:max-w-[600px]">
           <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:text-5xl">
             Langkah mudah bergabung <br />
@@ -333,9 +332,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           </h2>
         </div>
 
-        <!-- Right Column -->
         <div class="flex w-full max-w-[620px] flex-col 2xl:max-w-[708px]">
-          <!-- Item 1 -->
           <div class="border-t border-border-public-strong py-10 2xl:py-12">
             <div class="flex flex-col items-start justify-between gap-4 md:flex-row md:gap-10 xl:gap-12 2xl:gap-40">
               <h3 class="flex-shrink-0 text-left font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">
@@ -380,20 +377,27 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <!-- Baris Pertama -->
         <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-center lg:gap-6">
           <!-- Kolom Kiri: Gambar -->
-          <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
-            <div
-              v-if="isGalleryLoading"
-              class="h-full w-full animate-pulse bg-gray-200"
-            ></div>
-            <img
-              v-else
-              :src="activeGalleryItem?.gambar || '/images/logo-mds-main.png'"
-              :alt="activeGalleryItem?.nama || 'Galeri Lingkungan'"
-              loading="lazy"
-              decoding="async"
-              class="h-full w-full object-cover"
-            />
-          </div>
+          <ClientOnly>
+            <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
+              <div
+                v-if="isGalleryLoading"
+                class="h-full w-full animate-pulse bg-gray-200"
+              ></div>
+              <img
+                v-else
+                :src="activeGalleryItem?.gambar || '/images/logo-mds-main.png'"
+                :alt="activeGalleryItem?.nama || 'Galeri Lingkungan'"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover"
+              />
+            </div>
+            <template #fallback>
+              <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
+                <div class="h-full w-full animate-pulse bg-gray-200"></div>
+              </div>
+            </template>
+          </ClientOnly>
 
           <!-- Kolom Kanan: Teks -->
           <div class="flex-1">
@@ -404,56 +408,69 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </div>
 
         <!-- Baris Kedua: Carousel Foto Kecil -->
-        <div class="mt-6 w-full">
-          <div class="overflow-hidden">
-            <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6" @scroll.passive="handleGalleryScroll">
-            <template v-if="isGalleryLoading">
-              <div
-                v-for="index in 3"
-                :key="`gallery-skeleton-${index}`"
-                class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
-              ></div>
-            </template>
+        <ClientOnly>
+          <div class="mt-6 w-full">
+            <div class="overflow-hidden">
+              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6" @scroll.passive="handleGalleryScroll">
+                <template v-if="isGalleryLoading">
+                  <div
+                    v-for="index in 3"
+                    :key="`gallery-skeleton-${index}`"
+                    class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                  ></div>
+                </template>
 
-            <div
-              v-for="item in squareGalleryItems"
-              v-else
-              :key="item.id"
-              :data-gallery-index="displayGalleryItems.findIndex(galleryItem => galleryItem.id === item.id)"
-              class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
-            >
-              <img
-                :src="item.gambar || '/images/logo-mds-main.png'"
-                :alt="item.nama"
-                loading="lazy"
-                decoding="async"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-5 pt-14 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <h3 class="truncate font-heading text-base font-semibold">
-                  {{ item.nama }}
-                </h3>
-                <p class="mt-1 truncate font-sans text-sm text-white/80">
-                  {{ item.deskripsi || 'Galeri lingkungan belajar MDS Cendekia' }}
-                </p>
+                <div
+                  v-for="(item, index) in squareGalleryItems"
+                  v-else
+                  :key="item.id"
+                  :data-gallery-index="index"
+                  class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                >
+                  <img
+                    :src="item.gambar || '/images/logo-mds-main.png'"
+                    :alt="item.nama"
+                    loading="lazy"
+                    decoding="async"
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-5 pt-14 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <h3 class="truncate font-heading text-base font-semibold">
+                      {{ item.nama }}
+                    </h3>
+                    <p class="mt-1 truncate font-sans text-sm text-white/80">
+                      {{ item.deskripsi || 'Galeri lingkungan belajar MDS Cendekia' }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          </div>
 
-          <div v-if="displayGalleryItems.length > 1 && !isGalleryLoading" class="mt-5 flex items-center justify-center gap-2">
-            <button
-              v-for="(item, index) in displayGalleryItems"
-              :key="`gallery-dot-${item.id}`"
-              type="button"
-              class="h-2 rounded-full transition-all"
-              :class="currentGalleryIndex === index ? 'w-6 bg-brand' : 'w-2 bg-text-public-heading/20 hover:bg-brand/50'"
-              :aria-label="`Lihat posisi galeri ${index + 1}`"
-              :aria-current="currentGalleryIndex === index ? 'true' : undefined"
-              @click="selectGalleryIndex(index)"
-            ></button>
+            <div v-if="squareGalleryItems.length > 1 && !isGalleryLoading" class="mt-5 flex items-center justify-center gap-2">
+              <button
+                v-for="(item, index) in squareGalleryItems"
+                :key="`gallery-dot-${item.id}`"
+                type="button"
+                class="h-2 rounded-full transition-all"
+                :class="currentGalleryIndex === index ? 'w-6 bg-brand' : 'w-2 bg-text-public-heading/20 hover:bg-brand/50'"
+                :aria-label="`Lihat posisi galeri ${index + 1}`"
+                :aria-current="currentGalleryIndex === index ? 'true' : undefined"
+                @click="selectGalleryIndex(index)"
+              ></button>
+            </div>
           </div>
-        </div>
+          <template #fallback>
+            <div class="mt-6 w-full overflow-hidden">
+              <div class="flex gap-5 pb-1 2xl:gap-6">
+                <div
+                  v-for="index in 3"
+                  :key="`gallery-fallback-${index}`"
+                  class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                ></div>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
     </section>
 
@@ -495,64 +512,86 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           Kabar terbaru dan informasi edukasi.
         </h2>
 
-        <div class="grid w-full grid-cols-1 justify-center gap-5 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-6">
-          <template v-if="isNewsLoading">
-            <div
-              v-for="index in 4"
-              :key="`news-skeleton-${index}`"
-              class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
-            >
-              <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
-              <div class="flex flex-col p-6 2xl:p-8">
-                <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                  <span class="h-7 w-24 rounded-full bg-gray-200"></span>
-                  <span class="h-4 w-28 rounded-full bg-gray-200"></span>
+        <ClientOnly>
+          <div class="grid w-full grid-cols-1 justify-center gap-5 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-6">
+            <template v-if="isNewsLoading">
+              <div
+                v-for="index in 4"
+                :key="`news-skeleton-${index}`"
+                class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
+              >
+                <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
+                <div class="flex flex-col p-6 2xl:p-8">
+                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
+                    <span class="h-7 w-24 rounded-full bg-gray-200"></span>
+                    <span class="h-4 w-28 rounded-full bg-gray-200"></span>
+                  </div>
+                  <div class="mb-4 h-16 rounded-2xl bg-gray-200"></div>
+                  <div class="h-20 rounded-2xl bg-gray-200"></div>
                 </div>
-                <div class="mb-4 h-16 rounded-2xl bg-gray-200"></div>
-                <div class="h-20 rounded-2xl bg-gray-200"></div>
+              </div>
+            </template>
+            <template v-else-if="visiblePublicNewsItems.length">
+              <NuxtLink
+                v-for="item in visiblePublicNewsItems"
+                :key="item.id"
+                :to="buildNewsPath(item)"
+                class="flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md 2xl:rounded-4xl"
+              >
+                <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]" />
+                <div class="flex flex-col p-6 2xl:p-8">
+                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
+                    <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
+                      {{ item.category || 'Berita' }}
+                    </span>
+                    <span class="text-right font-sans text-sm text-gray-400">
+                      {{ formatNewsDate(item.publishDate) }}
+                    </span>
+                  </div>
+                  <h3 class="mb-4 font-heading text-xl font-medium leading-snug text-text-public-heading">
+                    {{ item.title }}
+                  </h3>
+                  <p class="font-sans text-sm leading-relaxed text-gray-500">
+                    {{ item.excerpt }}
+                  </p>
+                </div>
+              </NuxtLink>
+            </template>
+            <div v-else class="col-span-full flex min-h-40 items-center justify-center px-8 text-center">
+              <p class="font-sans text-lg leading-relaxed text-gray-500">
+                Belum ada berita atau informasi yang dibuat
+              </p>
+            </div>
+          </div>
+
+          <NuxtLink
+            v-if="hasMorePublicNews"
+            to="/berita"
+            class="mt-14 flex h-12 cursor-pointer items-center justify-center rounded-full border border-blue-500 bg-transparent px-8 font-sans text-base font-medium text-blue-500 transition-colors hover:bg-blue-500 hover:text-white md:mt-16 2xl:mt-20"
+          >
+            Lihat Lebih Banyak
+          </NuxtLink>
+
+          <template #fallback>
+            <div class="grid w-full grid-cols-1 justify-center gap-5 sm:grid-cols-2 xl:grid-cols-4 2xl:gap-6">
+              <div
+                v-for="index in 4"
+                :key="`news-fallback-${index}`"
+                class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
+              >
+                <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
+                <div class="flex flex-col p-6 2xl:p-8">
+                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
+                    <span class="h-7 w-24 rounded-full bg-gray-200"></span>
+                    <span class="h-4 w-28 rounded-full bg-gray-200"></span>
+                  </div>
+                  <div class="mb-4 h-16 rounded-2xl bg-gray-200"></div>
+                  <div class="h-20 rounded-2xl bg-gray-200"></div>
+                </div>
               </div>
             </div>
           </template>
-          <template v-else-if="visiblePublicNewsItems.length">
-            <NuxtLink
-              v-for="item in visiblePublicNewsItems"
-              :key="item.id"
-              :to="buildNewsPath(item)"
-              class="flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md 2xl:rounded-4xl"
-            >
-              <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]" />
-              <div class="flex flex-col p-6 2xl:p-8">
-                <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                  <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
-                    {{ item.category || 'Berita' }}
-                  </span>
-                  <span class="text-right font-sans text-sm text-gray-400">
-                    {{ formatNewsDate(item.publishDate) }}
-                  </span>
-                </div>
-                <h3 class="mb-4 font-heading text-xl font-medium leading-snug text-text-public-heading">
-                  {{ item.title }}
-                </h3>
-                <p class="font-sans text-sm leading-relaxed text-gray-500">
-                  {{ item.excerpt }}
-                </p>
-              </div>
-            </NuxtLink>
-          </template>
-          <div v-else class="col-span-full flex min-h-40 items-center justify-center px-8 text-center">
-            <p class="font-sans text-lg leading-relaxed text-gray-500">
-              Belum ada berita atau informasi yang dibuat
-            </p>
-          </div>
-        </div>
-
-        <NuxtLink
-          v-if="hasMorePublicNews"
-          to="/berita"
-          class="mt-14 flex h-12 cursor-pointer items-center justify-center rounded-full border border-blue-500 bg-transparent px-8 font-sans text-base font-medium text-blue-500 transition-colors hover:bg-blue-500 hover:text-white md:mt-16 2xl:mt-20"
-        >
-          Lihat Lebih Banyak
-        </NuxtLink>
+        </ClientOnly>
       </div>
     </section>
   </div>

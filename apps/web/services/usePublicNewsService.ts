@@ -3,6 +3,8 @@ import { publicApiEndpoints } from '~/services/publicApiEndpoints'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
+const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
+
 const normalizeIdentifier = (value: unknown) => normalizeText(value).toLowerCase()
 
 const stripHtml = (value: unknown) => normalizeText(value).replace(/<[^>]*>/g, ' ')
@@ -82,10 +84,15 @@ export const usePublicNewsService = () => {
 
   const listPublicNews = async (limit = 4) => {
     try {
+      const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
       const data = await $fetch<any>(publicApiEndpoints.berita.list, {
-        query: { limit: String(limit) }
+        baseURL: apiBaseUrl,
+        query: { limit: String(limit) },
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       })
-      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
       const rows = readArrayPayload(data)
       const mappedRows = rows
         .map(item => mapPublicNewsItem(item, apiBaseUrl))
@@ -105,10 +112,15 @@ export const usePublicNewsService = () => {
 
   const getPublicNewsDetail = async (identifier: string) => {
     try {
+      const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
       const data = await $fetch<any>(publicApiEndpoints.berita.detail, {
-        query: { limit: '100' }
+        baseURL: apiBaseUrl,
+        query: { limit: '100' },
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       })
-      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
       const rows = readArrayPayload(data)
       const normalizedIdentifier = normalizeIdentifier(identifier)
       const found = rows.find((item) => {

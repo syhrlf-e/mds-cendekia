@@ -32,7 +32,8 @@ const orderChanged = ref(false)
 const form = ref<GalleryFormState>({
   nama: '',
   deskripsi: '',
-  gambar: null
+  gambar: null,
+  isUtama: false
 })
 
 const filteredItems = computed(() => {
@@ -51,6 +52,23 @@ const from = computed(() => filteredItems.value.length ? (currentPage.value - 1)
 const to = computed(() => Math.min(currentPage.value * perPage.value, filteredItems.value.length))
 const pagedItems = computed(() => filteredItems.value.slice(from.value - 1, to.value))
 const canDragRows = computed(() => !searchQuery.value.trim() && !savingOrder.value)
+const primaryGalleryItem = computed(() => items.value.find(item => item.isUtama) || null)
+const canDragItem = (item: GalleryItem) => canDragRows.value && !item.isUtama
+
+const readGalleryId = (payload: any) => {
+  const id = payload?.id ?? payload?.data?.id ?? payload?.gallery?.id ?? payload?.data?.gallery?.id
+  return id ? String(id) : ''
+}
+
+const sortGalleryItems = (rows: GalleryItem[]) => {
+  return [...rows].sort((firstItem, secondItem) => {
+    if (firstItem.isUtama !== secondItem.isUtama) return firstItem.isUtama ? -1 : 1
+    if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
+    if (firstItem.urutan) return -1
+    if (secondItem.urutan) return 1
+    return 0
+  })
+}
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
@@ -74,25 +92,27 @@ const resetForm = () => {
   form.value = {
     nama: '',
     deskripsi: '',
-    gambar: null
+    gambar: null,
+    isUtama: false
   }
 }
 
 const applyDisplayOrder = (rows: GalleryItem[]) => {
-  const hasPrimary = rows.some(item => item.isUtama)
-
-  return rows.map((item, index) => ({
+  return sortGalleryItems(
+    rows.map((item, index) => ({
+      ...item,
+      urutan: item.urutan || index + 1
+    }))
+  ).map((item, index) => ({
     ...item,
-    urutan: item.urutan || index + 1,
-    isUtama: hasPrimary ? item.isUtama : index === 0
+    urutan: index + 1
   }))
 }
 
 const normalizeCurrentOrder = () => {
-  items.value = items.value.map((item, index) => ({
+  items.value = sortGalleryItems(items.value).map((item, index) => ({
     ...item,
-    urutan: index + 1,
-    isUtama: index === 0
+    urutan: index + 1
   }))
 }
 
@@ -115,6 +135,7 @@ const fetchGallery = async () => {
 
 const openCreate = () => {
   resetForm()
+  form.value.isUtama = !primaryGalleryItem.value
   isFormOpen.value = true
 }
 
@@ -127,7 +148,8 @@ const openEdit = (item: GalleryItem) => {
     nama: item.nama,
     deskripsi: item.deskripsi,
     gambar: null,
-    urutan: item.urutan
+    urutan: item.urutan,
+    isUtama: item.isUtama
   }
   isFormOpen.value = true
 }
@@ -214,6 +236,119 @@ const createFileFromGalleryItem = async (item: GalleryItem) => {
   })
 }
 
+const updateGalleryPrimaryFlag = async (item: GalleryItem, isUtama: boolean) => {
+  const imageFile = await createFileFromGalleryItem(item)
+
+  if (!imageFile) {
+    return {
+      error: new Error('Gambar lama belum bisa diproses.')
+    }
+  }
+
+  const formData = buildGalleryFormData({
+    nama: item.nama,
+    deskripsi: item.deskripsi,
+    gambar: imageFile,
+    isUtama,
+    urutan: item.urutan
+  })
+
+  return await updateGallery(item.id, formData)
+}
+
+const getTargetGalleryName = () => form.value.nama.trim() || 'galeri baru'
+
+const confirmPrimaryReplacement = () => {
+  if (!import.meta.client || !form.value.isUtama) return true
+
+  const currentPrimary = primaryGalleryItem.value
+  if (!currentPrimary || currentPrimary.id === editingId.value) return true
+
+  return window.confirm(`Gambar utama saat ini adalah "${currentPrimary.nama}". Jadikan "${getTargetGalleryName()}" sebagai gambar utama baru?`)
+}
+
+const handlePrimaryToggleChange = () => {
+  const existingItem = items.value.find(item => item.id === editingId.value)
+
+  if (isEdit.value && existingItem?.isUtama && !form.value.isUtama) {
+    form.value.isUtama = true
+    addToast('Gambar utama aktif tidak bisa dinonaktifkan langsung. Pilih gambar lain sebagai gambar utama untuk menggantinya.', 'warning')
+    return
+  }
+
+  if (form.value.isUtama && !confirmPrimaryReplacement()) {
+    form.value.isUtama = false
+  }
+}
+
+const demotePreviousPrimaryIfNeeded = async () => {
+  if (!form.value.isUtama) return true
+
+  const currentPrimary = primaryGalleryItem.value
+  if (!currentPrimary || currentPrimary.id === editingId.value) return true
+
+  const { error: updateError } = await updateGalleryPrimaryFlag(currentPrimary, false)
+  if (updateError) {
+    addToast(getAdminGalleryErrorMessage(updateError, 'Gambar utama lama belum berhasil diperbarui.'), 'error')
+    return false
+  }
+
+  return true
+}
+
+const persistGalleryOrder = async (rows: GalleryItem[], fallbackMessage: string) => {
+  for (const [index, item] of rows.entries()) {
+    const imageFile = await createFileFromGalleryItem(item)
+
+    if (!imageFile) {
+      addToast('Urutan belum bisa disimpan karena ada gambar lama yang tidak bisa diproses.', 'error')
+      return false
+    }
+
+    const formData = buildGalleryFormData({
+      nama: item.nama,
+      deskripsi: item.deskripsi,
+      gambar: imageFile,
+      isUtama: item.isUtama,
+      urutan: index + 1
+    })
+
+    const { error: updateError } = await updateGallery(item.id, formData)
+
+    if (updateError) {
+      addToast(getAdminGalleryErrorMessage(updateError, fallbackMessage), 'error')
+      return false
+    }
+  }
+
+  return true
+}
+
+const buildPrimaryFirstRows = (primaryId: string) => {
+  return sortGalleryItems(items.value.map(item => ({
+    ...item,
+    isUtama: item.id === primaryId
+  }))).map((item, index) => ({
+    ...item,
+    urutan: index + 1
+  }))
+}
+
+const findSubmittedPrimaryId = (submitData: any, target: { id: string, nama: string, deskripsi: string }) => {
+  const responseId = readGalleryId(submitData)
+  if (target.id || responseId) return target.id || responseId
+
+  return items.value.find(item => item.nama === target.nama && item.deskripsi === target.deskripsi)?.id || ''
+}
+
+const verifyPrimaryFromBackend = (primaryId: string) => {
+  const confirmedPrimary = items.value.find(item => item.id === primaryId && item.isUtama)
+
+  if (confirmedPrimary) return
+
+  addToast('Backend belum mengembalikan is_utama untuk gambar utama. Data di web publik belum bisa sinkron sampai BE menyimpan dan mengirim field itu.', 'warning')
+}
+
 const submitForm = async () => {
   if (!form.value.nama.trim() || !form.value.deskripsi.trim()) {
     addToast('Lengkapi nama dan deskripsi galeri.', 'warning')
@@ -225,11 +360,23 @@ const submitForm = async () => {
     return
   }
 
-  const currentImageFile = await createFileFromCurrentImage()
   const existingItem = items.value.find(item => item.id === editingId.value)
+
+  if (isEdit.value && existingItem?.isUtama && !form.value.isUtama) {
+    addToast('Pilih gambar lain sebagai gambar utama sebelum menonaktifkan gambar utama saat ini.', 'warning')
+    return
+  }
+
+  const currentImageFile = await createFileFromCurrentImage()
+  const primaryTarget = form.value.isUtama
+    ? {
+        id: editingId.value,
+        nama: form.value.nama.trim(),
+        deskripsi: form.value.deskripsi.trim()
+      }
+    : null
   const formData = buildGalleryFormData({
     ...form.value,
-    isUtama: isEdit.value ? existingItem?.isUtama : items.value.length === 0,
     urutan: isEdit.value ? existingItem?.urutan : items.value.length + 1,
     gambar: form.value.gambar || currentImageFile
   })
@@ -241,20 +388,42 @@ const submitForm = async () => {
 
   saving.value = true
 
-  const { error: submitError } = isEdit.value
+  const { data: submitData, error: submitError } = isEdit.value
     ? await updateGallery(editingId.value, formData)
     : await createGallery(formData)
 
-  saving.value = false
-
   if (submitError) {
+    saving.value = false
     addToast(getAdminGalleryErrorMessage(submitError, 'Galeri belum berhasil disimpan.'), 'error')
+    return
+  }
+
+  const isPrimaryDemoted = await demotePreviousPrimaryIfNeeded()
+  if (!isPrimaryDemoted) {
+    saving.value = false
     return
   }
 
   addToast(isEdit.value ? 'Galeri berhasil diperbarui.' : 'Galeri berhasil ditambahkan.', 'success')
   closeForm()
   await fetchGallery()
+
+  if (primaryTarget) {
+    const primaryId = findSubmittedPrimaryId(submitData, primaryTarget)
+
+    if (primaryId) {
+      const isOrderPersisted = await persistGalleryOrder(buildPrimaryFirstRows(primaryId), 'Urutan gambar utama belum berhasil disimpan.')
+      if (!isOrderPersisted) {
+        saving.value = false
+        return
+      }
+    }
+
+    await fetchGallery()
+    if (primaryId) verifyPrimaryFromBackend(primaryId)
+  }
+
+  saving.value = false
 }
 
 const confirmDelete = async (item: GalleryItem) => {
@@ -275,7 +444,7 @@ const confirmDelete = async (item: GalleryItem) => {
 }
 
 const handleDragStart = (item: GalleryItem, event: DragEvent) => {
-  if (!canDragRows.value) return
+  if (!canDragItem(item)) return
 
   draggedItemId.value = item.id
   event.dataTransfer?.setData('text/plain', item.id)
@@ -283,7 +452,7 @@ const handleDragStart = (item: GalleryItem, event: DragEvent) => {
 }
 
 const handleDrop = (targetItem: GalleryItem) => {
-  if (!canDragRows.value || !draggedItemId.value || draggedItemId.value === targetItem.id) {
+  if (!canDragItem(targetItem) || !draggedItemId.value || draggedItemId.value === targetItem.id) {
     draggedItemId.value = ''
     return
   }
@@ -291,7 +460,7 @@ const handleDrop = (targetItem: GalleryItem) => {
   const currentIndex = items.value.findIndex(item => item.id === draggedItemId.value)
   const targetIndex = items.value.findIndex(item => item.id === targetItem.id)
 
-  if (currentIndex < 0 || targetIndex < 0) {
+  if (currentIndex < 0 || targetIndex < 0 || items.value[currentIndex]?.isUtama) {
     draggedItemId.value = ''
     return
   }
@@ -318,31 +487,11 @@ const saveGalleryOrder = async () => {
   if (!orderChanged.value || savingOrder.value) return
 
   savingOrder.value = true
+  const isOrderPersisted = await persistGalleryOrder(items.value, 'Urutan galeri belum berhasil disimpan.')
 
-  for (const [index, item] of items.value.entries()) {
-    const imageFile = await createFileFromGalleryItem(item)
-
-    if (!imageFile) {
-      savingOrder.value = false
-      addToast('Urutan belum bisa disimpan karena ada gambar lama yang tidak bisa diproses.', 'error')
-      return
-    }
-
-    const formData = buildGalleryFormData({
-      nama: item.nama,
-      deskripsi: item.deskripsi,
-      gambar: imageFile,
-      isUtama: index === 0,
-      urutan: index + 1
-    })
-
-    const { error: updateError } = await updateGallery(item.id, formData)
-
-    if (updateError) {
-      savingOrder.value = false
-      addToast(getAdminGalleryErrorMessage(updateError, 'Urutan galeri belum berhasil disimpan.'), 'error')
-      return
-    }
+  if (!isOrderPersisted) {
+    savingOrder.value = false
+    return
   }
 
   savingOrder.value = false
@@ -494,7 +643,7 @@ onBeforeUnmount(() => {
             <tr
               v-for="(item, index) in pagedItems"
               :key="item.id"
-              :draggable="canDragRows"
+              :draggable="canDragItem(item)"
               class="h-[76px] text-sm text-text-primary transition-colors hover:bg-bg-base"
               :class="draggedItemId === item.id ? 'bg-primary-50 opacity-60' : ''"
               @dragstart="handleDragStart(item, $event)"
@@ -504,13 +653,19 @@ onBeforeUnmount(() => {
             >
               <td class="px-4">
                 <button
+                  v-if="!item.isUtama"
                   type="button"
-                  :disabled="!canDragRows"
+                  :disabled="!canDragItem(item)"
                   class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-muted transition-colors hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
                   title="Geser urutan"
                 >
                   <GripVertical class="h-4 w-4" />
                 </button>
+                <span
+                  v-else
+                  class="inline-flex h-9 w-9 items-center justify-center"
+                  aria-label="Gambar utama tidak bisa digeser"
+                ></span>
               </td>
               <td class="px-4 font-medium text-text-secondary">
                 {{ from + index }}
@@ -588,29 +743,13 @@ onBeforeUnmount(() => {
       v-model="isFormOpen"
       :title="isEdit ? 'Edit Galeri' : 'Tambah Galeri'"
       width="max-w-2xl"
+      :close-on-backdrop="false"
       @close="closeForm"
     >
       <form
         class="space-y-5"
         @submit.prevent="submitForm"
       >
-        <AppInput
-          v-model="form.nama"
-          label="Nama Galeri"
-          placeholder="Contoh: Kegiatan belajar mandiri"
-          required
-          :disabled="saving"
-        />
-
-        <AppTextarea
-          v-model="form.deskripsi"
-          label="Deskripsi"
-          placeholder="Tuliskan deskripsi singkat dokumentasi ini..."
-          required
-          :rows="4"
-          :disabled="saving"
-        />
-
         <div>
           <label class="mb-2 block text-sm font-medium text-text-primary">
             Gambar <span v-if="!isEdit" class="text-error">*</span>
@@ -664,6 +803,47 @@ onBeforeUnmount(() => {
             @change="handleFileSelect"
           >
         </div>
+
+        <div class="flex items-center justify-between gap-5 rounded-2xl border border-border bg-bg-base px-5 py-4">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-text-primary">Jadikan gambar utama</p>
+            <p class="mt-1 text-xs leading-relaxed text-text-secondary">
+              Gambar utama tampil sebagai foto besar di halaman web dan tidak masuk carousel.
+            </p>
+            <p v-if="primaryGalleryItem && primaryGalleryItem.id !== editingId" class="mt-1 text-xs text-text-muted">
+              Saat ini: {{ primaryGalleryItem.nama }}
+            </p>
+          </div>
+
+          <label class="relative inline-flex shrink-0 cursor-pointer items-center">
+            <input
+              v-model="form.isUtama"
+              type="checkbox"
+              class="peer sr-only"
+              :disabled="saving"
+              @change="handlePrimaryToggleChange"
+            >
+            <span class="h-7 w-13 rounded-full bg-gray-300 transition-colors duration-150 peer-checked:bg-brand peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand/20 peer-disabled:cursor-not-allowed peer-disabled:opacity-60"></span>
+            <span class="absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-150 peer-checked:translate-x-6"></span>
+          </label>
+        </div>
+
+        <AppInput
+          v-model="form.nama"
+          label="Nama Galeri"
+          placeholder="Contoh: Kegiatan belajar mandiri"
+          required
+          :disabled="saving"
+        />
+
+        <AppTextarea
+          v-model="form.deskripsi"
+          label="Deskripsi"
+          placeholder="Tuliskan deskripsi singkat dokumentasi ini..."
+          required
+          :rows="4"
+          :disabled="saving"
+        />
       </form>
 
       <template #footer>

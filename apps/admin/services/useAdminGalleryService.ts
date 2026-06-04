@@ -79,7 +79,7 @@ export const buildGalleryFormData = (form: GalleryFormState) => {
 
   formData.append('nama', form.nama.trim())
   formData.append('deskripsi', form.deskripsi.trim())
-  formData.append('is_utama', form.isUtama ? '1' : '0')
+  formData.append('is_utama', form.isUtama ? 'true' : 'false')
   formData.append('urutan', String(form.urutan || 0))
 
   if (form.gambar) {

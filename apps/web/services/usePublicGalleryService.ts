@@ -3,6 +3,8 @@ import type { GalleryDto, GalleryItem } from '~/types/gallery'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
+const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
+
 const normalizeBoolean = (value: unknown) => {
   if (typeof value === 'boolean') return value
   if (typeof value === 'number') return value === 1
@@ -63,10 +65,15 @@ export const usePublicGalleryService = () => {
 
   const listPublicGallery = async (limit = 12) => {
     try {
+      const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
       const data = await $fetch<any>(publicApiEndpoints.gallery.list, {
-        query: { limit: String(limit) }
+        baseURL: apiBaseUrl,
+        query: { limit: String(limit) },
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       })
-      const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
       const rows = readArrayPayload(data)
       const mappedRows = rows
         .map(item => mapPublicGalleryItem(item, apiBaseUrl))
