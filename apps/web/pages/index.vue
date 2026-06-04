@@ -302,12 +302,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 6: Galeri / Lingkungan -->
-    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-56 xl:pt-64 2xl:pt-[303px]">
-      <div class="public-container flex w-full flex-col">
+    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[303px]">
+      <div class="public-container flex flex-col">
         <!-- Baris Pertama -->
         <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-center lg:gap-6">
           <!-- Kolom Kiri: Gambar -->
-          <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[58%]">
+          <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
             <div
               v-if="isGalleryLoading"
               class="h-full w-full animate-pulse bg-gray-200"
@@ -324,7 +324,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
           <!-- Kolom Kanan: Teks -->
           <div class="flex-1">
-            <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-5xl">
+            <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:text-5xl">
               Lingkungan belajar yang dirancang untuk tumbuh
             </h2>
           </div>
@@ -332,12 +332,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
         <!-- Baris Kedua: Carousel Foto Kecil -->
         <div class="mt-6 w-full overflow-hidden">
-          <div class="gallery-swipe-track flex gap-6 overflow-x-auto scroll-smooth pb-1">
+          <div class="gallery-swipe-track flex gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6">
             <template v-if="isGalleryLoading">
               <div
                 v-for="index in 3"
                 :key="`gallery-skeleton-${index}`"
-                class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-80 xl:w-[341px]"
+                class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
               ></div>
             </template>
 
@@ -346,7 +346,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               v-else
               :key="item.id"
               type="button"
-              class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-80 xl:w-[341px]"
+              class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
               :aria-label="`Tampilkan ${item.nama}`"
               @click="setActiveGallery(item)"
             >
