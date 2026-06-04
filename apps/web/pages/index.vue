@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, Instagram, Facebook, Youtube, MapPin, Phone, Mail } from 'lucide-vue-next'
+import { ArrowRight, Instagram, Facebook, Youtube, MapPin, Phone, Mail, Plus, Minus } from 'lucide-vue-next'
 import type { GalleryItem } from '~/types/gallery'
 import { usePublicGalleryService } from '~/services/usePublicGalleryService'
 import { usePublicNewsService } from '~/services/usePublicNewsService'
@@ -137,6 +137,47 @@ const handleGalleryScroll = () => {
 
   if (nearestItem) currentGalleryIndex.value = nearestItem.index
 }
+
+const activeFaqIndex = ref<number | null>(null)
+const faqList = [
+  {
+    question: 'Apakah ijazah Kejar Paket C resmi dan setara dengan ijazah SMA biasa?',
+    answer: 'Ya, ijazah Kejar Paket C sangat resmi dan diakui oleh negara. Ijazah ini setara dengan ijazah SMA reguler dan sepenuhnya sah digunakan untuk melanjutkan pendidikan ke perguruan tinggi (kuliah), mendaftar CPNS, TNI/Polri, maupun melamar pekerjaan di perusahaan swasta atau BUMN.'
+  },
+  {
+    question: 'Bagaimana jadwal belajarnya? Apakah akan mengganggu waktu kerja saya?',
+    answer: 'Tentu tidak. Kami merancang sistem belajar hybrid yang adaptif dan sangat fleksibel. Anda dapat mengakses materi secara mandiri (online) kapan saja di sela-sela waktu kerja, dipadukan dengan sesi tatap muka berkala yang jadwalnya disesuaikan agar tidak mengganggu aktivitas harian Anda.'
+  },
+  {
+    question: 'Siapa saja yang boleh mendaftar? Apakah ada batasan umur?',
+    answer: 'Tidak ada batasan umur untuk bergabung! Kami membuka pintu seluas-luasnya secara inklusif bagi siapa saja—baik remaja yang sempat putus sekolah, maupun orang dewasa atau pekerja yang ingin menyelesaikan jenjang pendidikan setara SMA.'
+  },
+  {
+    question: 'Berapa biaya pendaftarannya?',
+    answer: 'MDS Cendekia merupakan yayasan nirlaba yang berfokus pada pemberdayaan sosial. Kami menawarkan skema biaya yang sangat terjangkau, dan dalam beberapa kondisi, kami menyediakan program beasiswa/subsidi khusus. Silakan hubungi kami atau klik tombol "Daftarkan Diri Kamu" untuk mendapatkan rincian biaya terbaru.'
+  }
+]
+
+useJsonLd(() => {
+  const schema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    name: 'FAQ MDS Cendekia',
+    inLanguage: 'id-ID',
+    mainEntity: faqList.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer
+      }
+    }))
+  }
+
+  if (homeUrl) schema.url = `${homeUrl}#faq`
+
+  return schema
+})
 
 watch(publicGalleryItems, () => {
   currentGalleryIndex.value = 0
@@ -415,6 +456,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         </div>
       </div>
     </section>
+
+    <!-- Section FAQ -->
+    <PublicFaqSection
+      title="Pertanyaan yang sering"
+      highlight="ditanyakan."
+      :items="faqList"
+    />
 
     <!-- Section 7: CTA Banner -->
     <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-16 pt-32 md:pt-44 lg:pb-20 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-60">

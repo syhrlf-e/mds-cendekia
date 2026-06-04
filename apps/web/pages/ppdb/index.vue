@@ -186,38 +186,38 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
 <template>
   <div class="min-h-screen bg-white font-sans">
-    <section class="relative bg-white px-6 py-40 lg:pt-50 lg:pb-30">
+    <section class="relative bg-white px-0 py-32 md:py-36 lg:pb-24 lg:pt-40 2xl:pb-30 2xl:pt-50">
       <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="mb-6 flex h-9 w-fit px-6 items-center justify-center rounded-full border border-neutral-200 bg-transparent font-heading text-sm font-medium text-neutral-600 z-20">
+        <div class="z-20 mb-5 flex h-9 w-fit items-center justify-center rounded-full border border-neutral-200 bg-transparent px-5 font-heading text-sm font-medium text-neutral-600 2xl:mb-6 2xl:px-6">
           {{ landingInfo.active_wave.name }}
         </div>
-        <h1 class="font-heading text-5xl lg:text-6xl font-medium leading-[1.1] tracking-tight lg:whitespace-nowrap z-20">
+        <h1 class="z-20 font-heading text-4xl font-medium leading-[1.1] tracking-tight text-text-public-heading md:text-5xl lg:text-5xl lg:whitespace-nowrap xl:text-6xl">
           <span class="text-text-public-heading">Penerimaan Peserta Didik Baru</span><br/>
           <span class="text-brand">Tahun {{ academicYear }}</span>
         </h1>
-        <p class="mt-6 mb-14 max-w-lg font-sans text-xl leading-relaxed text-neutral-600">
+        <p class="mb-10 mt-5 max-w-2xl font-sans text-base leading-relaxed text-neutral-600 md:text-lg lg:mb-12 lg:mt-6 2xl:mb-14 2xl:max-w-lg 2xl:text-xl">
           Membangun generasi cerdas, berakhlak mulia, dan berwawasan global. Mulai perjalanan pendidikan kesetaraan Anda bersama YMDSC hari ini.
         </p>
 
-        <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+        <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row lg:gap-4">
           <NuxtLink
             v-if="!isDaftarDisabled"
             to="/ppdb/daftar"
-            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-lg font-medium text-white transition-opacity hover:opacity-90"
+            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full bg-brand px-7 font-heading text-base font-medium text-white transition-opacity hover:opacity-90 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             {{ daftarLabel }}
           </NuxtLink>
           <button
             v-else
             :disabled="isDaftarDisabled"
-            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full bg-brand px-8 font-heading text-lg font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full bg-brand px-7 font-heading text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             {{ daftarLabel }}
           </button>
           <NuxtLink
             to="/ppdb/cek-status"
-            class="flex h-14 min-w-50 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-8 font-heading text-lg font-medium text-text-public-heading transition-colors hover:bg-bg-base"
+            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-7 font-heading text-base font-medium text-text-public-heading transition-colors hover:bg-bg-base lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             Cek Status Pendaftaran
           </NuxtLink>
@@ -225,61 +225,61 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
       </div>
     </section>
-    <section class="bg-bg-base px-6 py-30 border-t border-neutral-200">
+    <section class="border-t border-neutral-200 bg-bg-base px-0 py-24 md:py-28 lg:py-30">
       <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-20">
+        <div class="flex flex-col gap-14 lg:flex-row lg:gap-16 2xl:gap-20">
           <div class="lg:w-1/3">
-            <h2 class="sticky top-30 font-heading text-5xl font-normal leading-tight text-text-public-heading">
+            <h2 class="sticky top-28 font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:top-30 lg:text-4xl 2xl:text-5xl">
               Informasi<br/>Pendaftaran.
             </h2>
           </div>
-          <div class="lg:w-2/3 flex flex-col gap-16">
+          <div class="flex flex-col gap-12 lg:w-2/3 2xl:gap-16">
             <div>
-              <div class="flex items-center gap-4 mb-8">
+              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Jadwal & Gelombang</h3>
+                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Jadwal & Gelombang</h3>
               </div>
 
-              <div class="flex flex-col gap-6">
-                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
-                  <p class="font-heading text-3xl font-medium text-text-public-heading">{{ wave.name }}</p>
-                  <p class="font-sans text-lg text-neutral-600 mt-2 sm:mt-0">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
+              <div class="flex flex-col gap-5 2xl:gap-6">
+                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
+                  <p class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ wave.name }}</p>
+                  <p class="mt-2 font-sans text-base text-neutral-600 sm:mt-0 2xl:text-lg">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
                 </div>
-                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
-                  <p class="font-heading text-2xl font-medium text-text-public-heading">{{ jadwal.label }}</p>
-                  <p class="font-sans text-lg text-neutral-600 mt-2 sm:mt-0">{{ jadwal.value }}</p>
+                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
+                  <p class="font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">{{ jadwal.label }}</p>
+                  <p class="mt-2 font-sans text-base text-neutral-600 sm:mt-0 2xl:text-lg">{{ jadwal.value }}</p>
                 </div>
               </div>
             </div>
             <div>
-              <div class="flex items-center gap-4 mb-8">
+              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Persyaratan Dokumen</h3>
+                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Persyaratan Dokumen</h3>
               </div>
-              <ul class="flex flex-col gap-6">
-                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-neutral-200 pb-6">
-                  <div class="mt-2 h-3 w-3 rounded-full bg-brand shrink-0"></div>
-                  <span class="font-heading text-2xl font-medium text-text-public-heading">{{ item }}</span>
+              <ul class="flex flex-col gap-5 2xl:gap-6">
+                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-neutral-200 pb-5 2xl:pb-6">
+                  <div class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-brand 2xl:h-3 2xl:w-3"></div>
+                  <span class="font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">{{ item }}</span>
                 </li>
               </ul>
             </div>
             <div>
-              <div class="flex items-center gap-4 mb-8">
+              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-base text-gray-500 capitalize font-medium">Rincian Biaya</h3>
+                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Rincian Biaya</h3>
               </div>
-              <div class="flex flex-col gap-6">
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
-                  <span class="font-sans text-xl text-neutral-600">Biaya Formulir</span>
-                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
+              <div class="flex flex-col gap-5 2xl:gap-6">
+                <div class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
+                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">Biaya Formulir</span>
+                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
                 </div>
-                <div v-if="landingInfo.active_wave" class="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-neutral-200 pb-6">
-                  <span class="font-sans text-xl text-neutral-600">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
-                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
+                <div v-if="landingInfo.active_wave" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
+                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
+                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
                 </div>
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between pb-2">
-                  <span class="font-sans text-xl text-neutral-600">SPP Bulanan</span>
-                  <span class="font-heading text-3xl font-medium text-text-public-heading">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
+                <div class="flex flex-col justify-between pb-2 sm:flex-row sm:items-baseline">
+                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">SPP Bulanan</span>
+                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
                 </div>
               </div>
             </div>
@@ -288,33 +288,11 @@ const formatDateRange = (startDate: string, endDate: string) => {
         </div>
       </div>
     </section>
-    <section class="bg-white px-6 py-30 border-t border-neutral-200">
-      <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-20">
-          <div class="lg:w-1/3">
-            <h2 class="sticky top-30 font-heading text-5xl font-normal leading-tight text-text-public-heading">
-              Pertanyaan<br/>PPDB.
-            </h2>
-            <p class="mt-6 font-sans text-xl leading-relaxed text-neutral-600">
-              Jawaban ringkas seputar pendaftaran, program, dokumen, jadwal, biaya, dan pengecekan status calon peserta didik.
-            </p>
-          </div>
-          <div class="lg:w-2/3 flex flex-col">
-            <div
-              v-for="item in faqItems"
-              :key="item.question"
-              class="border-b border-neutral-200 py-8 first:pt-0"
-            >
-              <h3 class="font-heading text-2xl font-medium leading-snug text-text-public-heading">
-                {{ item.question }}
-              </h3>
-              <p class="mt-4 font-sans text-lg leading-relaxed text-neutral-600">
-                {{ item.answer }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <PublicFaqSection
+      title="Pertanyaan"
+      highlight="PPDB."
+      subtitle="Jawaban ringkas seputar pendaftaran, program, dokumen, jadwal, biaya, dan pengecekan status calon peserta didik."
+      :items="faqItems"
+    />
   </div>
 </template>

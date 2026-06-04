@@ -245,43 +245,43 @@ useJsonLd(() => {
         </div>
       </div>
     </section>
-    <section class="bg-bg-base px-6 py-30 border-t border-neutral-200">
-      <div class="public-navbar-container">
-        <div class="flex flex-col lg:flex-row gap-20">
+    <section class="border-t border-neutral-200 bg-bg-base px-0 py-24 md:py-28 lg:py-30">
+      <div class="public-container">
+        <div class="flex flex-col gap-12 lg:flex-row lg:gap-14 2xl:gap-20">
           <div class="lg:w-1/3">
-            <h2 class="mb-6 font-heading text-5xl font-normal leading-tight text-text-public-heading">
+            <h2 class="mb-5 font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:mb-6 2xl:text-5xl">
               Legalitas &<br/>Keabsahan.
             </h2>
-            <p class="font-sans text-xl leading-relaxed text-neutral-600">
+            <p class="font-sans text-base leading-relaxed text-neutral-600 md:text-lg 2xl:text-xl">
               YMDSC berdiri tegak di atas landasan hukum yang sah, menjamin keamanan dan transparansi penuh bagi seluruh ekosistem pendidikan kami.
             </p>
           </div>
-          <div class="lg:w-2/3 flex flex-col justify-center lg:pl-10 xl:pl-16">
+          <div class="flex flex-col justify-center lg:w-2/3 lg:pl-6 xl:pl-10 2xl:pl-16">
 
-            <div class="border-b border-neutral-200 pb-8 mb-8">
-              <p class="font-sans text-sm text-gray-500 mb-3 uppercase font-medium">Badan Hukum</p>
-              <p class="font-heading text-3xl font-medium text-text-public-heading">Yayasan Mukti Daris Sasmita Cendekia (YMDSC)</p>
+            <div class="mb-7 border-b border-neutral-200 pb-7 2xl:mb-8 2xl:pb-8">
+              <p class="mb-3 font-sans text-sm font-medium uppercase text-gray-500">Badan Hukum</p>
+              <p class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">Yayasan Mukti Daris Sasmita Cendekia (YMDSC)</p>
             </div>
 
-            <div class="border-b border-neutral-200 pb-8 mb-8 flex flex-col md:flex-row md:justify-between gap-8 md:gap-4">
+            <div class="mb-7 flex flex-col gap-7 border-b border-neutral-200 pb-7 md:flex-row md:justify-between md:gap-4 2xl:mb-8 2xl:gap-8 2xl:pb-8">
               <div class="md:w-1/2">
-                <p class="font-sans text-sm text-gray-500 mb-3 uppercase font-medium">Akta Pendirian</p>
+                <p class="mb-3 font-sans text-sm font-medium uppercase text-gray-500">Akta Pendirian</p>
                 <div class="flex items-center gap-3">
-                  <CheckCircle class="h-6 w-6 text-brand" />
-                  <p class="font-heading text-3xl font-medium text-text-public-heading">Nomor 25</p>
+                  <CheckCircle class="h-5 w-5 text-brand 2xl:h-6 2xl:w-6" />
+                  <p class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">Nomor 25</p>
                 </div>
-                <p class="font-sans text-base text-neutral-600 mt-2">Diresmikan pada 4 Maret 2026</p>
+                <p class="mt-2 font-sans text-base text-neutral-600">Diresmikan pada 4 Maret 2026</p>
               </div>
               <div class="md:w-1/2">
-                <p class="font-sans text-sm text-gray-500 mb-3 uppercase font-medium">Pejabat Notaris</p>
-                <p class="font-heading text-3xl font-medium text-text-public-heading">Hartini, S.H., M.Kn.</p>
-                <p class="font-sans text-base text-neutral-600 mt-2">Kedudukan di Kota Cirebon</p>
+                <p class="mb-3 font-sans text-sm font-medium uppercase text-gray-500">Pejabat Notaris</p>
+                <p class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">Hartini, S.H., M.Kn.</p>
+                <p class="mt-2 font-sans text-base text-neutral-600">Kedudukan di Kota Cirebon</p>
               </div>
             </div>
 
             <div class="pb-2">
-              <p class="font-sans text-sm text-gray-500 mb-3 uppercase font-medium">Kedudukan Hukum Yayasan</p>
-              <p class="font-heading text-2xl font-medium text-text-public-heading leading-relaxed">
+              <p class="mb-3 font-sans text-sm font-medium uppercase text-gray-500">Kedudukan Hukum Yayasan</p>
+              <p class="font-heading text-xl font-medium leading-relaxed text-text-public-heading 2xl:text-2xl">
                 Perum Bumi Gesya Cikarang, Desa Jayasampurna<br/>
                 Kecamatan Serang Baru, Kab. Bekasi, Jawa Barat (17330)
               </p>
