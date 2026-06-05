@@ -76,17 +76,13 @@ useJsonLd(() => {
 
 <template>
   <div class="min-h-screen bg-white font-sans">
-    <section class="relative flex min-h-[680px] items-center overflow-hidden bg-white px-0 pt-20 lg:min-h-[720px] 2xl:min-h-screen">
-      <div class="pointer-events-none absolute bottom-0 right-0 z-0 flex h-[72%] w-1/2 translate-y-[15%] items-end justify-end lg:h-[78%] 2xl:h-[85%]">
-        <img src="/images/gradasiprofile.png" alt="" aria-hidden="true" class="h-full w-auto object-contain object-right-bottom" />
-      </div>
-
+    <section class="relative flex min-h-svh items-center overflow-hidden bg-white px-0 pb-14 pt-24 md:min-h-[680px] md:pb-0 md:pt-20 lg:min-h-[720px] 2xl:min-h-screen">
       <div class="public-container relative z-10">
-        <div class="max-w-[620px] 2xl:max-w-[750px]">
-          <h1 class="mb-6 font-heading text-4xl font-medium leading-tight text-text-public-heading md:text-5xl lg:mb-7 lg:text-5xl 2xl:mb-8 2xl:text-6xl">
+        <div class="max-w-md md:max-w-[620px] 2xl:max-w-[750px]">
+          <h1 class="mb-5 font-heading text-3xl font-medium leading-tight text-text-public-heading md:mb-6 md:text-5xl lg:mb-7 lg:text-5xl 2xl:mb-8 2xl:text-6xl">
             Dedikasi nyata untuk<br />pendidikan kesetaraan.
           </h1>
-          <p class="font-sans text-lg leading-relaxed text-neutral-600 md:text-xl lg:text-xl 2xl:text-2xl">
+          <p class="max-w-sm font-sans text-base leading-relaxed text-neutral-600 md:max-w-none md:text-xl lg:text-xl 2xl:text-2xl">
             Mengenal lebih dekat Yayasan Mukti Daris Sasmita Cendekia, wadah alternatif yang menjembatani mimpi dan masa depan tanpa batasan usia serta latar belakang.
           </p>
         </div>
