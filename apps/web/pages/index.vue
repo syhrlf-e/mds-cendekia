@@ -195,6 +195,12 @@ const formatNewsDate = (date: string) => {
   }).format(parsedDate)
 }
 
+const truncateWords = (text: string, maxWords = 18) => {
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  if (words.length <= maxWords) return text
+  return `${words.slice(0, maxWords).join(' ')}...`
+}
+
 const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encodeURIComponent(item.slug || item.id)}`
 </script>
 
@@ -508,7 +514,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     <section id="berita" class="relative flex flex-col items-center justify-center bg-bg-public-muted px-0 py-24 md:py-32 lg:py-32 xl:py-36 2xl:py-40">
       <div class="public-container flex flex-col items-center">
         <!-- Headline -->
-        <h2 class="mb-12 text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:mb-14 md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
+        <h2 class="mb-8 max-w-sm text-center font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:mb-14 md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
           Kabar terbaru dan informasi edukasi.
         </h2>
 
@@ -518,16 +524,20 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               <div
                 v-for="index in 4"
                 :key="`news-skeleton-${index}`"
-                class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
+                class="flex animate-pulse flex-col overflow-hidden rounded-2xl bg-white shadow-sm sm:rounded-3xl 2xl:min-h-[460px] 2xl:rounded-4xl"
               >
-                <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
-                <div class="flex flex-col p-6 2xl:p-8">
-                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                    <span class="h-7 w-24 rounded-full bg-gray-200"></span>
-                    <span class="h-4 w-28 rounded-full bg-gray-200"></span>
+                <div class="flex gap-3 p-3 sm:block sm:p-0">
+                  <div class="h-24 w-28 shrink-0 rounded-xl bg-gray-200 sm:h-48 sm:w-full sm:rounded-none lg:h-56 2xl:h-[250px]"></div>
+                  <div class="flex min-w-0 flex-1 flex-col sm:p-5 md:p-6 2xl:p-8">
+                    <div class="mb-2 flex items-start justify-between gap-2 sm:mb-4 2xl:mb-6">
+                      <span class="h-5 w-16 shrink-0 rounded-full bg-gray-200 sm:h-7 sm:w-24"></span>
+                    </div>
+                    <div class="mb-2 h-10 rounded-xl bg-gray-200 sm:mb-3 sm:h-14 sm:rounded-2xl"></div>
+                    <div class="h-8 rounded-xl bg-gray-200 sm:h-12 sm:rounded-2xl"></div>
+                    <div class="mt-3 border-t border-border-public-soft pt-3 sm:mt-5 sm:pt-4">
+                      <span class="block h-3 w-32 rounded-full bg-gray-200 sm:h-4 sm:w-40"></span>
+                    </div>
                   </div>
-                  <div class="mb-4 h-16 rounded-2xl bg-gray-200"></div>
-                  <div class="h-20 rounded-2xl bg-gray-200"></div>
                 </div>
               </div>
             </template>
@@ -536,24 +546,36 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                 v-for="item in visiblePublicNewsItems"
                 :key="item.id"
                 :to="buildNewsPath(item)"
-                class="flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md 2xl:rounded-4xl"
+                class="flex cursor-pointer flex-col overflow-hidden transition-all hover:-translate-y-1 sm:rounded-3xl sm:bg-white sm:shadow-sm sm:hover:shadow-md 2xl:rounded-4xl"
               >
-                <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]" />
-                <div class="flex flex-col p-6 2xl:p-8">
-                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                    <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
+                <div class="flex gap-3 sm:block sm:p-0">
+                  <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl sm:h-48 sm:w-full sm:rounded-none lg:h-56 2xl:h-[250px]">
+                    <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-full w-full object-cover" />
+                    <span class="absolute left-3 top-3 hidden rounded-full border border-blue-500 bg-white/95 px-3 py-1 font-sans text-xs font-medium text-blue-500 shadow-sm sm:inline-flex md:px-4 md:text-sm">
                       {{ item.category || 'Berita' }}
                     </span>
-                    <span class="text-right font-sans text-sm text-gray-400">
-                      {{ formatNewsDate(item.publishDate) }}
-                    </span>
                   </div>
-                  <h3 class="mb-4 font-heading text-xl font-medium leading-snug text-text-public-heading">
-                    {{ item.title }}
-                  </h3>
-                  <p class="font-sans text-sm leading-relaxed text-gray-500">
-                    {{ item.excerpt }}
-                  </p>
+                  <div class="flex min-w-0 flex-1 flex-col justify-center sm:justify-start sm:p-5 md:p-6 2xl:p-8">
+                    <div class="mb-1 flex items-center gap-2 sm:hidden">
+                      <span class="rounded-full border border-blue-500 px-2 py-0.5 font-sans text-[10px] font-medium leading-none text-blue-500">
+                        {{ item.category || 'Berita' }}
+                      </span>
+                      <span class="font-sans text-[11px] leading-none text-gray-400">
+                        {{ formatNewsDate(item.publishDate) }}
+                      </span>
+                    </div>
+                    <h3 class="line-clamp-3 min-w-0 font-heading text-base font-medium leading-snug text-text-public-heading sm:mb-3 sm:line-clamp-2 sm:w-full sm:text-lg md:text-xl">
+                      {{ item.title }}
+                    </h3>
+                    <p class="hidden w-full font-sans text-sm leading-relaxed text-gray-500 sm:line-clamp-2 sm:block">
+                      {{ truncateWords(item.excerpt, 18) }}
+                    </p>
+                    <div class="mt-5 hidden border-t border-border-public-soft pt-4 sm:block">
+                      <p class="font-sans text-[11px] leading-relaxed text-gray-400 sm:text-xs md:text-sm">
+                        Terbit pada tanggal {{ formatNewsDate(item.publishDate) }}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </NuxtLink>
             </template>
@@ -567,7 +589,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
           <NuxtLink
             v-if="hasMorePublicNews"
             to="/berita"
-            class="mt-14 flex h-12 cursor-pointer items-center justify-center rounded-full border border-blue-500 bg-transparent px-8 font-sans text-base font-medium text-blue-500 transition-colors hover:bg-blue-500 hover:text-white md:mt-16 2xl:mt-20"
+            class="mt-10 flex h-12 cursor-pointer items-center justify-center rounded-full border border-blue-500 bg-transparent px-8 font-sans text-sm font-medium text-blue-500 transition-colors hover:bg-blue-500 hover:text-white md:mt-16 md:text-base 2xl:mt-20"
           >
             Lihat Lebih Banyak
           </NuxtLink>
@@ -577,16 +599,20 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               <div
                 v-for="index in 4"
                 :key="`news-fallback-${index}`"
-                class="flex min-h-96 animate-pulse flex-col overflow-hidden rounded-3xl bg-white shadow-sm 2xl:min-h-[460px] 2xl:rounded-4xl"
+                class="flex animate-pulse flex-col overflow-hidden rounded-2xl bg-white shadow-sm sm:rounded-3xl 2xl:min-h-[460px] 2xl:rounded-4xl"
               >
-                <div class="h-52 w-full bg-gray-200 lg:h-56 2xl:h-[250px]"></div>
-                <div class="flex flex-col p-6 2xl:p-8">
-                  <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                    <span class="h-7 w-24 rounded-full bg-gray-200"></span>
-                    <span class="h-4 w-28 rounded-full bg-gray-200"></span>
+                <div class="flex gap-3 p-3 sm:block sm:p-0">
+                  <div class="h-24 w-28 shrink-0 rounded-xl bg-gray-200 sm:h-48 sm:w-full sm:rounded-none lg:h-56 2xl:h-[250px]"></div>
+                  <div class="flex min-w-0 flex-1 flex-col sm:p-5 md:p-6 2xl:p-8">
+                    <div class="mb-2 flex items-start justify-between gap-2 sm:mb-4 2xl:mb-6">
+                      <span class="h-5 w-16 shrink-0 rounded-full bg-gray-200 sm:h-7 sm:w-24"></span>
+                    </div>
+                    <div class="mb-2 h-10 rounded-xl bg-gray-200 sm:mb-3 sm:h-14 sm:rounded-2xl"></div>
+                    <div class="h-8 rounded-xl bg-gray-200 sm:h-12 sm:rounded-2xl"></div>
+                    <div class="mt-3 border-t border-border-public-soft pt-3 sm:mt-5 sm:pt-4">
+                      <span class="block h-3 w-32 rounded-full bg-gray-200 sm:h-4 sm:w-40"></span>
+                    </div>
                   </div>
-                  <div class="mb-4 h-16 rounded-2xl bg-gray-200"></div>
-                  <div class="h-20 rounded-2xl bg-gray-200"></div>
                 </div>
               </div>
             </div>
