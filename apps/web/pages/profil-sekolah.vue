@@ -88,24 +88,24 @@ useJsonLd(() => {
         </div>
       </div>
     </section>
-    <section class="bg-white px-0 py-24 md:py-28 lg:py-30 2xl:py-30">
+    <section class="bg-white px-0 py-16 md:py-28 lg:py-30 2xl:py-30">
       <div class="public-container flex flex-col items-center">
-        <h2 class="mb-14 max-w-3xl text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-25 2xl:max-w-4xl 2xl:text-5xl">
+        <h2 class="mb-9 max-w-sm text-center font-heading text-2xl font-normal leading-tight text-text-public-heading md:mb-14 md:max-w-3xl md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-25 2xl:max-w-4xl 2xl:text-5xl">
           Membuka pintu masa depan yang lebih inklusif untuk semua.
         </h2>
 
-        <div class="flex w-full max-w-[920px] flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-14 2xl:max-w-[1000px] 2xl:gap-20">
-          <div class="w-full flex-shrink-0 lg:w-5/12">
-            <div class="aspect-[4/5] overflow-hidden rounded-3xl bg-gray-200 shadow-md 2xl:rounded-4xl">
-              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-8 2xl:p-10" />
+        <div class="flex w-full max-w-[920px] flex-col items-center gap-8 md:gap-10 lg:flex-row lg:items-start lg:gap-14 2xl:max-w-[1000px] 2xl:gap-20">
+          <div class="w-full max-w-xs flex-shrink-0 md:max-w-none lg:w-5/12">
+            <div class="aspect-[5/4] overflow-hidden rounded-2xl bg-gray-200 shadow-sm md:aspect-[4/5] md:rounded-3xl md:shadow-md 2xl:rounded-4xl">
+              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-6 md:p-8 2xl:p-10" />
             </div>
           </div>
 
-          <div class="flex w-full flex-col pt-2 lg:w-7/12 2xl:pt-4">
-            <h3 class="mb-5 font-heading text-2xl font-semibold text-text-public-heading 2xl:mb-6 2xl:text-3xl">
+          <div class="flex w-full flex-col pt-0 lg:w-7/12 lg:pt-2 2xl:pt-4">
+            <h3 class="mb-4 font-heading text-xl font-semibold text-text-public-heading md:mb-5 md:text-2xl 2xl:mb-6 2xl:text-3xl">
               Sambutan Pimpinan Kami
             </h3>
-            <div class="mb-8 space-y-5 font-sans text-base leading-relaxed text-neutral-600 lg:text-lg 2xl:mb-12 2xl:space-y-6">
+            <div class="mb-6 space-y-4 text-justify font-sans text-sm leading-7 text-neutral-600 md:mb-8 md:space-y-5 md:text-left md:text-base md:leading-relaxed lg:text-lg 2xl:mb-12 2xl:space-y-6">
               <p>
                 Selamat datang di Yayasan Mukti Daris Sasmita Cendekia. Kami percaya bahwa pendidikan adalah hak fundamental yang tidak boleh dibatasi oleh usia, waktu, maupun latar belakang ekonomi.
               </p>
@@ -114,7 +114,7 @@ useJsonLd(() => {
               </p>
             </div>
 
-            <div class="self-start rounded-full border border-brand px-6 py-2.5 font-sans text-base font-medium text-brand 2xl:px-8 2xl:py-3 2xl:text-xl">
+            <div class="self-start rounded-full border border-brand px-5 py-2 font-sans text-sm font-medium text-brand md:px-6 md:py-2.5 md:text-base 2xl:px-8 2xl:py-3 2xl:text-xl">
               Bpk. Yusuf Mansur S.pd, NPD
             </div>
           </div>
