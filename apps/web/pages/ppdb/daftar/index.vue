@@ -187,12 +187,12 @@ const {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-8 md:py-10 xl:py-12">
+  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
     <div class="public-navbar-container">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-2">
-      <div class="mb-3 md:mb-4">
-        <h1 class="font-heading text-2xl font-bold text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
-        <p class="mt-1 max-w-2xl text-sm leading-relaxed text-text-secondary md:text-base">Lengkapi data di bawah ini dengan benar.</p>
+      <div class="mb-4 md:mb-5">
+        <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
+        <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
       </div>
 
       <AppAccordion
