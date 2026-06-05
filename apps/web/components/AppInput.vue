@@ -70,7 +70,7 @@ const handleInput = (event: Event) => {
     <label
       v-if="label && inputId"
       :for="inputId"
-      class="text-sm font-medium text-text-primary"
+      class="text-xs font-medium text-text-primary md:text-sm"
     >
       {{ label }}
 
@@ -85,7 +85,7 @@ const handleInput = (event: Event) => {
     <div class="relative flex items-center">
       <span
         v-if="prefix"
-        class="pointer-events-none absolute left-4 select-none font-medium text-text-primary"
+        class="pointer-events-none absolute left-4 select-none text-sm font-medium text-text-primary md:text-base"
       >
         {{ prefix }}
       </span>
@@ -101,7 +101,7 @@ const handleInput = (event: Event) => {
         :placeholder="placeholder"
         :disabled="disabled"
         :class="[
-          'h-11 w-full rounded-lg border bg-bg-surface text-base leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted',
+          'h-11 w-full rounded-lg border bg-bg-surface text-sm leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted md:text-base',
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
             ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'

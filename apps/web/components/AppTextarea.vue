@@ -39,8 +39,8 @@ const handleInput = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5 w-full">
-    <label v-if="label" :for="textareaId" class="text-sm font-medium text-text-primary">
+  <div class="flex w-full flex-col gap-1.5">
+    <label v-if="label" :for="textareaId" class="text-xs font-medium text-text-primary md:text-sm">
       {{ label }}
       <span v-if="!required" class="font-normal text-text-secondary">(Opsional)</span>
     </label>
@@ -52,7 +52,7 @@ const handleInput = (event: Event) => {
       :maxlength="maxlength"
       :rows="rows"
       :class="[
-        'min-h-30 w-full resize-y rounded-lg border bg-bg-surface p-4 text-base leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted',
+        'min-h-28 w-full resize-y rounded-lg border bg-bg-surface p-3.5 text-sm leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted md:min-h-30 md:p-4 md:text-base',
         error
           ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
           : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',

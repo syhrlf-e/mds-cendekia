@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex w-full flex-col gap-1.5">
-    <label v-if="label" :for="inputId" class="text-sm font-medium text-text-primary">
+    <label v-if="label" :for="inputId" class="text-xs font-medium text-text-primary md:text-sm">
       {{ label }}
       <span v-if="!required" class="font-normal text-text-secondary">(Opsional)</span>
     </label>
@@ -168,8 +168,8 @@ onBeforeUnmount(() => {
       type="button"
       :disabled="disabled"
       :class="[
-        'flex h-12 w-full items-center justify-between rounded-xl border bg-bg-surface px-4 text-left outline-none transition-colors',
-        error ? 'border-error focus:border-error focus:ring-1 focus:ring-error' : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
+        'flex h-11 w-full items-center justify-between rounded-lg border bg-bg-surface px-4 text-left text-sm outline-none transition-colors md:text-base',
+        error ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10' : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
         disabled ? 'cursor-not-allowed bg-bg-base opacity-60' : 'cursor-pointer',
         selectedLabel ? 'text-text-primary' : 'text-text-secondary'
       ]"
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
       <span class="text-text-secondary">⌄</span>
     </button>
 
-    <span v-if="error" class="text-sm text-error">{{ error }}</span>
+    <span v-if="error" class="text-xs text-error">{{ error }}</span>
 
     <Teleport to="body">
       <div

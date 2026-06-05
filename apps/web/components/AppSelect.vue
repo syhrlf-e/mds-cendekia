@@ -74,7 +74,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="selectRoot" class="relative flex w-full flex-col gap-1.5" :class="{ 'z-50': isOpen }">
-    <label v-if="label" :for="selectId" class="text-sm font-medium text-text-primary">
+    <label v-if="label" :for="selectId" class="text-xs font-medium text-text-primary md:text-sm">
       {{ label }}
       <span v-if="!required" class="font-normal text-text-secondary">(Opsional)</span>
     </label>
@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
       @click.stop="toggleSelect"
       @keydown="handleKeydown"
     >
-      <span class="truncate text-base leading-normal tracking-normal">{{ selectedOption?.label || placeholder }}</span>
+      <span class="truncate text-sm leading-normal tracking-normal md:text-base">{{ selectedOption?.label || placeholder }}</span>
       <ChevronDown
         class="pointer-events-none h-4 w-4 shrink-0 text-text-secondary transition-transform duration-200"
         :class="isOpen ? 'rotate-180' : ''"
@@ -130,6 +130,6 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <span v-if="error" class="text-sm text-error">{{ error }}</span>
+    <span v-if="error" class="text-xs text-error">{{ error }}</span>
   </div>
 </template>
