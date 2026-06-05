@@ -227,19 +227,19 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
-    <section id="profil" class="relative flex flex-col items-center justify-center bg-white px-0 pb-20 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-[599px]">
+    <section id="profil" class="relative flex flex-col items-center justify-center bg-white px-0 pb-16 pt-24 md:pb-20 md:pt-44 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-[599px]">
       <div class="public-container flex flex-col items-center text-center">
-        <h2 class="mb-12 max-w-4xl font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 2xl:mb-28 2xl:max-w-5xl 2xl:text-5xl">
+        <h2 class="mb-8 max-w-sm font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:mb-12 md:max-w-4xl md:text-4xl lg:mb-16 2xl:mb-28 2xl:max-w-5xl 2xl:text-5xl">
           Berdiri untuk mengabdi, bergerak dengan <span class="text-brand font-medium">legalitas resmi.</span>
         </h2>
 
-        <p class="mb-10 max-w-4xl font-sans text-base font-normal leading-relaxed text-text-public-heading md:text-lg lg:mb-12 lg:text-xl 2xl:mb-13 2xl:max-w-5xl 2xl:text-2xl">
+        <p class="mb-8 line-clamp-7 max-w-sm text-justify font-sans text-base font-normal leading-relaxed text-text-public-heading sm:max-w-2xl md:mb-10 md:max-w-4xl md:text-lg lg:mb-12 lg:text-xl 2xl:mb-13 2xl:max-w-5xl 2xl:text-2xl">
           Didirikan resmi pada Maret 2026, Yayasan Mukti Daris Sasmita Cendekia (YMDSC) hadir sebagai bentuk nyata kepedulian sosial untuk membangun manusia seutuhnya. Kami berkomitmen membuka akses pendidikan kesetaraan yang inklusif, nirlaba yang berkelanjutan bagi semua kelompok usia. Menjadikan pusat pemberdayaan masyarakat yang berlandaskan nilai-nilai Pancasila untuk membangun manusia seutuhnya.
         </p>
 
         <NuxtLink
           to="/profil-sekolah"
-          class="flex h-12 w-60 cursor-pointer items-center justify-center rounded-full border border-border font-heading text-sm font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none 2xl:w-62.5 2xl:text-base"
+          class="flex h-12 w-full max-w-60 cursor-pointer items-center justify-center rounded-full border border-border px-6 font-heading text-sm font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none md:w-60 md:max-w-none 2xl:w-62.5 2xl:text-base"
         >
           Selengkapnya tentang kami
         </NuxtLink>
