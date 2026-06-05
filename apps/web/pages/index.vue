@@ -280,42 +280,42 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 4: Program / Solusi Pendidikan -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-28 md:pt-36 lg:pt-40 xl:pt-48 2xl:pt-[281px]">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pt-24 md:pt-36 lg:pt-40 xl:pt-48 2xl:pt-[281px]">
       <div class="public-container flex flex-col items-center">
         <!-- Headline -->
-        <h2 class="mb-7 max-w-4xl text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl 2xl:mb-8 2xl:max-w-5xl 2xl:text-5xl">
+        <h2 class="mb-6 max-w-sm text-center font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:mb-7 md:max-w-4xl md:text-4xl 2xl:mb-8 2xl:max-w-5xl 2xl:text-5xl">
           Kami hadir membawa <span class="text-brand">solusi pendidikan</span> kesetaraan terlengkap untukmu.
         </h2>
 
         <!-- Pill -->
-        <div class="mb-7 flex h-8 w-48 items-center justify-center rounded-full border border-brand bg-transparent 2xl:mb-8 2xl:h-[33px] 2xl:w-[202px]">
+        <div class="mb-6 flex h-8 w-48 items-center justify-center rounded-full border border-brand bg-transparent md:mb-7 2xl:mb-8 2xl:h-[33px] 2xl:w-[202px]">
           <span class="font-heading text-sm font-normal text-brand 2xl:text-base">Program Unggulan Kami</span>
         </div>
 
         <!-- Card -->
-        <div class="group relative z-10 flex min-h-64 w-full max-w-[1196px] cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-6 py-8 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.25)] transition-all md:px-8 lg:h-72 lg:max-w-[980px] lg:py-0 xl:max-w-[1040px] 2xl:h-[331px] 2xl:max-w-[1196px] 2xl:px-10">
+        <div class="group relative z-10 flex min-h-56 w-full max-w-sm cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-border-soft bg-white px-5 py-7 text-left shadow-[0_0_8px_0_rgba(0,0,0,0.18)] transition-all sm:max-w-2xl md:min-h-72 md:max-w-[1196px] md:px-8 md:py-8 lg:h-72 lg:max-w-[980px] lg:py-0 xl:max-w-[1040px] 2xl:h-[331px] 2xl:max-w-[1196px] 2xl:px-10">
           <!-- Card Background -->
-          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute right-0 top-0 z-0 h-full w-auto translate-x-24 object-cover" />
+          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute right-0 top-0 z-0 hidden h-full w-auto translate-x-24 object-cover md:block" />
 
           <!-- Icon Top Right -->
-          <div class="absolute right-6 top-6 z-10 2xl:right-10 2xl:top-10">
-            <ArrowRight class="h-7 w-7 text-white transition-transform duration-300 group-hover:-rotate-45 2xl:h-8 2xl:w-8" />
+          <div class="absolute right-5 top-5 z-10 md:right-6 md:top-6 2xl:right-10 2xl:top-10">
+            <ArrowRight class="h-6 w-6 text-brand transition-transform duration-300 group-hover:-rotate-45 md:h-7 md:w-7 md:text-white 2xl:h-8 2xl:w-8" />
           </div>
 
           <!-- Card Content -->
-          <h3 class="relative z-10 mb-3 font-heading text-2xl font-medium text-text-public-heading 2xl:mb-4 2xl:text-3xl">
+          <h3 class="relative z-10 mb-3 max-w-48 font-heading text-2xl font-medium text-text-public-heading md:max-w-none 2xl:mb-4 2xl:text-3xl">
             Kejar Paket C
           </h3>
-          <p class="relative z-10 mb-14 font-sans text-base font-normal text-text-public-heading lg:mb-20 lg:text-lg 2xl:mb-[124px] 2xl:text-xl">
+          <p class="relative z-10 mb-8 max-w-64 whitespace-nowrap font-sans text-sm font-normal text-text-public-heading md:mb-12 md:max-w-none md:text-base md:whitespace-normal lg:mb-20 lg:text-lg 2xl:mb-[124px] 2xl:text-xl">
             Setara Sekolah Menengah Atas
           </p>
-          <p class="relative z-10 max-w-150 font-sans text-base font-normal text-text-public-heading md:text-lg 2xl:max-w-[700px] 2xl:text-xl">
+          <p class="relative z-10 max-w-[280px] font-sans text-sm font-normal leading-relaxed text-text-public-heading sm:max-w-100 md:max-w-150 md:text-lg 2xl:max-w-[700px] 2xl:text-xl">
             Raih ijazah resmi setara SMA tanpa harus mengorbankan waktu produktifmu.
           </p>
         </div>
 
         <!-- Note -->
-        <p class="mt-7 text-center font-heading text-base font-normal text-text-public-heading/50">
+        <p class="mt-5 text-center font-heading text-sm font-normal text-text-public-heading/50 md:mt-7 md:text-base">
           Program paket lainnya belum tersedia
         </p>
       </div>
