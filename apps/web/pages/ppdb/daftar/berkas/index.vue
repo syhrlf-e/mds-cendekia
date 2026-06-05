@@ -672,13 +672,16 @@ const submitForm = async () => {
       @close="$router.push('/ppdb')"
     >
       <div class="flex flex-col items-center text-center pt-2 font-heading">
-        <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
-          <Check class="h-10 w-10 stroke-[2.5]" />
+        <div class="relative mb-5 flex h-20 w-20 items-center justify-center text-white">
+          <svg class="absolute inset-0 h-full w-full text-success" viewBox="0 0 100 100" aria-hidden="true">
+            <path fill="currentColor" d="M50 4.5c4.4 0 7.5 5.2 11.6 6.3 4.2 1.1 9.5-2 13.2.1 3.8 2.2 3.7 8.3 6.8 11.4 3.1 3.1 9.2 3 11.4 6.8 2.1 3.7-.9 9 .1 13.2 1.1 4.1 6.3 7.2 6.3 11.6s-5.2 7.5-6.3 11.6c-1.1 4.2 2 9.5-.1 13.2-2.2 3.8-8.3 3.7-11.4 6.8-3.1 3.1-3 9.2-6.8 11.4-3.7 2.1-9-.9-13.2.1-4.1 1.1-7.2 6.3-11.6 6.3s-7.5-5.2-11.6-6.3c-4.2-1.1-9.5 2-13.2-.1-3.8-2.2-3.7-8.3-6.8-11.4-3.1-3.1-9.2-3-11.4-6.8-2.1-3.7.9-9-.1-13.2C5.7 61.4.5 58.3.5 53.9s5.2-7.5 6.3-11.6c1.1-4.2-2-9.5.1-13.2 2.2-3.8 8.3-3.7 11.4-6.8 3.1-3.1 3-9.2 6.8-11.4 3.7-2.1 9 .9 13.2-.1 4.2-1.1 7.3-6.3 11.7-6.3z" />
+          </svg>
+          <Check class="relative h-10 w-10 stroke-[2.8]" />
         </div>
 
-        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Diterima!</h3>
+        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Data Pendaftaran Terkirim</h3>
         <p class="text-text-secondary mb-3">
-          Cek email kamu. Kami sudah mengirim nomor pendaftaran dan NISN untuk cek status pendaftaran.
+          Silakan cek email yang terdaftar untuk melihat nomor pendaftaran dan informasi cek status.
         </p>
         <a
           href="mailto:info@mdscendekia.or.id?subject=Belum%20Menerima%20Email%20Pendaftaran"
@@ -706,23 +709,28 @@ const submitForm = async () => {
       :close-on-escape="false"
       @close="$router.push('/ppdb')"
     >
-      <div class="flex flex-col items-center text-center pt-6 font-heading">
-        <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
-          <Check class="h-10 w-10 stroke-[2.5]" />
+      <div class="flex min-h-full flex-col font-heading text-center">
+        <div class="flex flex-1 flex-col items-center justify-center pt-6">
+          <div class="relative mb-5 flex h-20 w-20 items-center justify-center text-white">
+            <svg class="absolute inset-0 h-full w-full text-success" viewBox="0 0 100 100" aria-hidden="true">
+              <path fill="currentColor" d="M50 4.5c4.4 0 7.5 5.2 11.6 6.3 4.2 1.1 9.5-2 13.2.1 3.8 2.2 3.7 8.3 6.8 11.4 3.1 3.1 9.2 3 11.4 6.8 2.1 3.7-.9 9 .1 13.2 1.1 4.1 6.3 7.2 6.3 11.6s-5.2 7.5-6.3 11.6c-1.1 4.2 2 9.5-.1 13.2-2.2 3.8-8.3 3.7-11.4 6.8-3.1 3.1-3 9.2-6.8 11.4-3.7 2.1-9-.9-13.2.1-4.1 1.1-7.2 6.3-11.6 6.3s-7.5-5.2-11.6-6.3c-4.2-1.1-9.5 2-13.2-.1-3.8-2.2-3.7-8.3-6.8-11.4-3.1-3.1-9.2-3-11.4-6.8-2.1-3.7.9-9-.1-13.2C5.7 61.4.5 58.3.5 53.9s5.2-7.5 6.3-11.6c1.1-4.2-2-9.5.1-13.2 2.2-3.8 8.3-3.7 11.4-6.8 3.1-3.1 3-9.2 6.8-11.4 3.7-2.1 9 .9 13.2-.1 4.2-1.1 7.3-6.3 11.7-6.3z" />
+            </svg>
+            <Check class="relative h-10 w-10 stroke-[2.8]" />
+          </div>
+
+          <h3 class="mb-2 text-2xl font-heading font-bold text-text-primary">Data Pendaftaran Terkirim</h3>
+          <p class="mb-3 text-text-secondary">
+            Silakan cek email yang terdaftar untuk melihat nomor pendaftaran dan informasi cek status.
+          </p>
+          <a
+            href="mailto:info@mdscendekia.or.id?subject=Belum%20Menerima%20Email%20Pendaftaran"
+            class="inline-flex text-sm font-normal text-brand transition-colors hover:text-brand-hover"
+          >
+            Belum menerima email?
+          </a>
         </div>
 
-        <h3 class="text-2xl font-heading font-bold text-text-primary mb-2">Pendaftaran Diterima!</h3>
-        <p class="text-text-secondary mb-3">
-          Cek email kamu. Kami sudah mengirim nomor pendaftaran dan NISN untuk cek status pendaftaran.
-        </p>
-        <a
-          href="mailto:info@mdscendekia.or.id?subject=Belum%20Menerima%20Email%20Pendaftaran"
-          class="mb-8 inline-flex text-sm font-normal text-brand transition-colors hover:text-brand-hover"
-        >
-          Belum menerima email?
-        </a>
-
-        <div class="w-full flex flex-col gap-3 pb-4">
+        <div class="flex w-full flex-col gap-3 pb-4 pt-6">
           <AppButton
             variant="primary"
             class="w-full"

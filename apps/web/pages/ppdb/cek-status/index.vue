@@ -212,37 +212,38 @@ const checkAnother = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base px-4 py-8 md:py-12">
-    <div class="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-160 flex-col justify-center">
-      <div class="mb-8 text-center">
-        <h1 class="mb-3 font-heading text-3xl font-semibold text-text-primary">
-          Cek Status Pendaftaran
-        </h1>
-        <p class="text-text-secondary">
-          Masukkan nomor pendaftaran dan NISN untuk melihat hasil seleksi.
-        </p>
-      </div>
-
-      <form class="flex flex-col gap-5" @submit.prevent="handleCheck">
-        <div class="grid gap-5 sm:grid-cols-2">
-          <AppInput
-            v-model="nomorPendaftaran"
-            label="Nomor Pendaftaran"
-            placeholder="Contoh: MDS-2025-0001"
-            required
-            :disabled="isChecking || hasResult"
-          />
-          <AppInput
-            v-model="nisn"
-            label="NISN"
-            placeholder="Contoh: 0101234567"
-            required
-            inputmode="numeric"
-            :maxlength="10"
-            :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
-            :disabled="isChecking || hasResult"
-          />
+  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
+    <div class="public-navbar-container">
+      <div class="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-160 flex-col justify-center md:min-h-[calc(100vh-112px)]">
+        <div class="mb-7 text-center md:mb-8">
+          <h1 class="mb-2.5 font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:text-3xl">
+            Cek Status Pendaftaran
+          </h1>
+          <p class="mx-auto max-w-sm text-sm leading-6 text-text-secondary md:max-w-none md:text-base md:leading-relaxed">
+            Masukkan nomor pendaftaran dan NISN untuk melihat hasil seleksi.
+          </p>
         </div>
+
+        <form class="flex flex-col gap-4 md:gap-5" @submit.prevent="handleCheck">
+          <div class="grid gap-4 sm:grid-cols-2 md:gap-5">
+            <AppInput
+              v-model="nomorPendaftaran"
+              label="Nomor Pendaftaran"
+              placeholder="Contoh: MDS-2025-0001"
+              required
+              :disabled="isChecking || hasResult"
+            />
+            <AppInput
+              v-model="nisn"
+              label="NISN"
+              placeholder="Contoh: 0101234567"
+              required
+              inputmode="numeric"
+              :maxlength="10"
+              :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
+              :disabled="isChecking || hasResult"
+            />
+          </div>
 
         <div
           class="hidden lg:grid transition-all duration-300 ease-out"
@@ -317,77 +318,96 @@ const checkAnother = () => {
           </div>
         </div>
 
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-          <AppButton
-            variant="secondary"
-            type="button"
-            class="w-full sm:w-auto"
-            @click="router.push('/ppdb')"
-          >
-            Kembali
-          </AppButton>
+          <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between md:pt-0">
+            <AppButton
+              variant="secondary"
+              type="button"
+              class="w-full sm:w-auto"
+              @click="router.push('/ppdb')"
+            >
+              Kembali
+            </AppButton>
 
-          <AppButton
-            type="submit"
-            variant="primary"
-            :disabled="((!nomorPendaftaran.trim() || !nisn.trim()) && !hasResult) || isChecking"
-            :loading="isChecking"
-            class="w-full sm:w-auto"
-          >
-            {{ rightButtonLabel }}
-          </AppButton>
-        </div>
-      </form>
+            <AppButton
+              type="submit"
+              variant="primary"
+              :disabled="((!nomorPendaftaran.trim() || !nisn.trim()) && !hasResult) || isChecking"
+              :loading="isChecking"
+              class="w-full sm:w-auto"
+            >
+              {{ rightButtonLabel }}
+            </AppButton>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
   <AppBottomSheet v-if="isMobile && hasResult" :modelValue="hasResult" @update:modelValue="checkAnother">
-    <div v-if="state === 'success' && resultData" class="flex flex-col pt-2">
+    <div v-if="state === 'success' && resultData" class="flex flex-col pt-2 font-heading">
       <div
-        class="mb-6 rounded-xl border p-4"
+        class="mb-5 rounded-xl border p-3.5"
         :class="getStatusResultClass(resultData.status)"
       >
-        <p class="text-base font-medium text-current">
+        <p class="text-sm font-semibold leading-5 text-current">
           {{ getStatusResultCopy(resultData.status).title }}
         </p>
-        <p class="mt-1 text-sm leading-relaxed text-current/80">
+        <p class="mt-1 text-xs leading-5 text-current/80">
           {{ getStatusResultCopy(resultData.status).description }}
         </p>
       </div>
 
-      <div v-if="resultData.status === 'rejected'" class="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
+      <div v-if="resultData.status === 'rejected'" class="mb-5 rounded-xl border border-red-100 bg-red-50 p-3.5">
         <p class="mb-1 text-sm font-semibold text-error">Alasan Penolakan</p>
-        <p class="text-sm text-text-primary">{{ resultData.alasanPenolakan }}</p>
+        <p class="text-sm leading-6 text-text-primary">{{ resultData.alasanPenolakan }}</p>
       </div>
 
-      <div class="space-y-6 px-1">
+      <div class="space-y-5">
         <section>
-          <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Informasi Pendaftaran</h2>
-          <div class="grid grid-cols-3 gap-y-3 text-sm">
-            <span class="text-text-secondary">Nomor</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nomor }}</span>
-            <span class="text-text-secondary">NISN</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nisn }}</span>
-            <span class="text-text-secondary">Tanggal</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.tanggal }}</span>
+          <h2 class="mb-2.5 border-b border-border pb-2 text-xs font-semibold uppercase text-text-secondary">Informasi Pendaftaran</h2>
+          <div class="divide-y divide-border text-sm">
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">Nomor</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.nomor }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">NISN</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.nisn }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">Tanggal</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.tanggal }}</span>
+            </div>
           </div>
         </section>
 
         <section>
-          <h2 class="mb-3 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">Identitas Calon Siswa</h2>
-          <div class="grid grid-cols-3 gap-y-3 text-sm">
-            <span class="text-text-secondary">Nama</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.nama }}</span>
-            <span class="text-text-secondary">TTL</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.ttl }}</span>
-            <span class="text-text-secondary">J. Kelamin</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
-            <span class="text-text-secondary">Asal Sekolah</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.sekolah }}</span>
-            <span class="text-text-secondary">Email</span>
-            <span class="col-span-2 truncate font-medium text-text-primary">{{ resultData.email }}</span>
-            <span class="text-text-secondary">No. HP</span>
-            <span class="col-span-2 font-medium text-text-primary">{{ resultData.noHp }}</span>
+          <h2 class="mb-2.5 border-b border-border pb-2 text-xs font-semibold uppercase text-text-secondary">Identitas Calon Siswa</h2>
+          <div class="divide-y divide-border text-sm">
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">Nama</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.nama }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">TTL</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.ttl }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">J. Kelamin</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.jenisKelamin }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">Asal Sekolah</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.sekolah }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">Email</span>
+              <span class="min-w-0 truncate text-right font-medium text-text-primary">{{ resultData.email }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 py-2.5">
+              <span class="shrink-0 text-text-secondary">No. HP</span>
+              <span class="text-right font-medium text-text-primary">{{ resultData.noHp }}</span>
+            </div>
           </div>
         </section>
 
