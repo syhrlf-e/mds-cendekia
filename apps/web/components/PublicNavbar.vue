@@ -299,7 +299,7 @@ const handleNavClick = async (item: NavItem) => {
             <div class="flex items-center gap-3 lg:hidden">
               <button
                 type="button"
-                class="mobile-menu-button flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border-soft bg-white transition-colors duration-200 hover:bg-primary-50"
+                class="mobile-menu-button flex h-11 w-11 cursor-pointer items-center justify-center bg-transparent"
                 :class="mobileMenuOpen ? 'is-open' : ''"
                 :aria-label="mobileMenuOpen ? 'Tutup menu' : 'Buka menu'"
                 :aria-expanded="mobileMenuOpen"
