@@ -54,9 +54,9 @@ const statusIcon = computed(() => {
 })
 
 const iconClass = computed(() => {
-  if (effectiveStatus.value === 'locked') return 'text-text-secondary w-5 h-5'
-  if (effectiveStatus.value === 'complete') return 'text-success w-5 h-5'
-  return `text-text-secondary w-5 h-5 transition-transform duration-500 ${props.isOpen ? 'rotate-180' : ''}`
+  if (effectiveStatus.value === 'locked') return 'text-text-secondary h-4 w-4 md:h-5 md:w-5'
+  if (effectiveStatus.value === 'complete') return 'text-success h-4 w-4 md:h-5 md:w-5'
+  return `text-text-secondary h-4 w-4 md:h-5 md:w-5 transition-transform duration-500 ${props.isOpen ? 'rotate-180' : ''}`
 })
 
 const statusText = computed(() => {
@@ -73,7 +73,7 @@ const statusTextClass = computed(() => {
 
 const headerClass = computed(() => {
   return [
-    'flex items-center justify-between w-full p-4 md:p-5 xl:p-6 text-left transition-colors duration-300 select-none relative z-10',
+    'flex items-center justify-between w-full gap-3 p-3.5 md:p-5 xl:p-6 text-left transition-colors duration-300 select-none relative z-10',
     props.isLocked ? 'cursor-not-allowed bg-bg-base text-text-secondary' : 'cursor-pointer bg-bg-surface hover:bg-bg-base rounded-t-2xl',
     props.isOpen ? 'border-b border-border rounded-t-2xl' : 'rounded-2xl'
   ]
@@ -96,15 +96,15 @@ const headerClass = computed(() => {
       :aria-expanded="isOpen"
     >
       <span
-        class="font-heading text-base font-semibold md:text-lg"
+        class="min-w-0 font-heading text-sm font-semibold leading-snug md:text-lg"
         :class="effectiveStatus === 'locked' ? 'text-text-secondary' : 'text-text-primary'"
       >
         {{ title }}
       </span>
-      <span class="flex items-center gap-2">
+      <span class="flex shrink-0 items-center gap-2">
         <span
           v-if="showStatusText && statusText"
-          class="hidden sm:inline text-sm font-medium"
+          class="hidden text-sm font-medium sm:inline"
           :class="statusTextClass"
         >
           {{ statusText }}
@@ -118,7 +118,7 @@ const headerClass = computed(() => {
       :class="isOpen && !isLocked ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
     >
       <div class="min-h-0" :class="isTransitioning || (!isOpen || isLocked) ? 'overflow-hidden' : ''">
-        <div class="p-4 md:p-5 xl:p-6">
+        <div class="p-3.5 md:p-5 xl:p-6">
           <slot></slot>
         </div>
       </div>
