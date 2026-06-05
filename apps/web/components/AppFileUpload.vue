@@ -57,8 +57,8 @@ const formatSize = (bytes: number) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5 w-full">
-    <label :for="fileInputId" class="text-sm font-medium text-text-primary">{{ label }}</label>
+  <div class="flex w-full flex-col gap-1.5">
+    <label :for="fileInputId" class="text-xs font-medium text-text-primary md:text-sm">{{ label }}</label>
 
     <div v-if="!modelValue" class="relative">
       <input
@@ -78,15 +78,15 @@ const formatSize = (bytes: number) => {
         <p class="text-xs text-text-secondary mt-1 text-center">Format: {{ accept }} (Maks. {{ maxSize }} MB)</p>
       </div>
       <div :class="[
-        'flex sm:hidden items-center justify-between gap-3 p-4 border rounded-xl bg-bg-base transition-colors',
+        'flex items-center justify-between gap-3 rounded-xl border bg-bg-base p-3.5 transition-colors sm:hidden',
         error ? 'border-error bg-error/5' : 'border-border'
       ]">
         <div class="min-w-0">
-          <p class="text-sm font-medium text-text-primary truncate">Belum ada file</p>
+          <p class="truncate text-sm font-medium text-text-primary">Belum ada file</p>
           <p class="text-xs text-text-secondary">{{ acceptText }} · maks. {{ maxSize }} MB</p>
         </div>
         <div :class="[
-          'h-9 shrink-0 rounded-lg border px-4 text-sm font-medium flex items-center justify-center transition-colors',
+          'flex h-9 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-medium transition-colors',
           error ? 'border-error bg-white text-error' : 'border-border bg-white text-text-primary'
         ]">
           Upload
@@ -94,7 +94,7 @@ const formatSize = (bytes: number) => {
       </div>
     </div>
 
-    <div v-else class="flex items-center justify-between p-4 border border-border rounded-xl bg-bg-base">
+    <div v-else class="flex items-center justify-between rounded-xl border border-border bg-bg-base p-3.5 md:p-4">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="p-2 bg-white rounded-lg shrink-0 text-brand shadow-sm">
           <FileIcon class="w-5 h-5" />
@@ -109,6 +109,6 @@ const formatSize = (bytes: number) => {
       </button>
     </div>
 
-    <span v-if="error" class="text-sm text-error">{{ error }}</span>
+    <span v-if="error" class="text-xs text-error">{{ error }}</span>
   </div>
 </template>

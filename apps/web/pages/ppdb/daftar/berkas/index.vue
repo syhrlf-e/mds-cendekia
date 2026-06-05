@@ -546,16 +546,16 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-8 md:py-10 xl:py-12">
+  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
     <div class="public-navbar-container">
-      <div class="mx-auto flex w-full max-w-5xl flex-col gap-5 md:gap-6">
+      <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 md:gap-6">
 
         <div class="mb-1 md:mb-2">
-          <h1 class="font-heading text-2xl font-bold text-text-primary md:text-3xl">Upload Berkas</h1>
-          <p class="mt-1 max-w-2xl text-sm leading-relaxed text-text-secondary md:text-base">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
+          <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Upload Berkas</h1>
+          <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
         </div>
 
-        <div class="flex flex-col gap-5 rounded-2xl border border-border bg-bg-surface p-4 shadow-sm md:gap-6 md:p-6 xl:p-8">
+        <div class="flex flex-col gap-4 rounded-2xl border border-border bg-bg-surface p-3.5 shadow-sm md:gap-6 md:p-6 xl:p-8">
           <AppFileUpload v-model="berkas.foto" label="1. Foto Siswa (3x4 berwarna)" accept=".jpg,.png" :maxSize="1" />
           <AppFileUpload v-model="berkas.rapor" label="2. Buku Rapor SMP" accept=".pdf" :maxSize="2" />
           <AppFileUpload v-model="berkas.skRapor" label="3. Surat Keterangan Nilai Rapor Semester I-V" accept=".pdf" :maxSize="2" />
