@@ -225,61 +225,61 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
       </div>
     </section>
-    <section class="border-t border-neutral-200 bg-bg-base px-0 py-24 md:py-28 lg:py-30">
+    <section class="border-t border-neutral-200 bg-bg-base px-0 py-16 md:py-28 lg:py-30">
       <div class="public-navbar-container">
-        <div class="flex flex-col gap-14 lg:flex-row lg:gap-16 2xl:gap-20">
+        <div class="flex flex-col gap-10 md:gap-14 lg:flex-row lg:gap-16 2xl:gap-20">
           <div class="lg:w-1/3">
-            <h2 class="sticky top-28 font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:top-30 lg:text-4xl 2xl:text-5xl">
+            <h2 class="font-heading text-2xl font-normal leading-tight text-text-public-heading md:text-4xl lg:sticky lg:top-30 lg:text-4xl 2xl:text-5xl">
               Informasi<br/>Pendaftaran.
             </h2>
           </div>
-          <div class="flex flex-col gap-12 lg:w-2/3 2xl:gap-16">
+          <div class="flex flex-col gap-10 md:gap-12 lg:w-2/3 2xl:gap-16">
             <div>
-              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
+              <div class="mb-5 flex items-center gap-3 md:mb-7 md:gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Jadwal & Gelombang</h3>
+                <h3 class="font-sans text-xs font-medium capitalize text-gray-500 md:text-sm 2xl:text-base">Jadwal & Gelombang</h3>
               </div>
 
-              <div class="flex flex-col gap-5 2xl:gap-6">
-                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
-                  <p class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ wave.name }}</p>
-                  <p class="mt-2 font-sans text-base text-neutral-600 sm:mt-0 2xl:text-lg">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
+              <div class="flex flex-col gap-4 md:gap-5 2xl:gap-6">
+                <div v-for="wave in landingInfo.waves" :key="wave.id" class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
+                  <p class="font-heading text-xl font-medium text-text-public-heading md:text-2xl 2xl:text-3xl">{{ wave.name }}</p>
+                  <p class="mt-1.5 font-sans text-sm text-neutral-600 sm:mt-0 md:text-base 2xl:text-lg">{{ formatDateRange(wave.start_date, wave.end_date) }}</p>
                 </div>
-                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
-                  <p class="font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">{{ jadwal.label }}</p>
-                  <p class="mt-2 font-sans text-base text-neutral-600 sm:mt-0 2xl:text-lg">{{ jadwal.value }}</p>
+                <div v-for="(jadwal, index) in landingInfo.jadwal_tambahan" :key="'jadwal-' + index" class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
+                  <p class="font-heading text-lg font-medium text-text-public-heading md:text-xl 2xl:text-2xl">{{ jadwal.label }}</p>
+                  <p class="mt-1.5 font-sans text-sm text-neutral-600 sm:mt-0 md:text-base 2xl:text-lg">{{ jadwal.value }}</p>
                 </div>
               </div>
             </div>
             <div>
-              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
+              <div class="mb-5 flex items-center gap-3 md:mb-7 md:gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Persyaratan Dokumen</h3>
+                <h3 class="font-sans text-xs font-medium capitalize text-gray-500 md:text-sm 2xl:text-base">Persyaratan Dokumen</h3>
               </div>
-              <ul class="flex flex-col gap-5 2xl:gap-6">
-                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-4 border-b border-neutral-200 pb-5 2xl:pb-6">
-                  <div class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-brand 2xl:h-3 2xl:w-3"></div>
-                  <span class="font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">{{ item }}</span>
+              <ul class="flex flex-col gap-4 md:gap-5 2xl:gap-6">
+                <li v-for="(item, index) in landingInfo.persyaratan" :key="index" class="flex items-start gap-3 border-b border-neutral-200 pb-4 md:gap-4 md:pb-5 2xl:pb-6">
+                  <div class="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand md:h-2.5 md:w-2.5 2xl:h-3 2xl:w-3"></div>
+                  <span class="font-heading text-lg font-medium leading-snug text-text-public-heading md:text-xl 2xl:text-2xl">{{ item }}</span>
                 </li>
               </ul>
             </div>
             <div>
-              <div class="mb-7 flex items-center gap-4 2xl:mb-8">
+              <div class="mb-5 flex items-center gap-3 md:mb-7 md:gap-4 2xl:mb-8">
                 <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-sm font-medium capitalize text-gray-500 2xl:text-base">Rincian Biaya</h3>
+                <h3 class="font-sans text-xs font-medium capitalize text-gray-500 md:text-sm 2xl:text-base">Rincian Biaya</h3>
               </div>
-              <div class="flex flex-col gap-5 2xl:gap-6">
-                <div class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
-                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">Biaya Formulir</span>
-                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
+              <div class="flex flex-col gap-4 md:gap-5 2xl:gap-6">
+                <div class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
+                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">Biaya Formulir</span>
+                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
                 </div>
-                <div v-if="landingInfo.active_wave" class="flex flex-col justify-between border-b border-neutral-200 pb-5 sm:flex-row sm:items-baseline 2xl:pb-6">
-                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
-                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
+                <div v-if="landingInfo.active_wave" class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
+                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
+                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
                 </div>
                 <div class="flex flex-col justify-between pb-2 sm:flex-row sm:items-baseline">
-                  <span class="font-sans text-lg text-neutral-600 2xl:text-xl">SPP Bulanan</span>
-                  <span class="font-heading text-2xl font-medium text-text-public-heading 2xl:text-3xl">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
+                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">SPP Bulanan</span>
+                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
                 </div>
               </div>
             </div>
