@@ -193,50 +193,50 @@ useJsonLd(() => {
 
       </div>
     </section>
-    <section class="border-t border-neutral-200 bg-white px-0 py-24 md:py-28 lg:py-30">
+    <section class="border-t border-neutral-200 bg-white px-0 py-16 md:py-28 lg:py-30">
       <div class="public-container flex flex-col items-center">
-        <h2 class="mb-14 text-center font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
+        <h2 class="mb-10 text-center font-heading text-2xl font-normal leading-tight text-text-public-heading md:mb-14 md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-20 2xl:text-5xl">
           Penggerak Yayasan Kami
         </h2>
 
-        <div class="flex w-full flex-col items-center gap-14 2xl:gap-20">
+        <div class="flex w-full flex-col items-center gap-10 md:gap-14 2xl:gap-20">
           <div class="flex flex-col items-center">
-            <div class="mb-5 flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-[180px] 2xl:w-[180px]">
-              <svg class="h-14 w-14 text-neutral-300 2xl:h-16 2xl:w-16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="mb-4 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-36 md:w-36 2xl:mb-6 2xl:h-[180px] 2xl:w-[180px]">
+              <svg class="h-11 w-11 text-neutral-300 md:h-14 md:w-14 2xl:h-16 2xl:w-16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="text-center font-heading text-xl font-medium text-text-public-heading 2xl:text-2xl">Bpk. Muhammad Djody Satriani</h3>
-            <p class="mt-2 font-sans text-base font-medium text-brand 2xl:text-lg">Ketua Pembina</p>
+            <h3 class="max-w-xs text-center font-heading text-lg font-medium text-text-public-heading md:text-xl 2xl:text-2xl">Bpk. Muhammad Djody Satriani</h3>
+            <p class="mt-1.5 font-sans text-sm font-medium text-brand md:mt-2 md:text-base 2xl:text-lg">Ketua Pembina</p>
           </div>
           <div class="flex flex-col items-center">
-            <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
-              <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <div class="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
+              <svg class="h-9 w-9 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Bpk. Buya Hamka</h3>
-            <p class="mt-2 font-sans text-base font-medium text-neutral-600">Ketua Pengawas</p>
+            <h3 class="text-center font-heading text-base font-medium text-text-public-heading md:text-lg 2xl:text-xl">Bpk. Buya Hamka</h3>
+            <p class="mt-1.5 font-sans text-sm font-medium text-neutral-600 md:mt-2 md:text-base">Ketua Pengawas</p>
           </div>
-          <div class="grid w-full max-w-[900px] grid-cols-1 gap-10 border-t border-neutral-200 pt-10 sm:grid-cols-3 2xl:max-w-[1000px] 2xl:gap-15">
+          <div class="grid w-full max-w-[900px] grid-cols-3 gap-4 border-t border-neutral-200 pt-8 md:gap-10 md:pt-10 2xl:max-w-[1000px] 2xl:gap-15">
             <div class="flex flex-col items-center">
-              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Bpk. Rio Nurfajri</h3>
-              <p class="mt-2 font-sans text-base text-gray-500">Ketua Umum</p>
+              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Bpk. Rio Nurfajri</h3>
+              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Ketua Umum</p>
             </div>
 
             <div class="flex flex-col items-center">
-              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Ibu Vena Adrianti Ningrum</h3>
-              <p class="mt-2 font-sans text-base text-gray-500">Sekretaris</p>
+              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Ibu Vena Adrianti Ningrum</h3>
+              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Sekretaris</p>
             </div>
 
             <div class="flex flex-col items-center">
-              <div class="mb-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-11 w-11 text-neutral-300 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
+                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="text-center font-heading text-lg font-medium text-text-public-heading 2xl:text-xl">Ibu Rizalina Nurazizah</h3>
-              <p class="mt-2 font-sans text-base text-gray-500">Bendahara</p>
+              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Ibu Rizalina Nurazizah</h3>
+              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Bendahara</p>
             </div>
           </div>
 
