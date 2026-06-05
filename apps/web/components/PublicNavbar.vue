@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Menu, X } from 'lucide-vue-next'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 type NavItem = {
@@ -132,6 +131,12 @@ const scrollToTarget = async (hash: string) => {
   history.replaceState(null, '', hash)
 }
 
+const closeMobileMenuOnEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    mobileMenuOpen.value = false
+  }
+}
+
 onMounted(async () => {
   if (route.path === '/' && route.hash) {
     await router.replace('/')
@@ -141,6 +146,7 @@ onMounted(async () => {
   await syncActiveFromRoute()
   updateIndicator()
   window.addEventListener('resize', updateIndicator)
+  window.addEventListener('keydown', closeMobileMenuOnEscape)
 })
 
 watch(activeMenuLabel, () => {
@@ -160,15 +166,10 @@ watch(() => route.fullPath, async () => {
   mobileMenuOpen.value = false
 })
 
-watch(mobileMenuOpen, (isOpen) => {
-  if (!import.meta.client) return
-  document.body.style.overflow = isOpen ? 'hidden' : ''
-})
-
 onUnmounted(() => {
   if (import.meta.client) {
-    document.body.style.overflow = ''
     window.removeEventListener('resize', updateIndicator)
+    window.removeEventListener('keydown', closeMobileMenuOnEscape)
     deactivateScrollListener()
   }
 })
@@ -223,25 +224,37 @@ const handleNavClick = async (item: NavItem) => {
 </script>
 
 <template>
-  <nav class="fixed left-0 right-0 top-0 z-60 bg-white/80 backdrop-blur-md transition-all duration-300">
-    <div
-      class="fixed inset-0 z-40 bg-text-primary/45 backdrop-blur-md transition-opacity duration-300 lg:hidden"
-      :class="mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
+  <Transition name="mobile-page-blur">
+    <button
+      v-if="mobileMenuOpen"
+      type="button"
+      class="fixed inset-0 z-50 cursor-default bg-text-primary/12 backdrop-blur-sm lg:hidden"
+      aria-label="Tutup menu navigasi"
       @click="mobileMenuOpen = false"
     />
+  </Transition>
 
+  <nav
+    class="fixed left-0 right-0 top-0 z-60 border-b border-transparent bg-white/90 backdrop-blur-md transition-all duration-300"
+    :class="mobileMenuOpen ? 'border-border-soft shadow-sm lg:border-transparent lg:shadow-none' : ''"
+  >
     <div class="public-navbar-container">
       <div
         class="relative z-50 bg-transparent transition-all duration-500"
-        :class="mobileMenuOpen ? 'py-6' : 'py-4'"
+        :class="mobileMenuOpen ? 'py-3 lg:py-4' : 'py-3.5 lg:py-4'"
       >
         <div class="flex items-center justify-between">
           <!-- Logo -->
-          <NuxtLink to="/" class="group flex cursor-pointer items-center gap-3" aria-label="Ke beranda" @click.prevent="goToHome">
+          <NuxtLink
+            to="/"
+            class="group flex min-h-11 cursor-pointer items-center gap-3"
+            aria-label="Ke beranda"
+            @click.prevent="goToHome"
+          >
             <img
               src="/images/logo-mds-main.png"
               alt="Logo Yayasan Mukti Daris Sasmita Cendekia"
-              class="h-10 w-10 object-contain"
+              class="h-9 w-9 object-contain lg:h-10 lg:w-10"
               fetchpriority="high"
               loading="eager"
             />
@@ -286,72 +299,56 @@ const handleNavClick = async (item: NavItem) => {
             <div class="flex items-center gap-3 lg:hidden">
               <button
                 type="button"
-                class="cursor-pointer rounded-full p-2 transition-transform duration-200 hover:bg-primary-50"
-                aria-label="Toggle menu"
+                class="mobile-menu-button flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border-soft bg-white transition-colors duration-200 hover:bg-primary-50"
+                :class="mobileMenuOpen ? 'is-open' : ''"
+                :aria-label="mobileMenuOpen ? 'Tutup menu' : 'Buka menu'"
+                :aria-expanded="mobileMenuOpen"
+                aria-controls="public-mobile-menu"
                 @click="mobileMenuOpen = !mobileMenuOpen"
               >
-                <Menu v-if="!mobileMenuOpen" class="h-6 w-6 text-text-primary" />
-                <X v-else class="h-6 w-6 text-text-primary" />
+                <span class="mobile-menu-lines" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
               </button>
             </div>
           </div>
         </div>
 
         <!-- Mobile Menu Panel -->
-        <div v-show="mobileMenuOpen" class="mt-4 border-t border-border-soft lg:hidden">
-          <div class="space-y-2 pb-4 pt-4">
-            <NuxtLink
-              v-for="(item, index) in menuItems"
-              :key="item.id"
-              :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
-              :style="{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : '0ms' }"
-              class="group flex w-full translate-y-2 cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left opacity-0 transition-all duration-300"
-              :class="[
-                activeMenuLabel === item.label
-                  ? 'bg-primary-50 text-brand'
-                  : 'text-text-public-heading hover:bg-bg-base',
-                mobileMenuOpen ? 'animate-slide-in' : ''
-              ]"
-              @click.prevent="handleNavClick(item)"
-            >
-              <span class="font-medium font-heading text-base transition-transform group-hover:translate-x-1">{{ item.label }}</span>
-              <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
-            </NuxtLink>
+        <Transition name="mobile-nav">
+          <div
+            v-if="mobileMenuOpen"
+            id="public-mobile-menu"
+            class="mt-3 overflow-hidden border-t border-border-soft pt-3 lg:hidden"
+          >
+            <div class="space-y-1">
+              <NuxtLink
+                v-for="(item, index) in menuItems"
+                :key="item.id"
+                :to="item.to.startsWith('#') ? `/${item.to}` : item.to"
+                :style="{ transitionDelay: `${index * 45}ms` }"
+                class="mobile-nav-item group flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-left transition-all duration-300"
+                :class="
+                  activeMenuLabel === item.label
+                    ? 'bg-primary-50 text-brand'
+                    : 'text-text-public-heading hover:bg-bg-base'
+                "
+                @click.prevent="handleNavClick(item)"
+              >
+                <span class="font-heading text-base font-medium transition-transform group-hover:translate-x-1">{{ item.label }}</span>
+                <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
+              </NuxtLink>
+            </div>
           </div>
-
-          <div class="border-t border-border-soft pb-2 pt-4">
-            <NuxtLink
-              to="/ppdb"
-              class="flex w-full translate-y-2 cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-white px-4 py-3 font-medium font-heading text-base text-brand opacity-0 transition-all duration-300 hover:bg-brand hover:text-white"
-              :class="mobileMenuOpen ? 'animate-slide-in' : ''"
-              style="transition-delay: 300ms"
-              @click="mobileMenuOpen = false"
-            >
-              <span>Daftarkan Diri Kamu</span>
-            </NuxtLink>
-          </div>
-        </div>
+        </Transition>
       </div>
     </div>
   </nav>
 </template>
 
 <style scoped>
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-in {
-  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 .public-navbar-cta {
   display: none;
 }
@@ -360,5 +357,111 @@ const handleNavClick = async (item: NavItem) => {
   .public-navbar-cta {
     display: inline-flex;
   }
+}
+
+.mobile-menu-lines {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 16px;
+}
+
+.mobile-menu-lines span {
+  position: absolute;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  color: #27272a;
+  transition:
+    top 0.25s ease,
+    width 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.2s ease;
+}
+
+.mobile-menu-lines span:nth-child(1) {
+  top: 1px;
+  width: 22px;
+}
+
+.mobile-menu-lines span:nth-child(2) {
+  top: 7px;
+  width: 14px;
+}
+
+.mobile-menu-lines span:nth-child(3) {
+  top: 13px;
+  width: 19px;
+}
+
+.mobile-menu-button.is-open .mobile-menu-lines span:nth-child(1) {
+  top: 7px;
+  width: 22px;
+  transform: rotate(45deg);
+}
+
+.mobile-menu-button.is-open .mobile-menu-lines span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(8px);
+}
+
+.mobile-menu-button.is-open .mobile-menu-lines span:nth-child(3) {
+  top: 7px;
+  width: 22px;
+  transform: rotate(-45deg);
+}
+
+.mobile-nav-enter-active,
+.mobile-nav-leave-active {
+  transition:
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-nav-enter-from,
+.mobile-nav-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px) scaleY(0.98);
+}
+
+.mobile-nav-enter-to,
+.mobile-nav-leave-from {
+  max-height: 430px;
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+}
+
+.mobile-nav-enter-from .mobile-nav-item,
+.mobile-nav-leave-to .mobile-nav-item {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.mobile-nav-enter-to .mobile-nav-item,
+.mobile-nav-leave-from .mobile-nav-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-page-blur-enter-active,
+.mobile-page-blur-leave-active {
+  transition:
+    opacity 0.24s ease,
+    backdrop-filter 0.24s ease;
+}
+
+.mobile-page-blur-enter-from,
+.mobile-page-blur-leave-to {
+  opacity: 0;
+  backdrop-filter: blur(0);
+}
+
+.mobile-page-blur-enter-to,
+.mobile-page-blur-leave-from {
+  opacity: 1;
+  backdrop-filter: blur(4px);
 }
 </style>

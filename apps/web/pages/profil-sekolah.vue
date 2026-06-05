@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CheckCircle } from 'lucide-vue-next'
+
 useHead({
   title: 'Profil Sekolah | MDS Cendekia',
   meta: [
