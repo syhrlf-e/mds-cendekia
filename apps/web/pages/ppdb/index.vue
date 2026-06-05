@@ -186,17 +186,17 @@ const formatDateRange = (startDate: string, endDate: string) => {
 
 <template>
   <div class="min-h-screen bg-white font-sans">
-    <section class="relative bg-white px-0 py-32 md:py-36 lg:pb-24 lg:pt-40 2xl:pb-30 2xl:pt-50">
+    <section class="relative bg-white px-0 pb-16 pt-28 md:py-36 lg:pb-24 lg:pt-40 2xl:pb-30 2xl:pt-50">
       <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="z-20 mb-5 flex h-9 w-fit items-center justify-center rounded-full border border-neutral-200 bg-transparent px-5 font-heading text-sm font-medium text-neutral-600 2xl:mb-6 2xl:px-6">
+        <div class="z-20 mb-4 flex h-8 w-fit items-center justify-center rounded-full border border-neutral-200 bg-transparent px-4 font-heading text-xs font-medium text-neutral-600 md:mb-5 md:h-9 md:px-5 md:text-sm 2xl:mb-6 2xl:px-6">
           {{ landingInfo.active_wave.name }}
         </div>
-        <h1 class="z-20 font-heading text-4xl font-medium leading-[1.1] tracking-tight text-text-public-heading md:text-5xl lg:text-5xl lg:whitespace-nowrap xl:text-6xl">
-          <span class="text-text-public-heading">Penerimaan Peserta Didik Baru</span><br/>
+        <h1 class="z-20 max-w-md font-heading text-3xl font-medium leading-tight tracking-tight text-text-public-heading md:max-w-none md:text-5xl md:leading-[1.1] lg:text-5xl lg:whitespace-nowrap xl:text-6xl">
+          <span class="text-text-public-heading">Penerimaan Peserta Didik Baru</span><br class="hidden md:block"/>
           <span class="text-brand">Tahun {{ academicYear }}</span>
         </h1>
-        <p class="mb-10 mt-5 max-w-2xl font-sans text-base leading-relaxed text-neutral-600 md:text-lg lg:mb-12 lg:mt-6 2xl:mb-14 2xl:max-w-lg 2xl:text-xl">
+        <p class="mb-8 mt-4 max-w-md font-sans text-sm leading-7 text-neutral-600 md:mb-10 md:mt-5 md:max-w-2xl md:text-lg md:leading-relaxed lg:mb-12 lg:mt-6 2xl:mb-14 2xl:max-w-lg 2xl:text-xl">
           Membangun generasi cerdas, berakhlak mulia, dan berwawasan global. Mulai perjalanan pendidikan kesetaraan Anda bersama YMDSC hari ini.
         </p>
 
@@ -204,20 +204,20 @@ const formatDateRange = (startDate: string, endDate: string) => {
           <NuxtLink
             v-if="!isDaftarDisabled"
             to="/ppdb/daftar"
-            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full bg-brand px-7 font-heading text-base font-medium text-white transition-opacity hover:opacity-90 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
+            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-brand px-6 font-heading text-sm font-medium text-white transition-opacity hover:opacity-90 sm:min-w-48 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             {{ daftarLabel }}
           </NuxtLink>
           <button
             v-else
             :disabled="isDaftarDisabled"
-            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full bg-brand px-7 font-heading text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
+            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-brand px-6 font-heading text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-48 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             {{ daftarLabel }}
           </button>
           <NuxtLink
             to="/ppdb/cek-status"
-            class="flex h-13 min-w-48 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-7 font-heading text-base font-medium text-text-public-heading transition-colors hover:bg-bg-base lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
+            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-6 font-heading text-sm font-medium text-text-public-heading transition-colors hover:bg-bg-base sm:min-w-48 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             Cek Status Pendaftaran
           </NuxtLink>
