@@ -482,21 +482,21 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     />
 
     <!-- Section 7: CTA Banner -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-16 pt-32 md:pt-44 lg:pb-20 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-60">
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-14 pt-24 md:pt-44 lg:pb-20 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-60">
       <div class="public-container">
-        <div class="relative flex min-h-72 w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-brand px-4 py-10 text-center shadow-lg md:min-h-80 md:py-12 2xl:h-[356px] 2xl:rounded-4xl 2xl:py-0">
+        <div class="relative flex min-h-64 w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-brand px-4 py-9 text-center shadow-lg md:min-h-80 md:py-12 2xl:h-[356px] 2xl:rounded-4xl 2xl:py-0">
           <!-- Background Image -->
           <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
 
           <!-- Content -->
-          <div class="relative z-10 flex flex-col items-center px-4">
-            <h2 class="mb-6 font-heading text-3xl font-semibold text-white md:text-4xl lg:mb-8 lg:text-4xl 2xl:mb-10 2xl:text-5xl">
+          <div class="relative z-10 flex max-w-sm flex-col items-center px-3 sm:max-w-2xl md:max-w-none md:px-4">
+            <h2 class="mb-4 font-heading text-2xl font-semibold leading-tight text-white md:text-4xl lg:mb-8 lg:text-4xl 2xl:mb-10 2xl:text-5xl">
               Siap mengambil kesempatan ini?
             </h2>
-            <p class="mb-8 max-w-2xl font-sans text-base font-medium text-white md:text-lg 2xl:mb-10 2xl:max-w-[800px] 2xl:text-xl">
+            <p class="mb-6 max-w-sm font-sans text-sm font-medium leading-relaxed text-white sm:max-w-2xl md:text-lg 2xl:mb-10 2xl:max-w-[800px] 2xl:text-xl">
               Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
             </p>
-            <NuxtLink to="/ppdb" class="flex h-14 w-full max-w-[315px] cursor-pointer items-center justify-center rounded-full bg-white px-6 font-sans text-base font-medium text-brand transition-opacity hover:opacity-90 lg:text-lg 2xl:h-[58px] 2xl:text-xl">
+            <NuxtLink to="/ppdb" class="flex h-12 w-full max-w-[280px] cursor-pointer items-center justify-center rounded-full bg-white px-6 font-sans text-sm font-medium text-brand transition-opacity hover:opacity-90 md:h-14 md:max-w-[315px] md:text-base lg:text-lg 2xl:h-[58px] 2xl:text-xl">
               Daftarkan Diri Kamu di Sini
             </NuxtLink>
           </div>
