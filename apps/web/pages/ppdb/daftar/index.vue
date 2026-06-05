@@ -190,10 +190,10 @@ const {
   <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
     <div class="public-navbar-container">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-2">
-      <div class="mb-4 md:mb-5">
-        <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
-        <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
-      </div>
+        <div class="mb-4 md:mb-5">
+          <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
+          <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
+        </div>
 
       <AppAccordion
         title="Data Diri Siswa"
@@ -203,7 +203,7 @@ const {
         showStatusText
         @toggle="toggleAccordion(1)"
       >
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-5">
           <AppInput v-model="form.nama" label="Nama Lengkap" required :error="errors.nama" :sanitizer="sanitizeName" :maxlength="80" @blur="validateField('nama')" class="md:col-span-2" />
           <AppInput v-model="form.nik" label="NIK" required :error="errors.nik" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateField('nik')" placeholder="16 digit NIK" />
           <AppInput v-model="form.nisn" label="NISN" required :error="errors.nisn" :sanitizer="(value) => sanitizeDigits(value, 10)" inputmode="numeric" :maxlength="10" @blur="validateField('nisn')" placeholder="10 digit NISN" />
@@ -225,7 +225,7 @@ const {
           />
 
           <div class="flex w-full flex-col gap-1.5">
-            <label class="text-sm font-medium text-text-primary">Jenis Kelamin</label>
+            <label class="text-xs font-medium text-text-primary md:text-sm">Jenis Kelamin</label>
             <div class="grid min-h-11 grid-cols-2 gap-2">
               <button
                 type="button"
@@ -254,7 +254,7 @@ const {
                 Perempuan
               </button>
             </div>
-            <span v-if="errors.jenis_kelamin" class="text-sm text-error">{{ errors.jenis_kelamin }}</span>
+            <span v-if="errors.jenis_kelamin" class="text-xs text-error">{{ errors.jenis_kelamin }}</span>
           </div>
 
           <div class="md:col-span-2">
@@ -298,7 +298,7 @@ const {
         lockedText="Lengkapi data siswa dulu"
         @toggle="toggleAccordion(2)"
       >
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-5">
           <AppInput v-model="formSekolah.nama_sekolah_asal" label="Nama Sekolah Asal" required :error="errors.nama_sekolah_asal" :sanitizer="sanitizeSchoolName" :maxlength="120" @blur="validateField('nama_sekolah_asal')" class="md:col-span-2" />
           <AppInput v-model="formSekolah.npsn_sekolah_asal" label="NPSN" required :error="errors.npsn_sekolah_asal" :sanitizer="(value) => sanitizeDigits(value, 8)" inputmode="numeric" :maxlength="8" @blur="validateField('npsn_sekolah_asal')" placeholder="8 digit NPSN" />
           <AppInput v-model="formSekolah.tahun_lulus" label="Tahun Lulus" required :error="errors.tahun_lulus" :sanitizer="(value) => sanitizeDigits(value, 4)" inputmode="numeric" :maxlength="4" @blur="validateField('tahun_lulus')" placeholder="Contoh: 2024" />
@@ -320,10 +320,10 @@ const {
         lockedText="Lengkapi data sekolah dulu"
         @toggle="toggleAccordion(3)"
       >
-        <div class="flex flex-col gap-7 md:gap-8">
-          <div class="flex flex-col gap-4">
-            <h3 class="border-b border-border pb-2 font-heading text-base font-semibold text-brand md:text-lg">Data Ayah</h3>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        <div class="flex flex-col gap-6 md:gap-8">
+          <div class="flex flex-col gap-3.5 md:gap-4">
+            <h3 class="border-b border-border pb-2 font-heading text-sm font-semibold text-brand md:text-lg">Data Ayah</h3>
+            <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-5">
               <AppInput v-model="ayah.nama" label="Nama Lengkap Ayah" required :error="errors['orangTua.0.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(0, 'nama')" />
               <AppInput v-model="ayah.nik" label="NIK Ayah" required :error="errors['orangTua.0.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(0, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="ayah.agama" label="Agama Ayah" required :options="agamaOptions" :error="errors['orangTua.0.agama']" @blur="validateOrangTuaField(0, 'agama')" />
@@ -335,9 +335,9 @@ const {
             </div>
           </div>
 
-          <div class="flex flex-col gap-4">
-            <h3 class="border-b border-border pb-2 font-heading text-base font-semibold text-brand md:text-lg">Data Ibu</h3>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+          <div class="flex flex-col gap-3.5 md:gap-4">
+            <h3 class="border-b border-border pb-2 font-heading text-sm font-semibold text-brand md:text-lg">Data Ibu</h3>
+            <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-5">
               <AppInput v-model="ibu.nama" label="Nama Lengkap Ibu" required :error="errors['orangTua.1.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(1, 'nama')" />
               <AppInput v-model="ibu.nik" label="NIK Ibu" required :error="errors['orangTua.1.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(1, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="ibu.agama" label="Agama Ibu" required :options="agamaOptions" :error="errors['orangTua.1.agama']" @blur="validateOrangTuaField(1, 'agama')" />
@@ -349,16 +349,16 @@ const {
             </div>
           </div>
 
-          <div class="flex items-start gap-3 rounded-xl border border-border bg-bg-surface p-4 sm:items-center">
+          <div class="flex items-start gap-3 rounded-xl border border-border bg-bg-surface p-3.5 sm:items-center md:p-4">
             <input type="checkbox" id="waliCheckbox" v-model="isWaliBerbeda" class="mt-0.5 h-5 w-5 shrink-0 rounded border-border text-brand accent-brand focus:ring-brand sm:mt-0">
             <label for="waliCheckbox" class="cursor-pointer select-none text-sm font-medium leading-relaxed text-text-primary md:text-base">
               Wali berbeda dengan orang tua
             </label>
           </div>
 
-          <div v-if="isWaliBerbeda" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-            <h3 class="border-b border-border pb-2 font-heading text-base font-semibold text-brand md:text-lg">Data Wali</h3>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+          <div v-if="isWaliBerbeda" class="flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-4 duration-300 md:gap-4">
+            <h3 class="border-b border-border pb-2 font-heading text-sm font-semibold text-brand md:text-lg">Data Wali</h3>
+            <div class="grid grid-cols-1 gap-3.5 md:grid-cols-2 md:gap-5">
               <AppInput v-model="wali.nama" label="Nama Lengkap Wali" required :error="errors['orangTua.2.nama']" :sanitizer="sanitizeName" :maxlength="80" @blur="validateOrangTuaField(2, 'nama')" />
               <AppInput v-model="wali.nik" label="NIK Wali" required :error="errors['orangTua.2.nik']" :sanitizer="(value) => sanitizeDigits(value, 16)" inputmode="numeric" :maxlength="16" @blur="validateOrangTuaField(2, 'nik')" placeholder="16 digit NIK" />
               <AppSelect v-model="wali.agama" label="Agama Wali" required :options="agamaOptions" :error="errors['orangTua.2.agama']" @blur="validateOrangTuaField(2, 'agama')" />
@@ -374,7 +374,7 @@ const {
         </div>
       </AppAccordion>
 
-      <div class="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AppButton
           variant="secondary"
           class="w-full sm:w-auto"
@@ -390,7 +390,7 @@ const {
         >
           Berikutnya
         </AppButton>
-      </div>
+        </div>
       </div>
     </div>
   </div>
