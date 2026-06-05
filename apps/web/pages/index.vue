@@ -372,13 +372,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     </section>
 
     <!-- Section 6: Galeri / Lingkungan -->
-    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-32 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[303px]">
+    <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-24 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[303px]">
       <div class="public-container flex flex-col">
         <!-- Baris Pertama -->
         <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-center lg:gap-6">
           <!-- Kolom Kiri: Gambar -->
           <ClientOnly>
-            <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
+            <div class="order-2 aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:w-[56%] 2xl:w-[707px]">
               <div
                 v-if="isGalleryLoading"
                 class="h-full w-full animate-pulse bg-gray-200"
@@ -393,15 +393,15 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               />
             </div>
             <template #fallback>
-              <div class="aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:w-[56%] 2xl:w-[707px]">
+              <div class="order-2 aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:w-[56%] 2xl:w-[707px]">
                 <div class="h-full w-full animate-pulse bg-gray-200"></div>
               </div>
             </template>
           </ClientOnly>
 
           <!-- Kolom Kanan: Teks -->
-          <div class="flex-1">
-            <h2 class="font-heading text-3xl font-normal leading-tight text-text-public-heading md:text-4xl lg:text-4xl 2xl:text-5xl">
+          <div class="order-1 flex-1 lg:order-none">
+            <h2 class="max-w-sm font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:text-4xl lg:max-w-none lg:text-4xl 2xl:text-5xl">
               Lingkungan belajar yang dirancang untuk tumbuh
             </h2>
           </div>
@@ -409,14 +409,14 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
         <!-- Baris Kedua: Carousel Foto Kecil -->
         <ClientOnly>
-          <div class="mt-6 w-full">
+          <div class="mt-4 w-full md:mt-6">
             <div class="overflow-hidden">
-              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-1 2xl:gap-6" @scroll.passive="handleGalleryScroll">
+              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 md:gap-5 2xl:gap-6" @scroll.passive="handleGalleryScroll">
                 <template v-if="isGalleryLoading">
                   <div
                     v-for="index in 3"
                     :key="`gallery-skeleton-${index}`"
-                    class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                    class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
                   ></div>
                 </template>
 
@@ -425,7 +425,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                   v-else
                   :key="item.id"
                   :data-gallery-index="index"
-                  class="group relative aspect-square w-64 flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                  class="gallery-thumb-card group relative aspect-square flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
                 >
                   <img
                     :src="item.gambar || '/images/logo-mds-main.png'"
@@ -446,13 +446,13 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               </div>
             </div>
 
-            <div v-if="squareGalleryItems.length > 1 && !isGalleryLoading" class="mt-5 flex items-center justify-center gap-2">
+            <div v-if="squareGalleryItems.length > 1 && !isGalleryLoading" class="mt-4 flex items-center justify-center gap-1.5 md:mt-5 md:gap-2">
               <button
                 v-for="(item, index) in squareGalleryItems"
                 :key="`gallery-dot-${item.id}`"
                 type="button"
-                class="h-2 rounded-full transition-all"
-                :class="currentGalleryIndex === index ? 'w-6 bg-brand' : 'w-2 bg-text-public-heading/20 hover:bg-brand/50'"
+                class="h-1.5 rounded-full transition-all md:h-2"
+                :class="currentGalleryIndex === index ? 'w-5 bg-brand md:w-6' : 'w-1.5 bg-text-public-heading/20 hover:bg-brand/50 md:w-2'"
                 :aria-label="`Lihat posisi galeri ${index + 1}`"
                 :aria-current="currentGalleryIndex === index ? 'true' : undefined"
                 @click="selectGalleryIndex(index)"
@@ -460,12 +460,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
             </div>
           </div>
           <template #fallback>
-            <div class="mt-6 w-full overflow-hidden">
-              <div class="flex gap-5 pb-1 2xl:gap-6">
+            <div class="mt-4 w-full overflow-hidden md:mt-6">
+              <div class="flex gap-4 pb-1 md:gap-5 2xl:gap-6">
                 <div
                   v-for="index in 3"
                   :key="`gallery-fallback-${index}`"
-                  class="aspect-square w-64 flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                  class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
                 ></div>
               </div>
             </div>
@@ -606,5 +606,15 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
 .gallery-swipe-track::-webkit-scrollbar {
   display: none;
+}
+
+.gallery-thumb-card {
+  width: calc((100% - 1rem) / 2);
+}
+
+@media (min-width: 768px) {
+  .gallery-thumb-card {
+    width: 18rem;
+  }
 }
 </style>
