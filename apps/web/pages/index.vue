@@ -200,27 +200,27 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
 <template>
   <div class="min-h-screen bg-white font-sans">
-    <section class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-20">
+    <section class="relative flex min-h-svh flex-col items-center justify-center overflow-hidden pb-14 pt-24 md:min-h-screen md:pb-0 md:pt-20">
       <div class="public-container relative z-10 flex flex-col items-center text-center">
-        <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-420 max-w-[190vw] -translate-x-1/2 -translate-y-1/2">
+        <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-120 max-w-[150vw] -translate-x-1/2 -translate-y-1/2 sm:w-160 md:w-420 md:max-w-[190vw]">
           <span class="absolute inset-0 rounded-full border border-brand/10" />
           <span class="absolute inset-[10%] rounded-full border border-brand/10" />
           <span class="absolute inset-[20%] rounded-full border border-brand/10" />
           <span class="absolute inset-[40%] rounded-full border border-brand/10" />
         </div>
 
-        <h1 class="mb-7 max-w-4xl font-heading text-4xl font-medium leading-tight text-text-public-heading sm:text-5xl lg:text-5xl xl:mb-8 2xl:max-w-5xl 2xl:text-6xl">
+        <h1 class="mb-6 max-w-sm font-heading text-4xl font-medium leading-tight text-text-public-heading sm:max-w-2xl sm:text-5xl md:mb-7 md:max-w-4xl lg:text-5xl xl:mb-8 2xl:max-w-5xl 2xl:text-6xl">
           Tidak ada kata terlambat <br />
           <span class="text-brand">untuk belajar.</span>
         </h1>
 
-        <p class="mb-10 max-w-2xl font-heading text-sm font-normal leading-relaxed text-text-public-heading md:text-base lg:mb-12 2xl:mb-14.5 2xl:max-w-3xl">
+        <p class="mb-8 max-w-sm font-heading text-base font-normal leading-relaxed text-text-public-heading md:mb-10 md:max-w-2xl lg:mb-12 2xl:mb-14.5 2xl:max-w-3xl">
           Kami membuka pintu bagi semua usia untuk mendapatkan pendidikan kesetaraan dan vokasi resmi secara inklusif dan berkelanjutan.
         </p>
 
         <NuxtLink
           to="/ppdb"
-          class="flex h-12 w-56 cursor-pointer items-center justify-center rounded-full bg-brand font-heading text-sm font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none md:w-60 2xl:h-14 2xl:w-62.5 2xl:text-base"
+          class="flex h-12 w-full max-w-56 cursor-pointer items-center justify-center rounded-full bg-brand px-6 font-heading text-sm font-medium text-white transition-colors hover:bg-brand-hover focus:outline-none md:w-60 md:max-w-none 2xl:h-14 2xl:w-62.5 2xl:text-base"
         >
           Daftarkan Diri Kamu
         </NuxtLink>
