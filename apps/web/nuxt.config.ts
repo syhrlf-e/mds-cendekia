@@ -69,6 +69,9 @@ export default defineNuxtConfig({
     '/ppdb/daftar': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },
+    '/ppdb/verifikasi': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
     '/ppdb/daftar/**': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },

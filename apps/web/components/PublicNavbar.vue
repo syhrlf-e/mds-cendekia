@@ -288,7 +288,7 @@ const handleNavClick = async (item: NavItem) => {
           <!-- Actions -->
           <div class="relative z-10 flex items-center gap-3">
             <NuxtLink
-              to="/ppdb"
+              to="/ppdb/verifikasi"
               class="public-navbar-cta cursor-pointer items-center justify-center rounded-full border border-brand bg-white px-4 py-2 font-heading text-sm font-medium text-brand transition-colors duration-300 hover:bg-brand hover:text-white xl:px-5 xl:py-2.5 xl:text-base"
               @click="mobileMenuOpen = false"
             >

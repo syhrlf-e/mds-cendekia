@@ -23,13 +23,12 @@
       </div>
     </header>
 
-    <main class="flex-1">
+    <main class="flex-1 pb-14 md:pb-16">
       <slot />
     </main>
 
-    <footer class="border-t border-border bg-white">
-      <div class="public-navbar-container flex flex-col gap-1 py-4 text-center text-xs text-text-secondary md:py-5 md:text-sm">
-        <p class="font-medium text-text-primary">MDS Cendekia</p>
+    <footer class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur-md">
+      <div class="public-navbar-container py-3 text-center text-xs text-text-secondary md:py-4 md:text-sm">
         <p class="leading-relaxed">Butuh bantuan? Hubungi admin PPDB melalui kanal resmi sekolah.</p>
       </div>
     </footer>

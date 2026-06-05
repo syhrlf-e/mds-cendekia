@@ -212,9 +212,9 @@ const checkAnother = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
-    <div class="public-navbar-container">
-      <div class="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-160 flex-col justify-center md:min-h-[calc(100vh-112px)]">
+  <div class="h-[calc(100vh-116px)] overflow-hidden bg-bg-base py-6 md:h-[calc(100vh-132px)] md:py-8">
+    <div class="public-navbar-container h-full">
+      <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-center">
         <div class="mb-7 text-center md:mb-8">
           <h1 class="mb-2.5 font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:text-3xl">
             Cek Status Pendaftaran

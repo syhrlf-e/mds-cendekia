@@ -245,7 +245,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 
         <NuxtLink
           to="/profil-sekolah"
-          class="flex h-12 w-full max-w-60 cursor-pointer items-center justify-center rounded-full border border-border px-6 font-heading text-sm font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none md:w-60 md:max-w-none 2xl:w-62.5 2xl:text-base"
+          class="flex h-12 w-full max-w-72 cursor-pointer items-center justify-center rounded-full border border-border px-6 font-heading text-sm font-normal text-text-public-heading transition-colors hover:bg-gray-50 focus:outline-none md:w-auto md:min-w-68 md:max-w-none md:whitespace-nowrap 2xl:min-w-72 2xl:text-base"
         >
           Selengkapnya tentang kami
         </NuxtLink>
@@ -417,12 +417,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <ClientOnly>
           <div class="mt-4 w-full md:mt-6">
             <div class="overflow-hidden">
-              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 md:gap-5 2xl:gap-6" @scroll.passive="handleGalleryScroll">
+              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 md:gap-5 xl:grid xl:grid-cols-4 xl:overflow-visible xl:pb-0 2xl:gap-6" @scroll.passive="handleGalleryScroll">
                 <template v-if="isGalleryLoading">
                   <div
                     v-for="index in 3"
                     :key="`gallery-skeleton-${index}`"
-                    class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                    class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 xl:w-full"
                   ></div>
                 </template>
 
@@ -431,7 +431,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                   v-else
                   :key="item.id"
                   :data-gallery-index="index"
-                  class="gallery-thumb-card group relative aspect-square flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                  class="gallery-thumb-card group relative aspect-square flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left xl:w-full"
                 >
                   <img
                     :src="item.gambar || '/images/logo-mds-main.png'"
@@ -471,7 +471,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                 <div
                   v-for="index in 3"
                   :key="`gallery-fallback-${index}`"
-                  class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 md:w-72 lg:w-72 xl:w-80 2xl:w-[341px]"
+                  class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 xl:w-full"
                 ></div>
               </div>
             </div>
@@ -641,6 +641,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
 @media (min-width: 768px) {
   .gallery-thumb-card {
     width: 18rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .gallery-thumb-card {
+    width: 100%;
   }
 }
 </style>

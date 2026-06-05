@@ -68,6 +68,16 @@ const asOrangTuaArray = (value?: AdminOrangTuaDto[] | AdminOrangTuaDto) => {
   return Array.isArray(value) ? value : [value]
 }
 
+const getAllBerkas = (item: AdminPendaftarDto) => {
+  return [
+    ...asBerkasArray(item.berkas_persyaratan),
+    ...asBerkasArray(item.berkas_pendaftaran),
+    ...asBerkasArray(item.berkas),
+    ...asBerkasArray(item.dokumen),
+    ...asBerkasArray(item.files)
+  ]
+}
+
 const getBerkasLabel = (file: AdminBerkasDto) => {
   return [
     file.jenis_berkas,
@@ -114,7 +124,7 @@ const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
   const directUrl = item.pass_photo
   if (directUrl) return normalizeAssetUrl(directUrl, apiBaseUrl)
 
-  const berkasList = asBerkasArray(item.berkas_persyaratan)
+  const berkasList = getAllBerkas(item)
   const fotoBerkas = berkasList.find(file => {
     const label = getBerkasLabel(file)
     return label.includes('foto') || label.includes('photo') || label.includes('pas')
@@ -124,7 +134,15 @@ const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
 }
 
 const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string): RegistrationFile[] => {
-  const berkasList = asBerkasArray(item.berkas_persyaratan)
+  const fotoUrl = getFotoUrl(item, apiBaseUrl)
+  const fotoFile: RegistrationFile[] = fotoUrl
+    ? [{
+        id: 'foto',
+        name: 'Foto Siswa (3x4 berwarna)',
+        url: fotoUrl
+      }]
+    : []
+  const berkasList = getAllBerkas(item)
 
   const uploadedFiles = berkasList
     .map((file, index) => ({
@@ -133,20 +151,27 @@ const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string): R
       url: getBerkasUrl(file, apiBaseUrl)
     }))
     .filter(file => file.url)
+    .filter(file => {
+      const label = file.name.toLowerCase()
+      return !label.includes('foto') && !label.includes('photo') && !label.includes('pas')
+    })
 
   const hasJsonStringIndexedLabels = uploadedFiles.length > 1 &&
     uploadedFiles.every(file => file.name.length <= 1) &&
     (uploadedFiles[0]?.name === '[' || uploadedFiles[1]?.name === '"')
 
   if (hasJsonStringIndexedLabels) {
-    return uploadedFiles.map((file, index) => ({
+    return [
+      ...fotoFile,
+      ...uploadedFiles.map((file, index) => ({
       ...file,
       id: defaultPersyaratanBerkas[index]?.id || file.id,
       name: defaultPersyaratanBerkas[index]?.name || file.name
-    }))
+      }))
+    ]
   }
 
-  return uploadedFiles.length ? uploadedFiles : defaultBerkas
+  return fotoFile.length || uploadedFiles.length ? [...fotoFile, ...uploadedFiles] : defaultBerkas
 }
 
 const getParentTitle = (parent: AdminOrangTuaDto, index: number) => {

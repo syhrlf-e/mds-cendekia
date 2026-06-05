@@ -203,7 +203,7 @@ const formatDateRange = (startDate: string, endDate: string) => {
         <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row lg:gap-4">
           <NuxtLink
             v-if="!isDaftarDisabled"
-            to="/ppdb/daftar"
+            to="/ppdb/verifikasi"
             class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-brand px-6 font-heading text-sm font-medium text-white transition-opacity hover:opacity-90 sm:min-w-48 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
           >
             {{ daftarLabel }}
@@ -217,7 +217,7 @@ const formatDateRange = (startDate: string, endDate: string) => {
           </button>
           <NuxtLink
             to="/ppdb/cek-status"
-            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-6 font-heading text-sm font-medium text-text-public-heading transition-colors hover:bg-bg-base sm:min-w-48 lg:h-14 lg:min-w-50 lg:px-8 lg:text-lg"
+            class="flex h-12 w-full cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-transparent px-6 font-heading text-sm font-medium text-text-public-heading transition-colors hover:bg-bg-base sm:min-w-60 sm:whitespace-nowrap lg:h-14 lg:min-w-72 lg:px-8 lg:text-base xl:text-lg"
           >
             Cek Status Pendaftaran
           </NuxtLink>

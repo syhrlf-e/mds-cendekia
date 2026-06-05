@@ -33,6 +33,7 @@ const {
   ensureOrangTuaShape,
   resetForm
 } = usePpdbRegistrationForm()
+const { ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 
 const form = biodata.value
 
@@ -150,6 +151,8 @@ const loadPrograms = async () => {
 }
 
 onMounted(async () => {
+  if (!ensureVerifiedOrRedirect()) return
+
   await Promise.all([
     loadSelectedRegions(),
     loadPrograms()

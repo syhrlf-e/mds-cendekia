@@ -9,6 +9,7 @@ definePageMeta({ layout: 'ppdb-form' })
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
+const { ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -142,6 +143,8 @@ const openSuccessPreview = () => {
 }
 
 onMounted(() => {
+  if (!ensureVerifiedOrRedirect()) return
+
   updateDeviceType()
   openSuccessPreview()
 
