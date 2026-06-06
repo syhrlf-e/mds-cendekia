@@ -30,7 +30,7 @@ const handleSave = async () => {
 
 <template>
   <div class="grid max-w-4xl gap-4">
-    <section class="rounded-2xl border border-border bg-bg-surface p-6 shadow-sm">
+    <section class="rounded-2xl border border-border bg-bg-surface p-6">
       <div class="mb-5 flex items-center justify-between gap-6">
         <div>
           <h2 class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
@@ -47,7 +47,7 @@ const handleSave = async () => {
             :key="option.value"
             type="button"
             class="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors"
-            :class="themeMode === option.value ? 'bg-bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text-secondary'"
+            :class="themeMode === option.value ? 'bg-bg-surface text-brand' : 'text-text-muted hover:text-text-secondary'"
             @click="themeMode = option.value"
           >
             <component :is="option.icon" class="h-4 w-4" />
@@ -63,7 +63,7 @@ const handleSave = async () => {
       </div>
     </section>
 
-    <section class="rounded-2xl border border-border bg-bg-surface p-6 shadow-sm">
+    <section class="rounded-2xl border border-border bg-bg-surface p-6">
       <div class="flex items-start gap-4">
         <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-brand">
           <CalendarDays class="h-5 w-5" />

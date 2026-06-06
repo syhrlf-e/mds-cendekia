@@ -63,7 +63,7 @@ onMounted(() => {
 
         <div
           :class="[
-            'relative flex max-h-[90vh] w-full flex-col rounded-2xl bg-bg-surface shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0]',
+            'relative flex max-h-[90vh] w-full flex-col rounded-2xl bg-bg-surface',
             width
           ]"
         >

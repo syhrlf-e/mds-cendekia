@@ -25,6 +25,7 @@ const props = withDefaults(
     maxlength?: number
     placeholder?: string
     error?: string
+    invalid?: boolean
     required?: boolean
     disabled?: boolean
     prefix?: string
@@ -33,6 +34,7 @@ const props = withDefaults(
   {
     modelValue: '',
     type: 'text',
+    invalid: false,
     disabled: false,
     required: false
   }
@@ -103,9 +105,9 @@ const handleInput = (event: Event) => {
         :class="[
           'h-11 w-full rounded-lg border bg-bg-surface text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
           prefix ? 'pl-11 pr-4' : 'px-4',
-          error
+          error || invalid
             ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
-            : 'border-border focus:border-brand focus:ring-[3px] focus:ring-brand/12',
+            : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
           disabled
             ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100'
             : ''

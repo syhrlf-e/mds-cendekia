@@ -51,7 +51,7 @@ onMounted(() => {
           @click="closeOnBackdrop && close()"
         ></div>
 
-        <div class="relative bg-bg-surface w-full h-[85vh] rounded-t-3xl shadow-2xl flex flex-col">
+        <div class="relative flex h-[85vh] w-full flex-col rounded-t-3xl bg-bg-surface">
           <div class="w-full flex justify-center pt-3 pb-2 shrink-0">
             <div class="w-12 h-1.5 bg-border rounded-full"></div>
           </div>

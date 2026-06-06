@@ -108,7 +108,7 @@ onBeforeUnmount(() => {
       v-if="isOpen && !disabled"
       :id="`${selectId}-listbox`"
       role="listbox"
-      class="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-bg-surface p-1 shadow-[0_18px_50px_rgba(15,23,42,0.14)]"
+      class="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-bg-surface p-1"
     >
       <button
         v-for="opt in options"

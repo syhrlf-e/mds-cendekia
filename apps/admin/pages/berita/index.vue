@@ -574,7 +574,7 @@ onBeforeUnmount(() => {
           @click.self="backToList"
         >
           <aside
-            class="font-heading absolute bottom-4 right-8 top-4 z-10 flex rounded-2xl border border-border bg-bg-base shadow-[rgba(0,0,0,0.14)_-16px_0_40px_0] transition-[width] duration-300 ease-out"
+            class="font-heading absolute bottom-4 right-8 top-4 z-10 flex rounded-2xl border border-border bg-bg-base transition-[width] duration-300 ease-out"
             :class="isPreviewExpanded ? 'w-[980px] max-w-[calc(100vw-64px)]' : 'w-[560px] max-w-[calc(100vw-64px)]'"
           >
             <section
@@ -631,7 +631,7 @@ onBeforeUnmount(() => {
             <section class="relative flex min-h-0 w-[560px] shrink-0 flex-col bg-bg-base">
               <button
                 type="button"
-                class="absolute left-0 top-1/2 z-20 flex h-11 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg-surface text-text-secondary shadow-lg transition-colors hover:bg-bg-base hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                class="absolute left-0 top-1/2 z-20 flex h-11 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg-surface text-text-secondary transition-colors hover:bg-bg-base hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 :aria-label="isPreviewExpanded ? 'Sembunyikan preview berita' : 'Tampilkan preview berita'"
                 @click="isPreviewExpanded = !isPreviewExpanded"
               >
@@ -800,7 +800,7 @@ onBeforeUnmount(() => {
                       <button
                         type="submit"
                         :disabled="saving"
-                        class="flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-brand-hover hover:shadow-xl disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+                        class="flex items-center gap-2 rounded-xl bg-brand px-6 py-3 font-semibold text-white transition-colors duration-200 hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
                       >
                         <Save class="h-5 w-5" />
                         {{ saving ? 'Menyimpan...' : isEdit ? 'Update Berita' : 'Simpan Berita' }}

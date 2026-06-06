@@ -12,7 +12,7 @@ export const useAdminAuthService = () => {
   }
 
   const logout = () => {
-    return get<AdminLogoutResponse>(adminApiEndpoints.auth.logout, {
+    return post<AdminLogoutResponse>(adminApiEndpoints.auth.logout, undefined, {
       handleUnauthorized: false,
       showErrorToast: false
     })

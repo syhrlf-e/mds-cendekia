@@ -96,7 +96,7 @@ const formatSize = (bytes: number) => {
 
     <div v-else class="flex items-center justify-between p-4 border border-border rounded-xl bg-bg-base">
       <div class="flex items-center gap-3 overflow-hidden">
-        <div class="p-2 bg-white rounded-lg shrink-0 text-brand shadow-sm">
+        <div class="shrink-0 rounded-lg bg-white p-2 text-brand">
           <FileIcon class="w-5 h-5" />
         </div>
         <div class="min-w-0">

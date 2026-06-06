@@ -26,6 +26,7 @@ let timer: ReturnType<typeof setInterval> | null = null
 
 const isLockedOut = computed(() => lockoutSeconds.value > 0)
 const canSubmit = computed(() => username.value.trim() && password.value && !isSubmitting.value && !isLockedOut.value)
+const hasLoginError = computed(() => Boolean(errorMsg.value))
 
 const getLockoutSecondsFromError = (error: any) => {
   const data = error?.data || error?.response?._data
@@ -101,6 +102,8 @@ const handleLogin = async () => {
 
   if (data?.status || data?.success) {
     localFailedAttempts.value = 0
+    const adminUsername = useState<string>('admin-auth:username', () => '')
+    adminUsername.value = data.data?.username || username.value.trim()
     void prefetchAdminData()
     await router.push('/dashboard')
     return
@@ -124,7 +127,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex min-h-screen min-w-5xl items-center justify-center bg-bg-base p-10">
-    <section class="w-100 rounded-2xl border border-border bg-bg-surface p-10 shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0]">
+    <section class="w-100 rounded-2xl border border-border bg-bg-surface p-10">
       <div v-if="isLockedOut" class="flex flex-col items-center text-center">
         <AlertTriangle class="mb-6 h-10 w-10 text-error" />
         <h1 class="mb-3 text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
@@ -160,6 +163,7 @@ onUnmounted(() => {
             required
             autocomplete="username"
             :disabled="isSubmitting"
+            :invalid="hasLoginError"
           />
 
           <div class="flex w-full flex-col gap-1.5">
@@ -172,7 +176,12 @@ onUnmounted(() => {
                 placeholder="Masukkan password"
                 autocomplete="current-password"
                 :disabled="isSubmitting"
-                class="h-11 w-full rounded-lg border border-border bg-bg-surface px-4 pr-12 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand focus:ring-[3px] focus:ring-brand/12 disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted"
+                :class="[
+                  'h-11 w-full rounded-lg border bg-bg-surface px-4 pr-12 text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted disabled:cursor-not-allowed disabled:bg-bg-parchment disabled:text-text-muted',
+                  hasLoginError
+                    ? 'border-error focus:border-error focus:ring-[3px] focus:ring-error/10'
+                    : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12'
+                ]"
               >
               <button
                 type="button"

@@ -18,7 +18,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="sticky top-0 z-20 shrink-0 bg-bg-surface shadow-sm">
+  <div class="sticky top-0 z-20 shrink-0 bg-bg-surface">
     <div class="flex items-start justify-between gap-5 border-b border-border px-8 py-5">
       <div class="flex min-w-0 items-start gap-5">
         <button
@@ -30,7 +30,7 @@ const emit = defineEmits<{
           <X class="h-5 w-5" />
         </button>
 
-        <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
+        <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
           <img
             v-if="item.fotoUrl"
             :src="item.fotoUrl"

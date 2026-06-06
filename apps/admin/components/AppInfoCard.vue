@@ -14,7 +14,7 @@ defineEmits(['click'])
 <template>
   <button
     type="button"
-    class="w-full group flex flex-col items-start text-left bg-bg-surface border border-border p-5 md:p-6 rounded-2xl transition-all duration-300 hover:border-brand hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 relative overflow-hidden"
+    class="group relative flex w-full flex-col items-start overflow-hidden rounded-2xl border border-border bg-bg-surface p-5 text-left transition-all duration-300 hover:border-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 md:p-6"
     @click="$emit('click', $event)"
   >
 

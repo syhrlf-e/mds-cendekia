@@ -31,7 +31,7 @@ const goToPage = (page: number) => {
 </script>
 
 <template>
-  <div class="flex shrink-0 flex-col items-center justify-between gap-3 rounded-2xl border border-border bg-bg-surface px-6 py-4 shadow-sm sm:flex-row">
+  <div class="flex shrink-0 flex-col items-center justify-between gap-3 rounded-2xl border border-border bg-bg-surface px-6 py-4 sm:flex-row">
     <span class="text-sm font-medium text-text-secondary">
       <span class="font-bold text-text-primary">{{ total }}</span>
       data · Halaman
@@ -57,7 +57,7 @@ const goToPage = (page: number) => {
         type="button"
         :disabled="disabled"
         class="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        :class="page === currentPage ? 'border-brand bg-brand text-white shadow-md shadow-brand/20' : 'border-border-soft bg-bg-surface text-text-secondary hover:bg-bg-base hover:text-text-primary'"
+        :class="page === currentPage ? 'border-brand bg-brand text-white' : 'border-border-soft bg-bg-surface text-text-secondary hover:bg-bg-base hover:text-text-primary'"
         @click="goToPage(page)"
       >
         {{ page }}

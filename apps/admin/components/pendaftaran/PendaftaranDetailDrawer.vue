@@ -33,7 +33,7 @@ const emit = defineEmits<{
         style="--detail-drawer-width: min(1080px, calc(100% - 320px));"
         @click.self="emit('close')"
       >
-        <aside class="relative z-[40] ml-auto flex h-full w-[var(--detail-drawer-width)] flex-col overflow-hidden border-l-2 border-border bg-bg-base shadow-[rgba(0,0,0,0.08)_-12px_0_32px_0]">
+        <aside class="relative z-[40] ml-auto flex h-full w-[var(--detail-drawer-width)] flex-col overflow-hidden border-l-2 border-border bg-bg-base">
           <PendaftaranIdentityHeader
             :item="item"
             :active-tab="activeTab"

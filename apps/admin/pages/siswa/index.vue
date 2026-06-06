@@ -342,7 +342,7 @@ watch(totalPages, value => {
         class="fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-[14px]"
         @click.self="closeDetail"
       >
-        <aside class="ml-auto flex h-full w-[min(760px,calc(100%-320px))] flex-col overflow-hidden border-l-2 border-border bg-bg-base shadow-[rgba(0,0,0,0.08)_-12px_0_32px_0]">
+        <aside class="ml-auto flex h-full w-[min(760px,calc(100%-320px))] flex-col overflow-hidden border-l-2 border-border bg-bg-base">
           <header class="shrink-0 border-b border-border bg-bg-surface px-8 py-5">
             <div class="flex items-start gap-5">
               <button
@@ -354,7 +354,7 @@ watch(totalPages, value => {
                 <XCircle class="h-5 w-5" />
               </button>
 
-              <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment shadow-sm">
+              <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
                 <img
                   v-if="selectedItem.fotoUrl"
                   :src="selectedItem.fotoUrl"

@@ -1,43 +1,41 @@
 import type { RegistrationStatus } from '~/types/adminPendaftaran'
 
 export type AdminSummaryDto = {
-  total_pendaftar: number
+  total_menunggu_verifikasi: number
+  total_pendaftar_diterima: number
+  total_pendaftar_ditolak: number
   total_siswa: number
+  total_galeri: number
   total_berita: number
-  pendaftar_perlu_aksi: DashboardActionApplicant[]
-  program_paket: DashboardProgramPackage[]
   gelombang: DashboardWave[]
-  distribusi_program_paket: DashboardProgramDistribution[]
-  aktivitas_ppdb: DashboardPpdbActivity[]
-}
-
-export type DashboardActionApplicant = {
-  nama: string
-  program_paket: string
-  status_berkas: string
-  created_at: string
+  program_paket: DashboardProgramPackage[]
+  berita_terbaru: DashboardLatestNews[]
+  pendaftar_terbaru: DashboardLatestApplicant[]
 }
 
 export type DashboardProgramPackage = {
   nama: string
-  status: string
+  status: boolean
 }
 
 export type DashboardWave = {
   order: number
-  mulai: string
-  selesai: string
-  status: string
+  kuota: number
+  total_pendaftar: number
+  status: boolean
 }
 
-export type DashboardProgramDistribution = {
-  program: string
-  total: number
-}
-
-export type DashboardPpdbActivity = {
-  nama: string
+export type DashboardLatestNews = {
+  gambar: string
   created_at: string
+}
+
+export type DashboardLatestApplicant = {
+  kode_pendaftaran: string
+  nama: string
+  nisn: string
+  nama_sekolah_asal: string
+  status: boolean
 }
 
 export type DashboardRegistration = {

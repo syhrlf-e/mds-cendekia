@@ -12,5 +12,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
       clearAdminDataCache()
       return navigateTo('/login')
     }
+
+    const adminUsername = useState<string>('admin-auth:username', () => '')
+    adminUsername.value = data.data?.username || ''
   }
 })

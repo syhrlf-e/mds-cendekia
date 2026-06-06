@@ -71,7 +71,7 @@ const emit = defineEmits<{
 
             <div
               v-if="isBerkasActionMenuOpen"
-              class="absolute right-0 top-10 z-20 w-44 overflow-hidden rounded-xl border border-border bg-bg-surface p-1 shadow-lg"
+              class="absolute right-0 top-10 z-20 w-44 overflow-hidden rounded-xl border border-border bg-bg-surface p-1"
             >
               <button
                 type="button"

@@ -345,7 +345,7 @@ onMounted(loadPackages)
           class="fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-[14px]"
           @click.self="closeDrawer"
         >
-          <aside class="ml-auto flex h-full w-[min(680px,calc(100%-320px))] flex-col overflow-hidden border-l-2 border-border bg-bg-base shadow-[rgba(0,0,0,0.08)_-12px_0_32px_0]">
+          <aside class="ml-auto flex h-full w-[min(680px,calc(100%-320px))] flex-col overflow-hidden border-l-2 border-border bg-bg-base">
             <header class="shrink-0 border-b border-border bg-bg-surface px-8 py-5">
               <div class="flex items-start justify-between gap-5">
                 <div>

@@ -30,7 +30,7 @@ const getToastClass = (type: string) => {
         v-for="toast in toasts"
         :key="toast.id"
         :class="[
-          'flex min-h-14 w-full items-center gap-3 rounded-full px-3.5 py-2.5 shadow-[rgba(0,0,0,0.16)_0_10px_28px_0] pointer-events-auto',
+          'pointer-events-auto flex min-h-14 w-full items-center gap-3 rounded-full px-3.5 py-2.5',
           getToastClass(toast.type)
         ]"
       >

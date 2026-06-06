@@ -84,7 +84,7 @@ const renderPdfPreview = async () => {
       canvas.height = Math.floor(viewport.height)
       canvas.style.width = `${Math.floor(viewport.width)}px`
       canvas.style.height = `${Math.floor(viewport.height)}px`
-      canvas.className = 'bg-white shadow-[0_10px_30px_rgba(15,23,42,0.16)]'
+      canvas.className = 'bg-white'
 
       container.appendChild(canvas)
 
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
   >
     <aside
       v-if="modelValue && file"
-      class="absolute inset-y-0 right-[var(--detail-drawer-width)] z-[30] flex w-[min(760px,calc(100%-var(--detail-drawer-width)))] flex-col border-r border-border bg-bg-surface shadow-[rgba(0,0,0,0.18)_-16px_0_40px_0]"
+      class="absolute inset-y-0 right-[var(--detail-drawer-width)] z-[30] flex w-[min(760px,calc(100%-var(--detail-drawer-width)))] flex-col border-r border-border bg-bg-surface"
     >
       <header class="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-bg-surface px-5">
         <div class="min-w-0">

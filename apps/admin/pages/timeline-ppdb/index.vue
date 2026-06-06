@@ -271,7 +271,7 @@ onBeforeUnmount(() => {
           <article
             v-for="gelombang in items"
             :key="gelombang.id"
-            class="flex flex-col rounded-2xl border border-border bg-bg-surface overflow-hidden shadow-sm transition-shadow hover:shadow-md"
+            class="flex flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface"
           >
             <!-- Card Header -->
             <div class="flex items-center justify-between border-b border-border bg-bg-base px-6 py-4">
@@ -317,7 +317,7 @@ onBeforeUnmount(() => {
                 </div>
                 
                 <div v-for="step in gelombang.timeline" :key="step.id" class="group relative pr-10">
-                  <div class="absolute -left-[23px] top-0.5 h-4 w-4 rounded-full border-2 border-white bg-brand shadow-sm"></div>
+                  <div class="absolute -left-[23px] top-0.5 h-4 w-4 rounded-full border-2 border-white bg-brand"></div>
                   <div>
                     <h4 class="text-sm font-semibold text-text-primary leading-none">{{ step.deskripsi }}</h4>
                     <p class="text-xs text-text-secondary mt-1.5">{{ formatDateDisplay(step.tanggal) }}</p>
@@ -353,7 +353,7 @@ onBeforeUnmount(() => {
           class="fixed left-0 top-0 z-50 flex h-[100dvh] w-full justify-end bg-black/50"
           @click.self="closeDrawer"
         >
-          <aside class="flex h-full w-[600px] max-w-full flex-col bg-bg-base shadow-2xl">
+          <aside class="flex h-full w-[600px] max-w-full flex-col bg-bg-base">
             <!-- Drawer Header -->
             <header class="flex h-[70px] shrink-0 items-center justify-between border-b border-border bg-bg-surface px-6">
               <h2 class="text-xl font-bold text-text-primary">

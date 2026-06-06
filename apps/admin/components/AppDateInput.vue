@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
         v-if="isOpen"
         class="fixed inset-0 z-[80] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       >
-        <div class="w-full max-w-md rounded-t-3xl bg-bg-surface p-5 shadow-2xl sm:rounded-3xl">
+        <div class="w-full max-w-md rounded-t-3xl bg-bg-surface p-5 sm:rounded-3xl">
           <div class="mb-5 text-center">
             <h3 class="font-heading text-lg font-semibold text-text-primary">
               {{ label || 'Pilih Tanggal' }}

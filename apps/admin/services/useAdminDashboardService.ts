@@ -32,46 +32,48 @@ const readArrayPayload = (payload: any): DashboardRawDto[] => {
 }
 
 export const createEmptyDashboardSummary = (): AdminSummaryDto => ({
-  total_pendaftar: 0,
+  total_menunggu_verifikasi: 0,
+  total_pendaftar_diterima: 0,
+  total_pendaftar_ditolak: 0,
   total_siswa: 0,
+  total_galeri: 0,
   total_berita: 0,
-  pendaftar_perlu_aksi: [],
-  program_paket: [],
   gelombang: [],
-  distribusi_program_paket: [],
-  aktivitas_ppdb: []
+  program_paket: [],
+  berita_terbaru: [],
+  pendaftar_terbaru: []
 })
 
 const mapSummaryPayload = (payload: any): AdminSummaryDto => {
   const summary = readObjectPayload(payload)
 
   return {
-    total_pendaftar: normalizeNumber(summary.total_pendaftar),
+    total_menunggu_verifikasi: normalizeNumber(summary.total_menunggu_verifikasi),
+    total_pendaftar_diterima: normalizeNumber(summary.total_pendaftar_diterima),
+    total_pendaftar_ditolak: normalizeNumber(summary.total_pendaftar_ditolak),
     total_siswa: normalizeNumber(summary.total_siswa),
+    total_galeri: normalizeNumber(summary.total_galeri),
     total_berita: normalizeNumber(summary.total_berita),
-    pendaftar_perlu_aksi: readArrayPayload(summary.pendaftar_perlu_aksi).map(item => ({
-      nama: normalizeText(item.nama),
-      program_paket: normalizeText(item.program_paket) || '-',
-      status_berkas: normalizeText(item.status_berkas) || 'Menunggu verifikasi',
-      created_at: normalizeText(item.created_at)
-    })),
     program_paket: readArrayPayload(summary.program_paket).map(item => ({
       nama: normalizeText(item.nama),
-      status: normalizeText(item.status) || '-'
+      status: Boolean(item.status)
     })),
     gelombang: readArrayPayload(summary.gelombang).map(item => ({
       order: normalizeNumber(item.order),
-      mulai: normalizeText(item.mulai),
-      selesai: normalizeText(item.selesai),
-      status: normalizeText(item.status) || '-'
+      kuota: normalizeNumber(item.kuota),
+      total_pendaftar: normalizeNumber(item.total_pendaftar),
+      status: Boolean(item.status)
     })),
-    distribusi_program_paket: readArrayPayload(summary.distribusi_program_paket).map(item => ({
-      program: normalizeText(item.program),
-      total: normalizeNumber(item.total)
-    })),
-    aktivitas_ppdb: readArrayPayload(summary.aktivitas_ppdb).map(item => ({
-      nama: normalizeText(item.nama),
+    berita_terbaru: readArrayPayload(summary.berita_terbaru).map(item => ({
+      gambar: normalizeText(item.gambar),
       created_at: normalizeText(item.created_at)
+    })),
+    pendaftar_terbaru: readArrayPayload(summary.pendaftar_terbaru).map(item => ({
+      kode_pendaftaran: normalizeText(item.kode_pendaftaran),
+      nama: normalizeText(item.nama),
+      nisn: normalizeText(item.nisn),
+      nama_sekolah_asal: normalizeText(item.nama_sekolah_asal),
+      status: Boolean(item.status)
     }))
   }
 }
@@ -144,7 +146,7 @@ export const useAdminDashboardService = () => {
     ])
 
     const summary = mapSummaryPayload(summaryResponse.data)
-    const registrations = summary.pendaftar_perlu_aksi.map(mapRegistration)
+    const registrations = summary.pendaftar_terbaru.map(mapRegistration)
     const timelineItems = readArrayPayload(timelineResponse.data).map(mapTimelineItem)
 
     return {
