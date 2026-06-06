@@ -12,30 +12,8 @@ import {
   Upload,
   X,
 } from 'lucide-vue-next'
-
-type NewsItem = {
-  id: string
-  title: string
-  slug: string
-  excerpt: string
-  content: string
-  category: string
-  tags: string
-  author: string
-  image: string
-  created_at: string
-  published: boolean
-  is_featured: boolean
-  views: number
-}
-
-type NewsForm = {
-  title: string
-  content: string
-  category: string
-  tags: string
-  image: File | null
-}
+import { generateAdminNewsSlug, getAdminNewsErrorMessage } from '~/services/useAdminNewsService'
+import type { AdminNewsForm, AdminNewsItem } from '~/types/adminNews'
 
 definePageMeta({
   layout: 'admin',
@@ -47,12 +25,16 @@ useHead({
 })
 
 const { addToast } = useToast()
-const { get, post, put, delete: deleteRequest } = useApi()
+const { post, put, delete: deleteRequest } = useApi()
+const {
+  news: items,
+  newsLoading: loading,
+  newsError: error,
+  loadNews: loadCachedNews,
+  refreshNews
+} = useAdminDataCache()
 
-const items = ref<NewsItem[]>([])
-const loading = ref(false)
 const saving = ref(false)
-const error = ref('')
 const pageMode = ref<'list' | 'form'>('list')
 const isEdit = ref(false)
 const editingId = ref('')
@@ -68,7 +50,7 @@ const fileInput = ref<HTMLInputElement | null>(null)
 let previousBodyOverflow = ''
 let previousHtmlOverflow = ''
 
-const form = ref<NewsForm>({
+const form = ref<AdminNewsForm>({
   title: '',
   content: '',
   category: 'other',
@@ -107,14 +89,7 @@ const from = computed(() => filteredItems.value.length ? (currentPage.value - 1)
 const to = computed(() => Math.min(currentPage.value * perPage.value, filteredItems.value.length))
 const pagedItems = computed(() => filteredItems.value.slice(from.value - 1, to.value))
 
-const generateSlug = (text: string) => text
-  .toLowerCase()
-  .replace(/[^a-z0-9\s-]/g, '')
-  .replace(/\s+/g, '-')
-  .replace(/-+/g, '-')
-  .trim()
-
-const normalizeText = (value: unknown) => String(value || '').trim()
+const generateSlug = generateAdminNewsSlug
 
 const normalizeUploadFileName = (name: string) => {
   const extension = name.includes('.') ? name.split('.').pop()?.toLowerCase() : ''
@@ -135,10 +110,6 @@ const getFileExtensionFromType = (type: string) => {
   return 'jpg'
 }
 
-const getApiErrorMessage = (error: any, fallback: string) => {
-  return error?.data?.message || error?.response?._data?.message || error?.message || fallback
-}
-
 const createFileFromCurrentImage = async () => {
   if (!import.meta.client || !isEdit.value || form.value.image || !imagePreview.value || imagePreview.value.startsWith('blob:')) {
     return null
@@ -157,24 +128,6 @@ const createFileFromCurrentImage = async () => {
   return new File([blob], filename, {
     type: blob.type || 'image/jpeg',
   })
-}
-
-const normalizeAssetPath = (path: string) => path
-  .split('/')
-  .map(segment => encodeURIComponent(segment))
-  .join('/')
-
-const normalizeAssetUrl = (url: unknown) => {
-  const rawUrl = normalizeText(url)
-
-  if (!rawUrl) return ''
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
-
-  const config = useRuntimeConfig()
-  const baseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
-  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
-
-  return `${baseUrl}${normalizeAssetPath(path)}`
 }
 
 const getCategoryClass = (category: string) => {
@@ -212,58 +165,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const mapNewsItem = (item: any): NewsItem | null => {
-  const id = normalizeText(item.id || item.berita_id)
-  const title = normalizeText(item.judul || item.title)
-  const content = normalizeText(item.isi || item.content || item.excerpt)
-
-  if (!id || !title) return null
-
-  return {
-    id,
-    title,
-    slug: generateSlug(title),
-    excerpt: content.slice(0, 160),
-    content,
-    category: normalizeText(item.kategori || item.category || 'other'),
-    tags: normalizeText(item.tags),
-    author: normalizeText(item.penulis?.biodata?.nama || item.penulis?.username || item.author),
-    image: normalizeAssetUrl(item.gambar || item.image || item.imageUrl || item.image_url),
-    created_at: normalizeText(item.created_at),
-    published: true,
-    is_featured: false,
-    views: Number(item.views || 0),
-  }
-}
-
-const readRows = (payload: any) => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.berita)) return payload.berita
-
-  return []
-}
-
-const fetchNews = async () => {
-  loading.value = true
-  error.value = ''
-
-  const { data, error: fetchError } = await get<any>('/api/berita/all', {
-    query: { limit: '100' },
-    showErrorToast: false,
-  })
-
-  if (fetchError) {
-    error.value = 'Gagal memuat data berita'
-    loading.value = false
-    return
-  }
-
-  items.value = readRows(data)
-    .map(mapNewsItem)
-    .filter((item: NewsItem | null): item is NewsItem => Boolean(item))
-  loading.value = false
-}
+const fetchNews = (force = false) => force ? refreshNews() : loadCachedNews()
 
 const resetForm = () => {
   isEdit.value = false
@@ -284,7 +186,7 @@ const openCreate = () => {
   pageMode.value = 'form'
 }
 
-const openEdit = (item: NewsItem) => {
+const openEdit = (item: AdminNewsItem) => {
   isEdit.value = true
   editingId.value = item.id
   imagePreview.value = item.image
@@ -337,7 +239,7 @@ const removeImage = () => {
   form.value.image = null
 }
 
-const previewNews = (item: NewsItem) => {
+const previewNews = (item: AdminNewsItem) => {
   navigateTo(`/berita/${item.id}`, {
     open: {
       target: '_blank',
@@ -363,7 +265,7 @@ const buildNewsFormData = async () => {
   return formData
 }
 
-const deleteNews = async (item: NewsItem) => {
+const deleteNews = async (item: AdminNewsItem) => {
   if (!import.meta.client) return
 
   const confirmed = window.confirm(`Hapus berita "${item.title}"?`)
@@ -380,7 +282,7 @@ const deleteNews = async (item: NewsItem) => {
   }
 
   addToast('Berita berhasil dihapus.', 'success')
-  await fetchNews()
+  await fetchNews(true)
 }
 
 const submitForm = async () => {
@@ -415,13 +317,13 @@ const submitForm = async () => {
   saving.value = false
 
   if (submitError) {
-    addToast(getApiErrorMessage(submitError, 'Berita belum berhasil disimpan.'), 'error')
+    addToast(getAdminNewsErrorMessage(submitError, 'Berita belum berhasil disimpan.'), 'error')
     return
   }
 
   addToast(isEdit.value ? 'Berita berhasil diperbarui.' : 'Berita berhasil dibuat.', 'success')
   backToList()
-  await fetchNews()
+  await fetchNews(true)
 }
 
 const setPageScrollLock = (locked: boolean) => {

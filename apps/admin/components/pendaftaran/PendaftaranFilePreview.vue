@@ -16,6 +16,7 @@ const pdfPagesRef = ref<HTMLElement | null>(null)
 const isPdfRendering = ref(false)
 const pdfRenderError = ref('')
 const pdfPageCount = ref(0)
+const renderTicket = ref(0)
 
 const previewFileType = computed(() => {
   const url = props.file?.url.toLowerCase() || ''
@@ -33,6 +34,7 @@ const clearPdfPreview = () => {
 }
 
 const closePreview = () => {
+  renderTicket.value += 1
   clearPdfPreview()
   emit('update:modelValue', false)
 }
@@ -45,9 +47,12 @@ const openPreviewInNewTab = () => {
 const renderPdfPreview = async () => {
   if (!import.meta.client || !props.file?.url || previewFileType.value !== 'pdf') return
 
+  const currentTicket = renderTicket.value + 1
+  renderTicket.value = currentTicket
+
   await nextTick()
   const container = pdfPagesRef.value
-  if (!container) return
+  if (!container || currentTicket !== renderTicket.value) return
 
   isPdfRendering.value = true
   clearPdfPreview()
@@ -58,9 +63,13 @@ const renderPdfPreview = async () => {
 
     const loadingTask = pdfjs.getDocument(props.file.url)
     const pdf = await loadingTask.promise
+    if (currentTicket !== renderTicket.value) return
+
     pdfPageCount.value = pdf.numPages
 
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      if (currentTicket !== renderTicket.value) return
+
       const page = await pdf.getPage(pageNumber)
       const baseViewport = page.getViewport({ scale: 1 })
       const containerWidth = Math.min(720, Math.max(320, container.clientWidth || 720))
@@ -89,20 +98,26 @@ const renderPdfPreview = async () => {
     console.error('Failed to render PDF preview:', error)
     pdfRenderError.value = 'PDF belum bisa ditampilkan di preview internal.'
   } finally {
-    isPdfRendering.value = false
+    if (currentTicket === renderTicket.value) {
+      isPdfRendering.value = false
+    }
   }
 }
 
 watch(
   () => [props.modelValue, props.file?.url],
   () => {
+    renderTicket.value += 1
     clearPdfPreview()
     if (props.modelValue && props.file && previewFileType.value === 'pdf') void renderPdfPreview()
   },
-  { flush: 'post' }
+  { flush: 'post', immediate: true }
 )
 
-onBeforeUnmount(clearPdfPreview)
+onBeforeUnmount(() => {
+  renderTicket.value += 1
+  clearPdfPreview()
+})
 </script>
 
 <template>

@@ -11,13 +11,17 @@ definePageMeta({
 useHead({ title: 'Galeri | MDS Cendekia' })
 
 const { addToast } = useToast()
-const { listGallery, createGallery, updateGallery, deleteGallery } = useAdminGalleryService()
+const { createGallery, updateGallery, deleteGallery } = useAdminGalleryService()
+const {
+  galleryItems: items,
+  galleryLoading: loading,
+  galleryError: error,
+  loadGallery: loadCachedGallery,
+  refreshGallery
+} = useAdminDataCache()
 
-const items = ref<GalleryItem[]>([])
-const loading = ref(false)
 const saving = ref(false)
 const savingOrder = ref(false)
-const error = ref('')
 const searchQuery = ref('')
 const currentPage = ref(1)
 const perPage = ref(10)
@@ -117,20 +121,15 @@ const normalizeCurrentOrder = () => {
 }
 
 const fetchGallery = async () => {
-  loading.value = true
-  error.value = ''
-
-  const { data, error: fetchError } = await listGallery(100)
-
-  if (fetchError) {
-    error.value = 'Gagal memuat data galeri.'
-    loading.value = false
-    return
-  }
-
-  items.value = applyDisplayOrder(data)
+  await loadCachedGallery()
+  items.value = applyDisplayOrder(items.value)
   orderChanged.value = false
-  loading.value = false
+}
+
+const refreshGalleryList = async () => {
+  await refreshGallery()
+  items.value = applyDisplayOrder(items.value)
+  orderChanged.value = false
 }
 
 const openCreate = () => {
@@ -406,7 +405,7 @@ const submitForm = async () => {
 
   addToast(isEdit.value ? 'Galeri berhasil diperbarui.' : 'Galeri berhasil ditambahkan.', 'success')
   closeForm()
-  await fetchGallery()
+  await refreshGalleryList()
 
   if (primaryTarget) {
     const primaryId = findSubmittedPrimaryId(submitData, primaryTarget)
@@ -419,7 +418,7 @@ const submitForm = async () => {
       }
     }
 
-    await fetchGallery()
+    await refreshGalleryList()
     if (primaryId) verifyPrimaryFromBackend(primaryId)
   }
 
@@ -440,7 +439,7 @@ const confirmDelete = async (item: GalleryItem) => {
   }
 
   addToast('Galeri berhasil dihapus.', 'success')
-  await fetchGallery()
+  await refreshGalleryList()
 }
 
 const handleDragStart = (item: GalleryItem, event: DragEvent) => {
@@ -497,7 +496,7 @@ const saveGalleryOrder = async () => {
   savingOrder.value = false
   orderChanged.value = false
   addToast('Urutan galeri berhasil disimpan.', 'success')
-  await fetchGallery()
+  await refreshGalleryList()
 }
 
 watch(searchQuery, () => {
@@ -542,7 +541,7 @@ onBeforeUnmount(() => {
         <AppButton
           variant="ghost"
           :disabled="loading"
-          @click="fetchGallery"
+          @click="refreshGalleryList"
         >
           <RefreshCw class="mr-2 h-4 w-4" />
           Muat Ulang
@@ -587,7 +586,7 @@ onBeforeUnmount(() => {
           <template #action>
             <AppButton
               variant="primary"
-              @click="fetchGallery"
+              @click="refreshGalleryList"
             >
               Coba Lagi
             </AppButton>

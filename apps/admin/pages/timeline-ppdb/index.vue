@@ -30,16 +30,19 @@ definePageMeta({
 useHead({ title: 'Timeline PPDB | MDS Cendekia' })
 
 const {
-  listTimelines,
   createTimeline,
   deleteTimeline
 } = useAdminTimelineService()
 const { addToast } = useToast()
+const {
+  timelineItems: items,
+  timelineLoading: loading,
+  timelineError: error,
+  loadTimeline: loadCachedTimeline,
+  refreshTimeline
+} = useAdminDataCache()
 
-const items = ref<GelombangTimelineDto[]>([])
-const loading = ref(false)
 const saving = ref(false)
-const error = ref('')
 
 const isDrawerOpen = ref(false)
 const editingId = ref<number | null>(null) // Placeholder if edit is added
@@ -87,19 +90,11 @@ const formatIsoString = (dateString: string) => {
 }
 
 const fetchTimeline = async () => {
-  loading.value = true
-  error.value = ''
+  await loadCachedTimeline()
+}
 
-  const { data, error: fetchError } = await listTimelines()
-
-  loading.value = false
-
-  if (fetchError || !data?.success) {
-    error.value = 'Gagal memuat data timeline PPDB.'
-    return
-  }
-
-  items.value = Array.isArray(data.data) ? data.data : []
+const refreshTimelineList = async () => {
+  await refreshTimeline()
 }
 
 const setPageScrollLock = (locked: boolean) => {
@@ -166,7 +161,7 @@ const deleteTimelineStep = async (step: GelombangTimelineDto['timeline'][number]
   }
 
   addToast(data?.message || 'Tahap timeline berhasil dihapus.', 'success')
-  await fetchTimeline()
+  await refreshTimelineList()
 }
 
 const submitForm = async () => {
@@ -214,7 +209,7 @@ const submitForm = async () => {
 
   addToast('Gelombang berhasil ditambahkan.', 'success')
   closeDrawer()
-  await fetchTimeline()
+  await refreshTimelineList()
 }
 
 watch(isDrawerOpen, value => {

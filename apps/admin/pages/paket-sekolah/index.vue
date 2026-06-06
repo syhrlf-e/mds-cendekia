@@ -18,12 +18,16 @@ definePageMeta({
 
 useHead({ title: 'Paket Sekolah | MDS Cendekia' })
 
-const { listPackages, savePackage, updatePackageStatus } = useAdminPaketSekolahService()
+const { savePackage, updatePackageStatus } = useAdminPaketSekolahService()
 const { addToast } = useToast()
-const isLoading = ref(true)
 const isSaving = ref(false)
-const loadError = ref('')
-const packages = ref<PaketSekolah[]>([])
+const {
+  packages,
+  packagesLoading: isLoading,
+  packagesError: loadError,
+  loadPackages: loadCachedPackages,
+  refreshPackages
+} = useAdminDataCache()
 const searchQuery = ref('')
 const filterStatus = ref<PaketStatus | ''>('')
 const isDrawerOpen = ref(false)
@@ -51,16 +55,8 @@ const jenjangOptions = [
   { label: 'Setara SMA', value: 'Setara SMA' }
 ]
 
-const loadPackages = async () => {
-  isLoading.value = true
-  loadError.value = ''
-
-  const { data, error } = await listPackages()
-
-  packages.value = data
-  loadError.value = error ? 'Data paket sekolah belum bisa diambil dari server.' : ''
-  isLoading.value = false
-}
+const loadPackages = () => loadCachedPackages()
+const refreshPackagesList = () => refreshPackages()
 
 const filteredPackages = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -142,7 +138,7 @@ const handleSave = async () => {
   }
 
   closeDrawer()
-  await loadPackages()
+  await refreshPackagesList()
   addToast(data?.message || 'Paket sekolah berhasil disimpan.', 'success')
 }
 
@@ -157,7 +153,7 @@ const toggleStatus = async (item: PaketSekolah) => {
     return
   }
 
-  await loadPackages()
+  await refreshPackagesList()
   addToast(nextStatus === 'aktif' ? 'Paket berhasil diaktifkan.' : 'Paket berhasil dinonaktifkan.', 'success')
 }
 

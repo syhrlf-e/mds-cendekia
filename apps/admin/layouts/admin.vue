@@ -13,13 +13,13 @@ const isLoggingOut = ref(false)
 
 const menu = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Pendaftaran', path: '/pendaftaran', icon: Users, pageTitle: 'Data Pendaftar PPDB' },
-  { name: 'Siswa', path: '/siswa', icon: GraduationCap, pageTitle: 'Data Siswa' },
-  { name: 'Berita', path: '/berita', icon: Newspaper, pageTitle: 'Kelola Berita' },
-  { name: 'Timeline PPDB', path: '/timeline-ppdb', icon: CalendarDays, pageTitle: 'Timeline PPDB' },
-  { name: 'Profil Sekolah', path: '/profil-sekolah', icon: School, pageTitle: 'Profil Sekolah' },
-  { name: 'Galeri', path: '/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
+  { name: 'Data Calon Pendaftar', path: '/pendaftaran', icon: Users, pageTitle: 'Data Calon Pendaftar' },
+  { name: 'Data Siswa', path: '/siswa', icon: GraduationCap, pageTitle: 'Data Siswa' },
+  { name: 'Pelaksanaan PPDB', path: '/timeline-ppdb', icon: CalendarDays, pageTitle: 'Pelaksanaan PPDB' },
   { name: 'Paket Sekolah', path: '/paket-sekolah', icon: PackageOpen, pageTitle: 'Paket Sekolah' },
+  { name: 'Berita', path: '/berita', icon: Newspaper, pageTitle: 'Kelola Berita' },
+  { name: 'Galeri', path: '/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
+  { name: 'Profil Sekolah', path: '/profil-sekolah', icon: School, pageTitle: 'Profil Sekolah' },
 ]
 const settingsMenu = { name: 'Pengaturan', path: '/pengaturan', icon: Settings, pageTitle: 'Pengaturan' }
 
@@ -67,8 +67,8 @@ const handleLogout = async () => {
       </p>
     </div>
 
-    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-sm lg:flex">
-      <div class="flex h-17.5 shrink-0 items-center gap-3 border-b border-border-soft px-6">
+    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-sm lg:flex">
+      <div class="flex h-20 shrink-0 items-center gap-3 border-b border-border-soft px-6">
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
@@ -107,7 +107,7 @@ const handleLogout = async () => {
     </aside>
 
     <main class="relative hidden h-full min-w-0 grow flex-col overflow-hidden bg-bg-base lg:flex">
-      <header class="relative z-30 mb-0 mt-4 flex h-17.5 shrink-0 items-center justify-between rounded-2xl border border-border-soft bg-bg-surface px-6 shadow-sm transition-colors">
+      <header class="relative z-30 mb-0 mt-4 flex h-20 shrink-0 items-center justify-between rounded-2xl border border-border-soft bg-bg-surface px-6 shadow-sm transition-colors">
         <div>
           <h1 class="text-lg font-bold leading-[1.24] tracking-[-0.2px] text-text-primary">
             {{ pageTitle }}

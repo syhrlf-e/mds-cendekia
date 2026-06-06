@@ -10,6 +10,15 @@ import type {
 type DashboardRawDto = Record<string, any>
 
 const normalizeText = (value: unknown) => String(value || '').trim()
+const normalizeNumber = (value: unknown) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : 0
+}
+
+const readObjectPayload = (payload: any): DashboardRawDto => {
+  if (!payload) return {}
+  return payload.data || payload
+}
 
 const readArrayPayload = (payload: any): DashboardRawDto[] => {
   if (Array.isArray(payload)) return payload
@@ -22,9 +31,49 @@ const readArrayPayload = (payload: any): DashboardRawDto[] => {
   return []
 }
 
-const readSummaryPayload = (payload: any): AdminSummaryDto | null => {
-  if (!payload) return null
-  return payload.data || payload
+export const createEmptyDashboardSummary = (): AdminSummaryDto => ({
+  total_pendaftar: 0,
+  total_siswa: 0,
+  total_berita: 0,
+  pendaftar_perlu_aksi: [],
+  program_paket: [],
+  gelombang: [],
+  distribusi_program_paket: [],
+  aktivitas_ppdb: []
+})
+
+const mapSummaryPayload = (payload: any): AdminSummaryDto => {
+  const summary = readObjectPayload(payload)
+
+  return {
+    total_pendaftar: normalizeNumber(summary.total_pendaftar),
+    total_siswa: normalizeNumber(summary.total_siswa),
+    total_berita: normalizeNumber(summary.total_berita),
+    pendaftar_perlu_aksi: readArrayPayload(summary.pendaftar_perlu_aksi).map(item => ({
+      nama: normalizeText(item.nama),
+      program_paket: normalizeText(item.program_paket) || '-',
+      status_berkas: normalizeText(item.status_berkas) || 'Menunggu verifikasi',
+      created_at: normalizeText(item.created_at)
+    })),
+    program_paket: readArrayPayload(summary.program_paket).map(item => ({
+      nama: normalizeText(item.nama),
+      status: normalizeText(item.status) || '-'
+    })),
+    gelombang: readArrayPayload(summary.gelombang).map(item => ({
+      order: normalizeNumber(item.order),
+      mulai: normalizeText(item.mulai),
+      selesai: normalizeText(item.selesai),
+      status: normalizeText(item.status) || '-'
+    })),
+    distribusi_program_paket: readArrayPayload(summary.distribusi_program_paket).map(item => ({
+      program: normalizeText(item.program),
+      total: normalizeNumber(item.total)
+    })),
+    aktivitas_ppdb: readArrayPayload(summary.aktivitas_ppdb).map(item => ({
+      nama: normalizeText(item.nama),
+      created_at: normalizeText(item.created_at)
+    }))
+  }
 }
 
 const isBerkasVerifiedText = (status: string) => {
@@ -77,34 +126,38 @@ const mapRegistration = (item: DashboardRawDto): DashboardRegistration => {
 export const useAdminDashboardService = () => {
   const { get } = useApi()
 
+  const getDashboardSummary = async () => {
+    const response = await get<any>(adminApiEndpoints.summary, { showErrorToast: false })
+    return {
+      data: response.data ? mapSummaryPayload(response.data) : createEmptyDashboardSummary(),
+      error: response.error
+    }
+  }
+
   const getDashboardData = async (): Promise<AdminDashboardData> => {
     const [
       summaryResponse,
-      pendaftarResponse,
-      siswaResponse,
       timelineResponse
     ] = await Promise.all([
       get<any>(adminApiEndpoints.summary, { showErrorToast: false }),
-      get<any>(adminApiEndpoints.pendaftar.list, { showErrorToast: false }),
-      get<any>(adminApiEndpoints.siswa.list, { showErrorToast: false }),
       get<any>(adminApiEndpoints.timelinePpdb.list, { showErrorToast: false })
     ])
 
-    const registrations = readArrayPayload(pendaftarResponse.data).map(mapRegistration)
+    const summary = mapSummaryPayload(summaryResponse.data)
+    const registrations = summary.pendaftar_perlu_aksi.map(mapRegistration)
     const timelineItems = readArrayPayload(timelineResponse.data).map(mapTimelineItem)
-    const siswaRows = readArrayPayload(siswaResponse.data)
-    const summary = readSummaryPayload(summaryResponse.data)
 
     return {
       registrations,
       timelineItems,
-      totalStudents: siswaRows.length || registrations.filter(item => item.status === 'approved').length,
+      totalStudents: summary.total_siswa,
       summary,
-      hasCriticalError: Boolean(pendaftarResponse.error && !summary)
+      hasCriticalError: Boolean(summaryResponse.error)
     }
   }
 
   return {
+    getDashboardSummary,
     getDashboardData
   }
 }
