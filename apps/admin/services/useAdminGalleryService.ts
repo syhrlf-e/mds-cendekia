@@ -56,6 +56,43 @@ export const getAdminGalleryErrorMessage = (error: any, fallback: string) => {
   return error?.data?.message || error?.response?._data?.message || error?.message || fallback
 }
 
+export const readGalleryId = (payload: any) => {
+  const id = payload?.id ?? payload?.data?.id ?? payload?.gallery?.id ?? payload?.data?.gallery?.id
+  return id ? String(id) : ''
+}
+
+export const sortGalleryItems = (rows: GalleryItem[]) => {
+  return [...rows].sort((firstItem, secondItem) => {
+    if (firstItem.isUtama !== secondItem.isUtama) return firstItem.isUtama ? -1 : 1
+    if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
+    if (firstItem.urutan) return -1
+    if (secondItem.urutan) return 1
+    return 0
+  })
+}
+
+export const applyGalleryDisplayOrder = (rows: GalleryItem[]) => {
+  return sortGalleryItems(
+    rows.map((item, index) => ({
+      ...item,
+      urutan: item.urutan || index + 1
+    }))
+  ).map((item, index) => ({
+    ...item,
+    urutan: index + 1
+  }))
+}
+
+export const buildPrimaryFirstGalleryRows = (rows: GalleryItem[], primaryId: string) => {
+  return sortGalleryItems(rows.map(item => ({
+    ...item,
+    isUtama: item.id === primaryId
+  }))).map((item, index) => ({
+    ...item,
+    urutan: index + 1
+  }))
+}
+
 export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string): GalleryItem | null => {
   const id = normalizeText(item.id)
   const nama = normalizeText(item.nama)
