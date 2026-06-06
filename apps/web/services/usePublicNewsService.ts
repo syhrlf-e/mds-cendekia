@@ -5,8 +5,6 @@ const normalizeText = (value: unknown) => String(value || '').trim()
 
 const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
 
-const normalizeIdentifier = (value: unknown) => normalizeText(value).toLowerCase()
-
 const stripHtml = (value: unknown) => normalizeText(value).replace(/<[^>]*>/g, ' ')
 
 const buildContent = (item: NewsDto) => normalizeText(item.isi || item.content || item.konten || item.body)
@@ -52,6 +50,8 @@ const readArrayPayload = (payload: any): NewsDto[] => {
   if (Array.isArray(payload?.data?.berita)) return payload.data.berita
   if (Array.isArray(payload?.data?.news)) return payload.data.news
   if (Array.isArray(payload?.data?.articles)) return payload.data.articles
+  if (payload && typeof payload === 'object' && payload.id && payload.judul) return [payload]
+  if (payload?.data && typeof payload.data === 'object' && payload.data.id && payload.data.judul) return [payload.data]
   return []
 }
 
@@ -113,28 +113,20 @@ export const usePublicNewsService = () => {
   const getPublicNewsDetail = async (identifier: string) => {
     try {
       const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
-      const data = await $fetch<any>(publicApiEndpoints.berita.detail, {
+      const normalizedIdentifier = normalizeText(identifier)
+      const isNumericId = /^\d+$/.test(normalizedIdentifier)
+      const endpoint = isNumericId
+        ? publicApiEndpoints.berita.detail(normalizedIdentifier)
+        : publicApiEndpoints.berita.detailBySlug(normalizedIdentifier)
+      const data = await $fetch<any>(endpoint, {
         baseURL: apiBaseUrl,
-        query: { limit: '100' },
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
         }
       })
       const rows = readArrayPayload(data)
-      const normalizedIdentifier = normalizeIdentifier(identifier)
-      const found = rows.find((item) => {
-        const candidates = [
-          item.slug,
-          item.id,
-          item.uuid,
-          item.news_id,
-          item.berita_id
-        ]
-
-        return candidates.some(candidate => normalizeIdentifier(candidate) === normalizedIdentifier)
-      })
-      const mappedItem = found ? mapPublicNewsItem(found, apiBaseUrl) : null
+      const mappedItem = rows[0] ? mapPublicNewsItem(rows[0], apiBaseUrl) : null
 
       return {
         data: mappedItem,

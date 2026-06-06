@@ -29,6 +29,7 @@ export const useApi = () => {
     useState('admin-cache:students', () => []).value = []
     useState('admin-cache:students-loaded-at', () => 0).value = 0
     useState('admin-cache:students-error', () => '').value = ''
+    useState<number | null>('admin-auth:id', () => null).value = null
   }
 
   const handleUnauthorizedResponse = async (showErrorToast: boolean) => {

@@ -1,4 +1,5 @@
-import type { AdminNewsItem } from '~/types/adminNews'
+import { adminApiEndpoints } from '~/services/adminApiEndpoints'
+import type { AdminNewsDto, AdminNewsItem } from '~/types/adminNews'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -26,20 +27,26 @@ const normalizeAssetUrl = (url: unknown, apiBaseUrl: string) => {
   return `${baseUrl}${normalizeAssetPath(path)}`
 }
 
-const readRows = (payload: any): any[] => {
+const isNewsObject = (value: any): value is AdminNewsDto => {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && value.id && value.judul)
+}
+
+const readRows = (payload: any): AdminNewsDto[] => {
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.data)) return payload.data
   if (Array.isArray(payload?.data?.data)) return payload.data.data
   if (Array.isArray(payload?.berita)) return payload.berita
   if (Array.isArray(payload?.data?.berita)) return payload.data.berita
+  if (isNewsObject(payload)) return [payload]
+  if (isNewsObject(payload?.data)) return [payload.data]
 
   return []
 }
 
-const mapNewsItem = (item: any, apiBaseUrl: string): AdminNewsItem | null => {
-  const id = normalizeText(item.id || item.berita_id)
-  const title = normalizeText(item.judul || item.title)
-  const content = normalizeText(item.isi || item.content || item.excerpt)
+const mapNewsItem = (item: AdminNewsDto, apiBaseUrl: string): AdminNewsItem | null => {
+  const id = normalizeText(item.id)
+  const title = normalizeText(item.judul)
+  const content = normalizeText(item.isi)
 
   if (!id || !title) return null
 
@@ -47,13 +54,13 @@ const mapNewsItem = (item: any, apiBaseUrl: string): AdminNewsItem | null => {
     id,
     title,
     slug: normalizeText(item.slug) || generateAdminNewsSlug(title),
-    excerpt: normalizeText(item.excerpt || item.ringkasan) || content.slice(0, 160),
+    excerpt: content.slice(0, 160),
     content,
-    category: normalizeText(item.kategori || item.category || 'other'),
-    tags: Array.isArray(item.tags) ? item.tags.map(normalizeText).filter(Boolean).join(',') : normalizeText(item.tags),
-    author: normalizeText(item.penulis?.biodata?.nama || item.penulis?.username || item.author),
-    image: normalizeAssetUrl(item.gambar || item.image || item.imageUrl || item.image_url, apiBaseUrl),
-    created_at: normalizeText(item.created_at || item.published_at || item.publish_date),
+    category: normalizeText(item.kategori || 'other'),
+    tags: normalizeText(item.tags),
+    author: normalizeText(item.penulis?.biodata?.nama || item.penulis?.username),
+    image: normalizeAssetUrl(item.gambar, apiBaseUrl),
+    created_at: normalizeText(item.created_at),
     published: item.published === false || item.status === 'draft' ? false : true,
     is_featured: Boolean(item.is_featured),
     views: Number(item.views || 0)
@@ -61,7 +68,11 @@ const mapNewsItem = (item: any, apiBaseUrl: string): AdminNewsItem | null => {
 }
 
 export const getAdminNewsErrorMessage = (error: any, fallback: string) => {
-  return error?.data?.message || error?.response?._data?.message || error?.message || fallback
+  const responseData = error?.data || error?.response?._data
+  const message = responseData?.message || responseData?.error || error?.statusMessage || error?.message
+
+  if (Array.isArray(message)) return message.filter(Boolean).join(', ')
+  return normalizeText(message) || fallback
 }
 
 export const useAdminNewsService = () => {
@@ -69,7 +80,7 @@ export const useAdminNewsService = () => {
   const { get } = useApi()
 
   const listNews = async (limit = 100) => {
-    const { data, error } = await get<any>('/api/berita/all', {
+    const { data, error } = await get<AdminNewsDto | AdminNewsDto[]>(adminApiEndpoints.berita.list, {
       query: { limit: String(limit) },
       showErrorToast: false
     })
@@ -86,7 +97,7 @@ export const useAdminNewsService = () => {
 
     return {
       data: rows
-        .map((item: any) => mapNewsItem(item, apiBaseUrl))
+        .map(item => mapNewsItem(item, apiBaseUrl))
         .filter((item): item is AdminNewsItem => Boolean(item)),
       error: null
     }

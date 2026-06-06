@@ -113,6 +113,7 @@ export default defineNuxtConfig({
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
+      whatsappNumber: '',
       siteUrl: '',
       siteName: 'MDS Cendekia',
       siteDescription: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.',

@@ -9,6 +9,8 @@ const { clearAdminDataCache } = useAdminDataCache()
 const { logout } = useAdminAuthService()
 const { addToast } = useToast()
 const adminUsername = useState<string>('admin-auth:username', () => '')
+const adminId = useState<number | null>('admin-auth:id', () => null)
+const isHydrated = ref(false)
 const isAdminMenuOpen = ref(false)
 const isLogoutModalOpen = ref(false)
 const isLoggingOut = ref(false)
@@ -38,6 +40,7 @@ const formatAdminName = (username: string) => {
 }
 
 const adminDisplayName = computed(() => formatAdminName(adminUsername.value))
+const visibleAdminDisplayName = computed(() => isHydrated.value ? adminDisplayName.value : 'Admin')
 const adminInitial = computed(() => adminDisplayName.value.charAt(0).toUpperCase() || 'A')
 const activePageTitle = computed(() => {
   if (route.path.startsWith('/dashboard')) {
@@ -54,6 +57,7 @@ const clearLocalSession = () => {
   legacyAdminToken.value = null
   localCendekiaToken.value = null
   adminUsername.value = ''
+  adminId.value = null
   clearAdminDataCache()
 }
 
@@ -77,6 +81,10 @@ const openLogoutModal = () => {
   isAdminMenuOpen.value = false
   isLogoutModalOpen.value = true
 }
+
+onMounted(() => {
+  isHydrated.value = true
+})
 </script>
 
 <template>
@@ -156,10 +164,10 @@ const openLogoutModal = () => {
               @click="isAdminMenuOpen = !isAdminMenuOpen"
             >
               <div class="flex size-[46px] shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-medium text-white">
-                {{ adminInitial }}
+                {{ isHydrated ? adminInitial : 'A' }}
               </div>
               <p class="min-w-0 grow truncate text-left font-heading text-base font-medium leading-normal text-dashboard-text">
-                {{ adminDisplayName }}
+                {{ visibleAdminDisplayName }}
               </p>
               <ChevronDown
                 class="size-5 shrink-0 text-dashboard-text transition-transform duration-300"

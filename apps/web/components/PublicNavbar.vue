@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MessageCircle } from 'lucide-vue-next'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 type NavItem = {
@@ -9,6 +10,8 @@ type NavItem = {
 
 const route = useRoute()
 const router = useRouter()
+const config = useRuntimeConfig()
+const { addToast } = useToast()
 const mobileMenuOpen = ref(false)
 const clickedHashLabel = ref<string | null>(null)
 
@@ -35,6 +38,37 @@ const getRouteActiveLabel = () => {
 
 const activeMenuLabel = ref(getRouteActiveLabel())
 let isScrollListenerActive = false
+
+const consultationMessage = computed(() => {
+  if (route.path.startsWith('/ppdb')) {
+    return 'Halo Admin MDS Cendekia, saya ingin berkonsultasi mengenai PPDB dan persyaratan pendaftaran.'
+  }
+
+  if (route.path.startsWith('/berita')) {
+    return 'Halo Admin MDS Cendekia, saya ingin bertanya mengenai informasi yang saya baca di website.'
+  }
+
+  if (route.path.startsWith('/profil-sekolah')) {
+    return 'Halo Admin MDS Cendekia, saya ingin berkonsultasi mengenai profil dan program pendidikan MDS Cendekia.'
+  }
+
+  return 'Halo Admin MDS Cendekia, saya ingin berkonsultasi mengenai program pendidikan MDS Cendekia.'
+})
+
+const whatsappNumber = computed(() => String(config.public.whatsappNumber || '').replace(/\D/g, ''))
+const consultationUrl = computed(() => whatsappNumber.value
+  ? `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(consultationMessage.value)}`
+  : ''
+)
+
+const handleConsultationClick = (event: MouseEvent) => {
+  mobileMenuOpen.value = false
+
+  if (consultationUrl.value) return
+
+  event.preventDefault()
+  addToast('Nomor konsultasi belum dikonfigurasi.', 'warning')
+}
 
 const setActiveFromScroll = () => {
   if (!import.meta.client || route.path !== '/') return
@@ -287,13 +321,17 @@ const handleNavClick = async (item: NavItem) => {
 
           <!-- Actions -->
           <div class="relative z-10 flex items-center gap-3">
-            <NuxtLink
-              to="/ppdb/verifikasi"
-              class="public-navbar-cta cursor-pointer items-center justify-center rounded-full border border-brand bg-white px-4 py-2 font-heading text-sm font-medium text-brand transition-colors duration-300 hover:bg-brand hover:text-white xl:px-5 xl:py-2.5 xl:text-base"
-              @click="mobileMenuOpen = false"
+            <a
+              :href="consultationUrl || undefined"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="public-navbar-consultation cursor-pointer items-center justify-center gap-2 rounded-full bg-bg-base px-4 py-2 font-heading text-sm font-medium text-text-public-heading transition-all duration-300 hover:bg-primary-50 hover:text-brand xl:px-5 xl:py-2.5 xl:text-base"
+              :aria-disabled="!consultationUrl"
+              @click="handleConsultationClick"
             >
-              <span>Daftar PPDB</span>
-            </NuxtLink>
+              <MessageCircle class="h-4 w-4" stroke-width="1.8" />
+              <span>Konsultasi</span>
+            </a>
 
             <!-- Mobile Toggle -->
             <div class="flex items-center gap-3 lg:hidden">
@@ -341,6 +379,20 @@ const handleNavClick = async (item: NavItem) => {
                 <span v-if="activeMenuLabel === item.label" class="h-2 w-2 rounded-full bg-brand" />
               </NuxtLink>
             </div>
+
+            <div class="mt-3 border-t border-border-soft pt-3">
+              <a
+                :href="consultationUrl || undefined"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 font-heading text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+                :aria-disabled="!consultationUrl"
+                @click="handleConsultationClick"
+              >
+                <MessageCircle class="h-4 w-4" stroke-width="1.8" />
+                Konsultasi
+              </a>
+            </div>
           </div>
         </Transition>
       </div>
@@ -349,12 +401,12 @@ const handleNavClick = async (item: NavItem) => {
 </template>
 
 <style scoped>
-.public-navbar-cta {
+.public-navbar-consultation {
   display: none;
 }
 
 @media (min-width: 1024px) {
-  .public-navbar-cta {
+  .public-navbar-consultation {
     display: inline-flex;
   }
 }

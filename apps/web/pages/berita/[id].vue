@@ -48,6 +48,14 @@ const articleParagraphs = computed(() => {
     .filter(Boolean)
 })
 
+const useFallbackNewsImage = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement
+  if (image.dataset.fallbackApplied) return
+
+  image.dataset.fallbackApplied = 'true'
+  image.src = '/images/logo-mds-main.png'
+}
+
 useHead(() => ({
   title: newsItem.value ? `${newsItem.value.title} | MDS Cendekia` : 'Berita | MDS Cendekia',
   link: articleUrl.value ? [{ rel: 'canonical', href: articleUrl.value }] : [],
@@ -173,6 +181,7 @@ useJsonLd(() => {
         :src="newsItem.imageUrl || '/images/logo-mds-main.png'"
         :alt="newsItem.title"
         class="mb-12 aspect-[16/9] w-full rounded-3xl object-cover"
+        @error="useFallbackNewsImage"
       >
 
       <div class="space-y-6 font-sans text-xl leading-[1.9] text-text-public-heading">

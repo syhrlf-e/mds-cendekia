@@ -47,6 +47,14 @@ const formatNewsDate = (date: string) => {
   }).format(parsedDate)
 }
 
+const useFallbackNewsImage = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement
+  if (image.dataset.fallbackApplied) return
+
+  image.dataset.fallbackApplied = 'true'
+  image.src = '/images/logo-mds-main.png'
+}
+
 const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encodeURIComponent(item.slug || item.id)}`
 </script>
 
@@ -85,7 +93,14 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               :to="buildNewsPath(item)"
               class="flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md 2xl:rounded-4xl"
             >
-              <img :src="item.imageUrl || '/images/logo-mds-main.png'" :alt="item.title" loading="lazy" decoding="async" class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]" />
+              <img
+                :src="item.imageUrl || '/images/logo-mds-main.png'"
+                :alt="item.title"
+                loading="lazy"
+                decoding="async"
+                class="h-52 w-full object-cover lg:h-56 2xl:h-[250px]"
+                @error="useFallbackNewsImage"
+              >
               <div class="flex flex-col p-6 2xl:p-8">
                 <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
                   <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">

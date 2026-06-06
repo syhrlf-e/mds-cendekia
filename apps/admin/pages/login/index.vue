@@ -103,7 +103,9 @@ const handleLogin = async () => {
   if (data?.status || data?.success) {
     localFailedAttempts.value = 0
     const adminUsername = useState<string>('admin-auth:username', () => '')
+    const adminId = useState<number | null>('admin-auth:id', () => null)
     adminUsername.value = data.data?.username || username.value.trim()
+    adminId.value = data.data?.id || null
     void prefetchAdminData()
     await router.push('/dashboard')
     return

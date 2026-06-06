@@ -12,6 +12,7 @@ import {
   Upload,
   X,
 } from 'lucide-vue-next'
+import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import { generateAdminNewsSlug, getAdminNewsErrorMessage } from '~/services/useAdminNewsService'
 import type { AdminNewsForm, AdminNewsItem } from '~/types/adminNews'
 
@@ -25,7 +26,8 @@ useHead({
 })
 
 const { addToast } = useToast()
-const { post, put, delete: deleteRequest } = useApi()
+const { post, patch, delete: deleteRequest } = useApi()
+const adminId = useState<number | null>('admin-auth:id', () => null)
 const {
   news: items,
   newsLoading: loading,
@@ -103,33 +105,6 @@ const normalizeUploadFileName = (name: string) => {
   return `${baseName}-${Date.now()}${extension ? `.${extension}` : ''}`
 }
 
-const getFileExtensionFromType = (type: string) => {
-  if (type.includes('png')) return 'png'
-  if (type.includes('webp')) return 'webp'
-  if (type.includes('gif')) return 'gif'
-  return 'jpg'
-}
-
-const createFileFromCurrentImage = async () => {
-  if (!import.meta.client || !isEdit.value || form.value.image || !imagePreview.value || imagePreview.value.startsWith('blob:')) {
-    return null
-  }
-
-  const response = await fetch(imagePreview.value, {
-    credentials: 'include',
-  })
-
-  if (!response.ok) return null
-
-  const blob = await response.blob()
-  const extension = getFileExtensionFromType(blob.type)
-  const filename = normalizeUploadFileName(`berita-${editingId.value}.${extension}`)
-
-  return new File([blob], filename, {
-    type: blob.type || 'image/jpeg',
-  })
-}
-
 const getCategoryClass = (category: string) => {
   const normalized = category.toLowerCase()
 
@@ -163,6 +138,14 @@ const formatDate = (dateString: string) => {
     month: 'short',
     year: 'numeric',
   })
+}
+
+const useFallbackNewsImage = (event: Event) => {
+  const image = event.currentTarget as HTMLImageElement
+  if (image.dataset.fallbackApplied) return
+
+  image.dataset.fallbackApplied = 'true'
+  image.src = '/images/logo-mds-main.png'
 }
 
 const fetchNews = (force = false) => force ? refreshNews() : loadCachedNews()
@@ -247,19 +230,19 @@ const previewNews = (item: AdminNewsItem) => {
   })
 }
 
-const buildNewsFormData = async () => {
+const buildNewsFormData = (authorId?: number) => {
   const formData = new FormData()
-  const currentImageFile = await createFileFromCurrentImage()
-  const imageFile = form.value.image || currentImageFile
 
-  formData.append('id_penulis', '1')
+  if (authorId) {
+    formData.append('id_penulis', String(authorId))
+  }
   formData.append('judul', form.value.title.trim())
   formData.append('isi', form.value.content.trim())
   formData.append('kategori', form.value.category.trim())
   formData.append('tags', form.value.tags.trim())
 
-  if (imageFile) {
-    formData.append('gambar', imageFile, normalizeUploadFileName(imageFile.name))
+  if (form.value.image) {
+    formData.append('gambar', form.value.image, normalizeUploadFileName(form.value.image.name))
   }
 
   return formData
@@ -272,7 +255,7 @@ const deleteNews = async (item: AdminNewsItem) => {
 
   if (!confirmed) return
 
-  const { error: deleteError } = await deleteRequest(`/api/berita/${item.id}`, {
+  const { error: deleteError } = await deleteRequest(adminApiEndpoints.berita.delete(item.id), {
     showErrorToast: false,
   })
 
@@ -301,18 +284,18 @@ const submitForm = async () => {
     return
   }
 
-  const formData = await buildNewsFormData()
-
-  if (isEdit.value && !formData.has('gambar')) {
-    addToast('Gambar lama belum bisa diproses. Pilih gambar baru untuk memperbarui berita.', 'warning')
+  if (!isEdit.value && !adminId.value) {
+    addToast('Identitas penulis belum tersedia. Silakan login kembali.', 'error')
     return
   }
+
+  const formData = buildNewsFormData(isEdit.value ? undefined : adminId.value || undefined)
 
   saving.value = true
 
   const { error: submitError } = isEdit.value
-    ? await put(`/api/berita/update/${editingId.value}`, formData, { showErrorToast: false })
-    : await post('/api/berita/create', formData, { showErrorToast: false })
+    ? await patch(adminApiEndpoints.berita.update(editingId.value), formData, { showErrorToast: false })
+    : await post(adminApiEndpoints.berita.create, formData, { showErrorToast: false })
 
   saving.value = false
 
@@ -462,6 +445,7 @@ onBeforeUnmount(() => {
                       :src="berita.image || '/images/placeholder-news.jpg'"
                       :alt="berita.title"
                       class="h-10 w-14 rounded-lg border border-border-soft object-cover"
+                      @error="useFallbackNewsImage"
                     >
                     <div class="min-w-0">
                       <p class="truncate text-text-primary">
@@ -595,6 +579,7 @@ onBeforeUnmount(() => {
                       :src="imagePreview"
                       :alt="form.title || 'Preview'"
                       class="h-full w-full object-cover"
+                      @error="useFallbackNewsImage"
                     >
                     <div
                       v-else
@@ -737,6 +722,7 @@ onBeforeUnmount(() => {
                                 :src="imagePreview"
                                 alt="Preview"
                                 class="h-64 w-full rounded-xl border border-border object-cover"
+                                @error="useFallbackNewsImage"
                               >
                               <div class="absolute inset-0 flex items-center justify-center gap-3 rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                                 <button

@@ -14,6 +14,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     const adminUsername = useState<string>('admin-auth:username', () => '')
+    const adminId = useState<number | null>('admin-auth:id', () => null)
     adminUsername.value = data.data?.username || ''
+    adminId.value = data.data?.id || null
   }
 })
