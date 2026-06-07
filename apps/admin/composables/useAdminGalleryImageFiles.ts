@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 import type { ToastType } from '~/composables/useToast'
 import type { GalleryFormState, GalleryItem } from '~/types/adminGallery'
+import { validateAdminImageUpload } from '~/utils/adminImageUpload'
 
 type UseAdminGalleryImageFilesOptions = {
   form: Ref<GalleryFormState>
@@ -28,26 +29,23 @@ export const useAdminGalleryImageFiles = ({
     if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
   }
 
-  const handleFileSelect = (event: Event) => {
+  const handleFileSelect = async (event: Event) => {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
 
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      addToast('Pilih file gambar yang valid.', 'warning')
-      return
-    }
+    const validation = await validateAdminImageUpload(file)
+    target.value = ''
 
-    if (file.size > 4 * 1024 * 1024) {
-      addToast('Ukuran file maksimal 4MB.', 'warning')
+    if (!validation.valid) {
+      addToast(validation.message, 'warning')
       return
     }
 
     revokeImagePreview()
     form.value.gambar = file
     imagePreview.value = URL.createObjectURL(file)
-    target.value = ''
   }
 
   const removeImage = () => {

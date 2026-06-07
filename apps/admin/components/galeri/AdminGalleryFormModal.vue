@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Save, Trash2, Upload, X } from 'lucide-vue-next'
 import type { GalleryFormState, GalleryItem } from '~/types/adminGallery'
+import { ADMIN_IMAGE_ACCEPT } from '~/utils/adminImageUpload'
 
 defineProps<{
   isEdit: boolean
@@ -87,7 +88,7 @@ const triggerFileInput = () => {
         <input
           ref="fileInput"
           type="file"
-          accept="image/*"
+          :accept="ADMIN_IMAGE_ACCEPT"
           class="hidden"
           @change="$emit('fileSelect', $event)"
         >

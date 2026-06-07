@@ -15,6 +15,7 @@ import {
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import { generateAdminNewsSlug, getAdminNewsErrorMessage } from '~/services/useAdminNewsService'
 import type { AdminNewsForm, AdminNewsItem } from '~/types/adminNews'
+import { ADMIN_IMAGE_ACCEPT, validateAdminImageUpload } from '~/utils/adminImageUpload'
 
 definePageMeta({
   layout: 'admin',
@@ -192,19 +193,17 @@ const triggerFileInput = () => {
   fileInput.value?.click()
 }
 
-const handleFileSelect = (event: Event) => {
+const handleFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
 
   if (!file) return
 
-  if (!file.type.startsWith('image/')) {
-    addToast('Pilih file gambar yang valid.', 'warning')
-    return
-  }
+  const validation = await validateAdminImageUpload(file)
+  target.value = ''
 
-  if (file.size > 4 * 1024 * 1024) {
-    addToast('Ukuran file maksimal 4MB.', 'warning')
+  if (!validation.valid) {
+    addToast(validation.message, 'warning')
     return
   }
 
@@ -212,7 +211,6 @@ const handleFileSelect = (event: Event) => {
 
   form.value.image = file
   imagePreview.value = URL.createObjectURL(file)
-  target.value = ''
 }
 
 const removeImage = () => {
@@ -761,7 +759,7 @@ onBeforeUnmount(() => {
                           <input
                             ref="fileInput"
                             type="file"
-                            accept="image/*"
+                            :accept="ADMIN_IMAGE_ACCEPT"
                             class="hidden"
                             @change="handleFileSelect"
                           >

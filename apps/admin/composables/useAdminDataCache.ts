@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { getAdminSessionGeneration } from './useAdminSession'
 import { createEmptyDashboardSummary, useAdminDashboardService } from '~/services/useAdminDashboardService'
 import { useAdminGalleryService } from '~/services/useAdminGalleryService'
 import { useAdminNewsService } from '~/services/useAdminNewsService'
@@ -94,12 +95,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) dashboardSummaryLoading.value = true
     dashboardSummaryError.value = ''
 
     dashboardSummaryRequest = (async () => {
       try {
         const { data, error } = await dashboardService.getDashboardSummary()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
           if (options.background && hasDashboardSummaryCache.value) return
@@ -125,12 +128,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) pendaftarLoading.value = true
     pendaftarError.value = ''
 
     pendaftarRequest = (async () => {
       try {
         const { data, error } = await pendaftaranService.listPendaftar()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
           if (options.background && pendaftar.value.length) return
@@ -157,12 +162,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) studentsLoading.value = true
     studentsError.value = ''
 
     studentsRequest = (async () => {
       try {
         const { data, error } = await siswaService.listStudents()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error && options.background && students.value.length) return
 
@@ -188,12 +195,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) newsLoading.value = true
     newsError.value = ''
 
     newsRequest = (async () => {
       try {
         const { data, error } = await newsService.listNews()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
           if (options.background && news.value.length) return
@@ -220,12 +229,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) galleryLoading.value = true
     galleryError.value = ''
 
     galleryRequest = (async () => {
       try {
         const { data, error } = await galleryService.listGallery()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
           if (options.background && galleryItems.value.length) return
@@ -252,12 +263,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) timelineLoading.value = true
     timelineError.value = ''
 
     timelineRequest = (async () => {
       try {
         const { data, error } = await timelineService.listTimelines()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error || !data?.success) {
           if (options.background && timelineItems.value.length) return
@@ -284,12 +297,14 @@ export const useAdminDataCache = () => {
     }
 
     const shouldShowLoading = !options.background
+    const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) packagesLoading.value = true
     packagesError.value = ''
 
     packagesRequest = (async () => {
       try {
         const { data, error } = await paketSekolahService.listPackages()
+        if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
           if (options.background && packages.value.length) return

@@ -77,6 +77,8 @@ CSP yang dimatikan menghilangkan lapisan pertahanan penting terhadap XSS dan pem
 
 ### SEC-04 - Medium - Validasi upload gambar terlalu permisif
 
+**Status frontend: selesai pada 7 Juni 2026.**
+
 **Bukti**
 
 - `apps/admin/pages/berita/index.vue:195-209` dan `apps/admin/composables/useAdminGalleryImageFiles.ts:31-45` hanya memeriksa `file.type.startsWith('image/')`.
@@ -86,24 +88,31 @@ CSP yang dimatikan menghilangkan lapisan pertahanan penting terhadap XSS dan pem
 
 Format seperti SVG atau tipe lain yang tidak diharapkan tetap lolos frontend. MIME dari browser dapat dipalsukan, sehingga validasi frontend tidak boleh menjadi kontrol keamanan.
 
-**Rekomendasi**
+**Implementasi frontend**
 
-Batasi frontend ke `image/png,image/jpeg,image/webp`. Backend wajib memeriksa magic bytes, ukuran/dimensi, menolak SVG, mengganti nama file, dan idealnya decode lalu encode ulang gambar sebelum disimpan.
+Upload berita dan galeri kini hanya menerima PNG, JPEG, dan WebP maksimal 4 MB. Validator memeriksa ekstensi, MIME, dan magic bytes sebelum file masuk ke form.
+
+**Sisa rekomendasi backend**
+
+Backend tetap wajib mengulangi pemeriksaan magic bytes dan ukuran/dimensi, menolak SVG, mengganti nama file, dan idealnya decode lalu encode ulang gambar sebelum disimpan.
 
 ### SEC-05 - Medium - Cache data sensitif tidak seluruhnya dibersihkan pada respons 401
 
+**Status: selesai pada 7 Juni 2026.**
+
 **Bukti**
 
-- `apps/admin/composables/useApi.ts:20-32` hanya membersihkan cache pendaftar, siswa, dan ID admin.
-- Cache summary, berita, galeri, timeline, paket, serta username baru dibersihkan oleh fungsi lain di `apps/admin/composables/useAdminDataCache.ts:395-416`.
+- `apps/admin/composables/useAdminSession.ts` sekarang menjadi teardown terpusat untuk logout, respons `401`, dan kegagalan verifikasi middleware.
+- Seluruh state milik admin dan cookie lokal dibersihkan tanpa menyentuh state internal Nuxt.
+- Loader cache memakai session generation agar respons dari sesi lama tidak dapat menulis data kembali setelah logout.
 
 **Dampak**
 
 Data akun sebelumnya dapat tetap berada di memory aplikasi setelah sesi kedaluwarsa, lalu terlihat sementara saat admin lain login pada tab yang sama.
 
-**Rekomendasi**
+**Sisa verifikasi**
 
-Buat satu session teardown service yang menjadi satu-satunya jalur logout/401. Service tersebut harus menghapus seluruh auth state, seluruh cache, object URL, timer, dan state UI sensitif.
+Pastikan cookie sesi `HttpOnly` benar-benar dihapus oleh endpoint logout backend karena cookie tersebut tidak dapat dihapus melalui JavaScript.
 
 ### AUTH-01 - Medium - Route guard hanya berjalan di client dan memverifikasi sesi pada setiap navigasi
 
@@ -240,7 +249,7 @@ Regresi pada login, session expiry, CRUD berita, upload, approve/reject pendafta
 
 1. Audit cookie, CORS, CSRF, rate limit, role authorization, dan session rotation di backend.
 2. Pastikan seluruh dokumen pendaftar tidak dapat diakses tanpa otorisasi.
-3. Bersihkan seluruh cache saat logout atau `401`.
+3. Bersihkan seluruh cache saat logout atau `401`. Selesai 7 Juni 2026.
 4. Terapkan validasi upload ketat di backend.
 
 ### P1 - Hardening frontend

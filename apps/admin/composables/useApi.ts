@@ -1,4 +1,5 @@
-import { navigateTo, useCookie, useRequestHeaders, useRoute, useRuntimeConfig, useState } from '#app'
+import { navigateTo, useRequestHeaders, useRoute, useRuntimeConfig } from '#app'
+import { useAdminSession } from './useAdminSession'
 import { useToast } from './useToast'
 
 let isHandlingUnauthorized = false
@@ -6,6 +7,7 @@ let isHandlingUnauthorized = false
 export const useApi = () => {
   const config = useRuntimeConfig()
   const { addToast } = useToast()
+  const { clearAdminSession } = useAdminSession()
 
   const normalizeBaseUrl = (url: unknown) => {
     const rawUrl = String(url || '').trim()
@@ -17,28 +19,13 @@ export const useApi = () => {
   const baseURL = normalizeBaseUrl(config.public.apiBaseUrl)
   const defaultTimeout = Number(config.public.apiTimeoutMs || 15000)
 
-  const clearLocalSession = () => {
-    const legacyAdminToken = useCookie('admin_token')
-    const localCendekiaToken = useCookie('cendekia_token')
-    legacyAdminToken.value = null
-    localCendekiaToken.value = null
-
-    useState('admin-cache:pendaftar', () => []).value = []
-    useState('admin-cache:pendaftar-loaded-at', () => 0).value = 0
-    useState('admin-cache:pendaftar-error', () => '').value = ''
-    useState('admin-cache:students', () => []).value = []
-    useState('admin-cache:students-loaded-at', () => 0).value = 0
-    useState('admin-cache:students-error', () => '').value = ''
-    useState<number | null>('admin-auth:id', () => null).value = null
-  }
-
   const handleUnauthorizedResponse = async (showErrorToast: boolean) => {
     if (isHandlingUnauthorized) return
 
     isHandlingUnauthorized = true
 
     try {
-      clearLocalSession()
+      clearAdminSession()
 
       if (showErrorToast) {
         addToast('Sesi telah habis. Silakan login kembali.', 'error')
@@ -46,7 +33,7 @@ export const useApi = () => {
 
       const route = useRoute()
       if (route.path !== '/login') {
-        await navigateTo('/login')
+        await navigateTo('/login', { replace: true })
       }
     } finally {
       isHandlingUnauthorized = false

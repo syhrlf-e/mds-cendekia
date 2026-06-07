@@ -5,11 +5,10 @@ import { useAdminAuthService } from '~/services/useAdminAuthService'
 
 const route = useRoute()
 const router = useRouter()
-const { clearAdminDataCache } = useAdminDataCache()
+const { clearAdminSession } = useAdminSession()
 const { logout } = useAdminAuthService()
 const { addToast } = useToast()
 const adminUsername = useState<string>('admin-auth:username', () => '')
-const adminId = useState<number | null>('admin-auth:id', () => null)
 const isHydrated = ref(false)
 const isAdminMenuOpen = ref(false)
 const isLogoutModalOpen = ref(false)
@@ -44,22 +43,12 @@ const visibleAdminDisplayName = computed(() => isHydrated.value ? adminDisplayNa
 const adminInitial = computed(() => adminDisplayName.value.charAt(0).toUpperCase() || 'A')
 const activePageTitle = computed(() => {
   if (route.path.startsWith('/dashboard')) {
-    return `Hai, Selamat datang kembali ${adminDisplayName.value}`
+    return `Hai, Selamat datang kembali ${visibleAdminDisplayName.value}`
   }
 
   const activeMenu = [...menu, settingsMenu].find(item => isActive(item.path))
   return activeMenu?.pageTitle || activeMenu?.name || 'Admin'
 })
-
-const clearLocalSession = () => {
-  const legacyAdminToken = useCookie('admin_token')
-  const localCendekiaToken = useCookie('cendekia_token')
-  legacyAdminToken.value = null
-  localCendekiaToken.value = null
-  adminUsername.value = ''
-  adminId.value = null
-  clearAdminDataCache()
-}
 
 const handleLogout = async () => {
   if (isLoggingOut.value) return
@@ -71,8 +60,8 @@ const handleLogout = async () => {
     addToast('Sesi lokal ditutup, tetapi logout server belum dapat dikonfirmasi.', 'warning')
   }
 
-  clearLocalSession()
-  await router.push('/login')
+  clearAdminSession()
+  await router.replace('/login')
 
   isLoggingOut.value = false
 }

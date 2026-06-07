@@ -12,6 +12,7 @@ useHead({ title: 'MDS Panel | MDS Cendekia' })
 
 const router = useRouter()
 const { login } = useAdminAuthService()
+const { activateAdminSession } = useAdminSession()
 const { prefetchAdminData } = useAdminDataCache()
 
 const username = ref('')
@@ -102,6 +103,7 @@ const handleLogin = async () => {
 
   if (data?.status || data?.success) {
     localFailedAttempts.value = 0
+    activateAdminSession()
     const adminUsername = useState<string>('admin-auth:username', () => '')
     const adminId = useState<number | null>('admin-auth:id', () => null)
     adminUsername.value = data.data?.username || username.value.trim()
