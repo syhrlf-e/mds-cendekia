@@ -289,7 +289,7 @@ onBeforeUnmount(() => {
       </header>
 
       <div class="min-h-0 grow overflow-auto px-4 pb-4 xl:px-0 xl:py-4">
-        <NuxtPage />
+        <slot />
       </div>
     </main>
 
