@@ -7,6 +7,7 @@ import type {
   RegistrationFile,
   RegistrationStatus
 } from '~/types/adminPendaftaran'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 export const defaultBerkas: RegistrationFile[] = [
   { id: 'foto', name: 'Foto Siswa (3x4 berwarna)', url: '' },
@@ -46,16 +47,6 @@ export const ensurePendaftarArray = (response: unknown): AdminPendaftarDto[] => 
   if (Array.isArray(data?.items)) return data.items
   if (data && typeof data === 'object' && 'id' in data) return [data as AdminPendaftarDto]
   return []
-}
-
-const normalizeAssetUrl = (url: string | undefined, apiBaseUrl: string) => {
-  const rawUrl = String(url || '').trim()
-  if (!rawUrl) return ''
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
-
-  const baseUrl = apiBaseUrl.replace(/\/$/, '')
-  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
-  return `${baseUrl}${path}`
 }
 
 const asBerkasArray = (value?: AdminBerkasDto[] | AdminBerkasDto) => {
@@ -101,10 +92,10 @@ const getBerkasDisplayName = (file: AdminBerkasDto, index: number) => {
     `Berkas ${index + 1}`
 }
 
-const getBerkasUrl = (file: AdminBerkasDto | undefined, apiBaseUrl: string): string => {
+const getBerkasUrl = (file: AdminBerkasDto | undefined, apiBaseUrl: string, allowedOrigins: string): string => {
   if (!file) return ''
 
-  return normalizeAssetUrl(
+  return resolveAllowedAdminAssetUrl(
     file.url ||
     file.url_file ||
     file.file_url ||
@@ -114,15 +105,15 @@ const getBerkasUrl = (file: AdminBerkasDto | undefined, apiBaseUrl: string): str
     file.path_file ||
     file.file_path ||
     file.lokasi_file ||
-    getBerkasUrl(file.data, apiBaseUrl) ||
-    getBerkasUrl(file.file_data, apiBaseUrl),
-    apiBaseUrl
+    getBerkasUrl(file.data, apiBaseUrl, allowedOrigins) ||
+    getBerkasUrl(file.file_data, apiBaseUrl, allowedOrigins),
+    { apiBaseUrl, allowedOrigins }
   )
 }
 
-const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
+const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string, allowedOrigins: string) => {
   const directUrl = item.pass_photo
-  if (directUrl) return normalizeAssetUrl(directUrl, apiBaseUrl)
+  if (directUrl) return resolveAllowedAdminAssetUrl(directUrl, { apiBaseUrl, allowedOrigins })
 
   const berkasList = getAllBerkas(item)
   const fotoBerkas = berkasList.find(file => {
@@ -130,11 +121,11 @@ const getFotoUrl = (item: AdminPendaftarDto, apiBaseUrl: string) => {
     return label.includes('foto') || label.includes('photo') || label.includes('pas')
   })
 
-  return getBerkasUrl(fotoBerkas, apiBaseUrl)
+  return getBerkasUrl(fotoBerkas, apiBaseUrl, allowedOrigins)
 }
 
-const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string): RegistrationFile[] => {
-  const fotoUrl = getFotoUrl(item, apiBaseUrl)
+const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string, allowedOrigins: string): RegistrationFile[] => {
+  const fotoUrl = getFotoUrl(item, apiBaseUrl, allowedOrigins)
   const fotoFile: RegistrationFile[] = fotoUrl
     ? [{
         id: 'foto',
@@ -148,7 +139,7 @@ const getPendaftarBerkasFiles = (item: AdminPendaftarDto, apiBaseUrl: string): R
     .map((file, index) => ({
       id: `${getBerkasDisplayName(file, index)}-${index}`,
       name: getBerkasDisplayName(file, index),
-      url: getBerkasUrl(file, apiBaseUrl)
+      url: getBerkasUrl(file, apiBaseUrl, allowedOrigins)
     }))
     .filter(file => file.url)
     .filter(file => {
@@ -202,10 +193,10 @@ const getPendaftarOrangTua = (item: AdminPendaftarDto): ParentData[] => {
     }))
 }
 
-export const mapPendaftar = (item: AdminPendaftarDto, apiBaseUrl: string): Registration => ({
+export const mapPendaftar = (item: AdminPendaftarDto, apiBaseUrl: string, allowedOrigins = ''): Registration => ({
   id: item.id,
   nama: item.nama,
-  fotoUrl: getFotoUrl(item, apiBaseUrl),
+  fotoUrl: getFotoUrl(item, apiBaseUrl, allowedOrigins),
   nisn: item.nisn,
   sekolah: item.riwayat_pendidikan?.nama_sekolah_asal || '-',
   tanggal: item.created_at,
@@ -228,11 +219,11 @@ export const mapPendaftar = (item: AdminPendaftarDto, apiBaseUrl: string): Regis
   kelurahan: item.kelurahan,
   gelombang: item.gelombang ?? null,
   orangTua: getPendaftarOrangTua(item),
-  berkasFiles: getPendaftarBerkasFiles(item, apiBaseUrl),
+  berkasFiles: getPendaftarBerkasFiles(item, apiBaseUrl, allowedOrigins),
   riwayatPendidikan: item.riwayat_pendidikan || null,
   program: item.program_paket || '-'
 })
 
-export const mapPendaftarList = (response: unknown, apiBaseUrl: string): Registration[] => {
-  return ensurePendaftarArray(response).map(item => mapPendaftar(item, apiBaseUrl))
+export const mapPendaftarList = (response: unknown, apiBaseUrl: string, allowedOrigins = ''): Registration[] => {
+  return ensurePendaftarArray(response).map(item => mapPendaftar(item, apiBaseUrl, allowedOrigins))
 }

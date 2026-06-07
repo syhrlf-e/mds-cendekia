@@ -12,7 +12,13 @@ export const useAdminPendaftaranService = () => {
     })
 
     return {
-      data: error ? [] : mapPendaftarList(data, String(config.public.apiBaseUrl || '')),
+      data: error
+        ? []
+        : mapPendaftarList(
+            data,
+            String(config.public.apiBaseUrl || ''),
+            String(config.public.assetAllowedOrigins || '')
+          ),
       error
     }
   }

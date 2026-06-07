@@ -57,6 +57,10 @@ KTP, KK, ijazah, atau dokumen siswa dapat bocor jika path upload dapat diakses t
 
 Coba akses satu URL dokumen pendaftar dari sesi incognito/tanpa cookie. Respons yang benar adalah `401`/`403`, bukan file.
 
+**Status hardening frontend: selesai pada 7 Juni 2026.**
+
+Frontend sekarang hanya menerima asset dari origin API dan `NUXT_PUBLIC_ASSET_ALLOWED_ORIGINS`. URL asing, protokol tidak aman, serta URL malformed ditolak sebelum render, fetch, PDF preview, atau `window.open`. Proteksi akses file tetap wajib dilakukan backend.
+
 ### SEC-03 - Medium - CSP dimatikan dan CORS server admin terlalu luas
 
 **Bukti**
@@ -254,7 +258,7 @@ Regresi pada login, session expiry, CRUD berita, upload, approve/reject pendafta
 
 ### P1 - Hardening frontend
 
-1. Terapkan CSP bertahap dan allowlist URL asset.
+1. Terapkan CSP bertahap. Allowlist URL asset selesai 7 Juni 2026.
 2. Batasi format upload di UI.
 3. Ganti prefetch global dengan route-aware loading dan pagination server.
 4. Perbaiki dialog accessibility dan PDF lazy rendering.

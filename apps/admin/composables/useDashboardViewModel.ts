@@ -1,5 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { AdminSummaryDto } from '~/types/adminDashboard'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 export type DashboardApplicantMetric = {
   label: string
@@ -88,11 +89,10 @@ export const useDashboardViewModel = (summaryData: Ref<AdminSummaryDto>) => {
   }
 
   const resolveAssetUrl = (path: string) => {
-    if (!path) return ''
-    if (/^https?:\/\//i.test(path)) return path
-
-    const baseUrl = String(config.public.apiBaseUrl || '').replace(/\/$/, '')
-    return `${baseUrl}/${path.replace(/^\//, '')}`
+    return resolveAllowedAdminAssetUrl(path, {
+      apiBaseUrl: String(config.public.apiBaseUrl || ''),
+      allowedOrigins: String(config.public.assetAllowedOrigins || '')
+    })
   }
 
   const applicantStatusLabel = (status: boolean) => status ? 'Diterima' : 'Menunggu'

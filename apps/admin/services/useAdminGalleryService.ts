@@ -1,5 +1,6 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { GalleryDto, GalleryFormState, GalleryItem } from '~/types/adminGallery'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -23,21 +24,6 @@ const readArrayPayload = (payload: any): GalleryDto[] => {
   if (Array.isArray(payload?.gallery)) return payload.gallery
   if (Array.isArray(payload?.data?.gallery)) return payload.data.gallery
   return []
-}
-
-const normalizeAssetPath = (path: string) => path
-  .split('/')
-  .map(segment => encodeURIComponent(segment))
-  .join('/')
-
-const normalizeAssetUrl = (url: unknown, apiBaseUrl: string) => {
-  const rawUrl = normalizeText(url)
-  if (!rawUrl) return ''
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
-
-  const baseUrl = apiBaseUrl.replace(/\/$/, '')
-  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
-  return `${baseUrl}${normalizeAssetPath(path)}`
 }
 
 const normalizeUploadFileName = (name: string) => {
@@ -93,7 +79,7 @@ export const buildPrimaryFirstGalleryRows = (rows: GalleryItem[], primaryId: str
   }))
 }
 
-export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string): GalleryItem | null => {
+export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string, allowedOrigins = ''): GalleryItem | null => {
   const id = normalizeText(item.id)
   const nama = normalizeText(item.nama)
 
@@ -103,7 +89,7 @@ export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string): GalleryIte
     id,
     nama,
     deskripsi: normalizeText(item.deskripsi),
-    gambar: normalizeAssetUrl(item.gambar, apiBaseUrl),
+    gambar: resolveAllowedAdminAssetUrl(item.gambar, { apiBaseUrl, allowedOrigins }),
     isUtama: normalizeBoolean(item.is_utama ?? item.isUtama ?? item.utama),
     urutan: normalizeNumber(item.urutan ?? item.sort_order ?? item.order),
     createdAt: normalizeText(item.created_at),
@@ -144,9 +130,10 @@ export const useAdminGalleryService = () => {
     }
 
     const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+    const allowedOrigins = String(config.public.assetAllowedOrigins || '')
     const rows = readArrayPayload(data)
     const mappedRows = rows
-      .map(item => mapGalleryItem(item, apiBaseUrl))
+      .map(item => mapGalleryItem(item, apiBaseUrl, allowedOrigins))
       .filter((item): item is GalleryItem => Boolean(item))
       .sort((firstItem, secondItem) => {
         if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan

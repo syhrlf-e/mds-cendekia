@@ -1,5 +1,6 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { AdminNewsDto, AdminNewsItem } from '~/types/adminNews'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -9,23 +10,6 @@ export const generateAdminNewsSlug = (text: string) => text
   .replace(/\s+/g, '-')
   .replace(/-+/g, '-')
   .trim()
-
-const normalizeAssetPath = (path: string) => path
-  .split('/')
-  .map(segment => encodeURIComponent(segment))
-  .join('/')
-
-const normalizeAssetUrl = (url: unknown, apiBaseUrl: string) => {
-  const rawUrl = normalizeText(url)
-
-  if (!rawUrl) return ''
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl
-
-  const baseUrl = apiBaseUrl.replace(/\/$/, '')
-  const path = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
-
-  return `${baseUrl}${normalizeAssetPath(path)}`
-}
 
 const isNewsObject = (value: any): value is AdminNewsDto => {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value) && value.id && value.judul)
@@ -43,7 +27,7 @@ const readRows = (payload: any): AdminNewsDto[] => {
   return []
 }
 
-const mapNewsItem = (item: AdminNewsDto, apiBaseUrl: string): AdminNewsItem | null => {
+const mapNewsItem = (item: AdminNewsDto, apiBaseUrl: string, allowedOrigins: string): AdminNewsItem | null => {
   const id = normalizeText(item.id)
   const title = normalizeText(item.judul)
   const content = normalizeText(item.isi)
@@ -59,7 +43,7 @@ const mapNewsItem = (item: AdminNewsDto, apiBaseUrl: string): AdminNewsItem | nu
     category: normalizeText(item.kategori || 'other'),
     tags: normalizeText(item.tags),
     author: normalizeText(item.penulis?.biodata?.nama || item.penulis?.username),
-    image: normalizeAssetUrl(item.gambar, apiBaseUrl),
+    image: resolveAllowedAdminAssetUrl(item.gambar, { apiBaseUrl, allowedOrigins }),
     created_at: normalizeText(item.created_at),
     published: item.published === false || item.status === 'draft' ? false : true,
     is_featured: Boolean(item.is_featured),
@@ -93,11 +77,12 @@ export const useAdminNewsService = () => {
     }
 
     const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+    const allowedOrigins = String(config.public.assetAllowedOrigins || '')
     const rows = readRows(data)
 
     return {
       data: rows
-        .map(item => mapNewsItem(item, apiBaseUrl))
+        .map(item => mapNewsItem(item, apiBaseUrl, allowedOrigins))
         .filter((item): item is AdminNewsItem => Boolean(item)),
       error: null
     }

@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 import type { ToastType } from '~/composables/useToast'
 import type { GalleryFormState, GalleryItem } from '~/types/adminGallery'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 import { validateAdminImageUpload } from '~/utils/adminImageUpload'
 
 type UseAdminGalleryImageFilesOptions = {
@@ -25,6 +26,13 @@ export const useAdminGalleryImageFiles = ({
   editingId,
   addToast
 }: UseAdminGalleryImageFilesOptions) => {
+  const config = useRuntimeConfig()
+
+  const getAllowedRemoteImageUrl = (url: string) => resolveAllowedAdminAssetUrl(url, {
+    apiBaseUrl: String(config.public.apiBaseUrl || ''),
+    allowedOrigins: String(config.public.assetAllowedOrigins || '')
+  })
+
   const revokeImagePreview = () => {
     if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
   }
@@ -59,7 +67,10 @@ export const useAdminGalleryImageFiles = ({
       return null
     }
 
-    const response = await fetch(imagePreview.value, {
+    const remoteImageUrl = getAllowedRemoteImageUrl(imagePreview.value)
+    if (!remoteImageUrl) return null
+
+    const response = await fetch(remoteImageUrl, {
       credentials: 'include'
     })
 
@@ -76,7 +87,10 @@ export const useAdminGalleryImageFiles = ({
   const createFileFromGalleryItem = async (item: GalleryItem) => {
     if (!import.meta.client || !item.gambar) return null
 
-    const response = await fetch(item.gambar, {
+    const remoteImageUrl = getAllowedRemoteImageUrl(item.gambar)
+    if (!remoteImageUrl) return null
+
+    const response = await fetch(remoteImageUrl, {
       credentials: 'include'
     })
 

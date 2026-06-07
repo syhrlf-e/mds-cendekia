@@ -2,6 +2,7 @@
 import { ExternalLink, FileText, XCircle } from 'lucide-vue-next'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { RegistrationFile } from '~/types/adminPendaftaran'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 const props = defineProps<{
   modelValue: boolean
@@ -12,14 +13,19 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
+const config = useRuntimeConfig()
 const pdfPagesRef = ref<HTMLElement | null>(null)
 const isPdfRendering = ref(false)
 const pdfRenderError = ref('')
 const pdfPageCount = ref(0)
 const renderTicket = ref(0)
+const safeFileUrl = computed(() => resolveAllowedAdminAssetUrl(props.file?.url, {
+  apiBaseUrl: String(config.public.apiBaseUrl || ''),
+  allowedOrigins: String(config.public.assetAllowedOrigins || '')
+}))
 
 const previewFileType = computed(() => {
-  const url = props.file?.url.toLowerCase() || ''
+  const url = safeFileUrl.value.toLowerCase()
   const name = props.file?.name.toLowerCase() || ''
   const source = `${url} ${name}`
 
@@ -40,12 +46,12 @@ const closePreview = () => {
 }
 
 const openPreviewInNewTab = () => {
-  if (!import.meta.client || !props.file?.url) return
-  window.open(props.file.url, '_blank', 'noopener,noreferrer')
+  if (!import.meta.client || !safeFileUrl.value) return
+  window.open(safeFileUrl.value, '_blank', 'noopener,noreferrer')
 }
 
 const renderPdfPreview = async () => {
-  if (!import.meta.client || !props.file?.url || previewFileType.value !== 'pdf') return
+  if (!import.meta.client || !safeFileUrl.value || previewFileType.value !== 'pdf') return
 
   const currentTicket = renderTicket.value + 1
   renderTicket.value = currentTicket
@@ -61,7 +67,7 @@ const renderPdfPreview = async () => {
     const pdfjs = await import('pdfjs-dist')
     pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString()
 
-    const loadingTask = pdfjs.getDocument(props.file.url)
+    const loadingTask = pdfjs.getDocument(safeFileUrl.value)
     const pdf = await loadingTask.promise
     if (currentTicket !== renderTicket.value) return
 
@@ -105,11 +111,11 @@ const renderPdfPreview = async () => {
 }
 
 watch(
-  () => [props.modelValue, props.file?.url],
+  () => [props.modelValue, safeFileUrl.value],
   () => {
     renderTicket.value += 1
     clearPdfPreview()
-    if (props.modelValue && props.file && previewFileType.value === 'pdf') void renderPdfPreview()
+    if (props.modelValue && safeFileUrl.value && previewFileType.value === 'pdf') void renderPdfPreview()
   },
   { flush: 'post', immediate: true }
 )
@@ -164,7 +170,7 @@ onBeforeUnmount(() => {
         <div class="flex min-h-full items-start justify-center">
           <img
             v-if="previewFileType === 'image'"
-            :src="file.url"
+            :src="safeFileUrl"
             :alt="file.name"
             class="max-h-full max-w-full object-contain"
           >

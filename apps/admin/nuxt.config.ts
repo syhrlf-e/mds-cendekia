@@ -40,6 +40,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: 'https://api.oirul.com',
+      assetAllowedOrigins: '',
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3',

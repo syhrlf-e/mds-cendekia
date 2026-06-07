@@ -1,7 +1,9 @@
 import { ref } from 'vue'
 import type { RegistrationFile } from '~/types/adminPendaftaran'
+import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 export const usePendaftaranFilePreview = () => {
+  const config = useRuntimeConfig()
   const isFilePreviewOpen = ref(false)
   const previewFile = ref<RegistrationFile | null>(null)
   const viewedFileIds = ref<Set<string>>(new Set())
@@ -18,15 +20,18 @@ export const usePendaftaranFilePreview = () => {
 
   const openFile = (file: RegistrationFile) => {
     if (!import.meta.client) return
-    const url = file.url
+    const url = resolveAllowedAdminAssetUrl(file.url, {
+      apiBaseUrl: String(config.public.apiBaseUrl || ''),
+      allowedOrigins: String(config.public.assetAllowedOrigins || '')
+    })
 
-    if (!url || url === '#') {
-      useToast().addToast('File berkas belum tersedia dari server.', 'error')
+    if (!url) {
+      useToast().addToast('File berkas tidak tersedia atau sumber file tidak diizinkan.', 'error')
       return
     }
 
     viewedFileIds.value = new Set([...viewedFileIds.value, file.id])
-    previewFile.value = file
+    previewFile.value = { ...file, url }
     isFilePreviewOpen.value = true
   }
 

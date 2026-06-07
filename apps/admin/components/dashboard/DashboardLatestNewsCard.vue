@@ -21,7 +21,7 @@ defineProps<{
       >
         <div class="h-[50px] w-[50px] overflow-hidden rounded-lg bg-[#d9d9d9]">
           <img
-            v-if="item.gambar"
+            v-if="resolveAssetUrl(item.gambar)"
             :src="resolveAssetUrl(item.gambar)"
             alt="Gambar berita terbaru"
             class="h-full w-full object-cover"
