@@ -39,6 +39,10 @@ export const useAdminSessionVerifier = () => {
       && Date.now() - verifiedAt < ADMIN_VERIFY_TTL_MS
   }
 
+  const hasVerifiedAdminSession = () => {
+    return verifiedGeneration === getAdminSessionGeneration() && verifiedAt > 0
+  }
+
   const verifyAdminSession = async (options: VerifyOptions = {}) => {
     if (isAdminSessionInvalidated()) return false
     if (!options.force && hasFreshVerification()) return true
@@ -73,6 +77,7 @@ export const useAdminSessionVerifier = () => {
   }
 
   return {
+    hasVerifiedAdminSession,
     markAdminSessionVerified,
     verifyAdminSession
   }

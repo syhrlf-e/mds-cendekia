@@ -8,10 +8,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
       return navigateTo('/login', { replace: true })
     }
 
-    const { verifyAdminSession } = useAdminSessionVerifier()
-    const isAuthenticated = await verifyAdminSession()
-    if (!isAuthenticated) {
-      return navigateTo('/login', { replace: true })
+    const { hasVerifiedAdminSession, verifyAdminSession } = useAdminSessionVerifier()
+
+    if (!hasVerifiedAdminSession()) {
+      const isAuthenticated = await verifyAdminSession()
+      if (!isAuthenticated) {
+        return navigateTo('/login', { replace: true })
+      }
+      return
     }
+
+    void verifyAdminSession({
+      clearOnFailure: false
+    })
   }
 })
