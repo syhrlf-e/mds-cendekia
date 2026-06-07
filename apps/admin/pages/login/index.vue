@@ -11,8 +11,9 @@ definePageMeta({
 useHead({ title: 'MDS Panel | MDS Cendekia' })
 
 const router = useRouter()
-const { login, verify } = useAdminAuthService()
-const { activateAdminSession, isAdminSessionInvalidated } = useAdminSession()
+const { login } = useAdminAuthService()
+const { isAdminSessionInvalidated } = useAdminSession()
+const { markAdminSessionVerified, verifyAdminSession } = useAdminSessionVerifier()
 const { prefetchDashboardSummary } = useAdminDataCache()
 
 const username = ref('')
@@ -154,11 +155,10 @@ const handleLogin = async () => {
   }
 
   if (data?.status || data?.success) {
-    activateAdminSession()
-    const adminUsername = useState<string>('admin-auth:username', () => '')
-    const adminId = useState<number | null>('admin-auth:id', () => null)
-    adminUsername.value = data.data?.username || username.value.trim()
-    adminId.value = data.data?.id || null
+    markAdminSessionVerified({
+      id: data.data?.id,
+      username: data.data?.username || username.value.trim()
+    })
     void prefetchDashboardSummary()
     await router.push('/dashboard')
     return
@@ -184,8 +184,11 @@ onMounted(async () => {
     return
   }
 
-  const { data } = await verify()
-  if (data?.success) {
+  const isAuthenticated = await verifyAdminSession({
+    force: true,
+    clearOnFailure: false
+  })
+  if (isAuthenticated) {
     await router.replace('/dashboard')
     return
   }
