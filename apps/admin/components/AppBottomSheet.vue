@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, useId } from 'vue'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
+  title?: string
+  ariaLabel?: string
+  ariaDescribedby?: string
   closeOnBackdrop?: boolean
   closeOnEscape?: boolean
 }>(), {
@@ -12,32 +15,20 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits(['update:modelValue', 'close'])
+const dialogRef = ref<HTMLElement | null>(null)
+const titleId = `bottom-sheet-title-${useId()}`
+const isOpen = computed(() => props.modelValue)
 
 const close = () => {
   emit('update:modelValue', false)
   emit('close')
 }
 
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
-  }
-})
-
-onMounted(() => {
-  if (props.modelValue) document.body.style.overflow = 'hidden'
-
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.modelValue && props.closeOnEscape) close()
-  }
-  document.addEventListener('keydown', handleEscape)
-
-  onUnmounted(() => {
-    document.body.style.overflow = ''
-    document.removeEventListener('keydown', handleEscape)
-  })
+useAccessibleDialog({
+  isOpen,
+  dialogRef,
+  close,
+  closeOnEscape: () => props.closeOnEscape
 })
 </script>
 
@@ -48,10 +39,23 @@ onMounted(() => {
         <!-- Backdrop -->
         <div
           class="absolute inset-0 bg-black/50 transition-opacity"
+          aria-hidden="true"
           @click="closeOnBackdrop && close()"
         ></div>
 
-        <div class="relative flex h-[85vh] w-full flex-col rounded-t-3xl bg-bg-surface">
+        <div
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="title ? titleId : undefined"
+          :aria-label="title ? undefined : (ariaLabel || 'Panel')"
+          :aria-describedby="ariaDescribedby"
+          tabindex="-1"
+          class="relative flex h-[85vh] w-full flex-col rounded-t-3xl bg-bg-surface"
+        >
+          <h2 v-if="title" :id="titleId" class="sr-only">
+            {{ title }}
+          </h2>
           <div class="w-full flex justify-center pt-3 pb-2 shrink-0">
             <div class="w-12 h-1.5 bg-border rounded-full"></div>
           </div>
