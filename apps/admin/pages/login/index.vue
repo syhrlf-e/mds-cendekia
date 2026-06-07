@@ -29,7 +29,6 @@ const lockoutSeconds = ref(0)
 let timer: ReturnType<typeof setInterval> | null = null
 
 const isLockedOut = computed(() => lockoutSeconds.value > 0)
-const canSubmit = computed(() => username.value.trim() && password.value && !isSubmitting.value && !isLockedOut.value)
 const hasLoginError = computed(() => Boolean(errorMsg.value))
 
 const getErrorStatus = (error: any) => {
@@ -242,7 +241,7 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <form class="flex flex-col gap-4" @submit.prevent="handleLogin">
+        <form class="flex flex-col gap-4" novalidate @submit.prevent="handleLogin">
           <AppInput
             ref="usernameInput"
             v-model="username"
@@ -281,7 +280,7 @@ onUnmounted(() => {
               >
               <button
                 type="button"
-                class="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-50 hover:text-text-primary"
+                class="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-50 hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30"
                 :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
                 :disabled="isSubmitting"
                 @click="showPassword = !showPassword"
@@ -305,7 +304,7 @@ onUnmounted(() => {
           <AppButton
             type="submit"
             variant="primary"
-            :disabled="!canSubmit"
+            :disabled="isLockedOut"
             :loading="isSubmitting"
             class="mt-2 w-full"
           >
