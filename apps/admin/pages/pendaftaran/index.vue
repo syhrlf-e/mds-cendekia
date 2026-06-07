@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import type { Registration } from '~/types/adminPendaftaran'
 
 definePageMeta({
   layout: 'admin',
@@ -57,10 +58,17 @@ const {
   parentSections,
   getBerkasStatusClass,
   getOutlineStatusClass,
-  openDetail,
+  openDetail: openRegistrationDetail,
   focusBerkasTab,
   closeDetail
 } = usePendaftaranDetail(isFilePreviewOpen, closeFilePreview)
+
+const hasLoadedDetailUi = ref(false)
+
+const openDetail = (item: Registration) => {
+  hasLoadedDetailUi.value = true
+  openRegistrationDetail(item)
+}
 
 const loadPendaftar = (force = false) => force ? refreshPendaftar() : loadCachedPendaftar()
 
@@ -119,7 +127,8 @@ onMounted(loadPendaftar)
     @open-detail="openDetail"
   />
 
-  <PendaftaranDetailDrawer
+  <LazyPendaftaranDetailDrawer
+    v-if="hasLoadedDetailUi"
     :model-value="isDetailModalOpen"
     :item="selectedItem"
     :active-tab="activeTab"
@@ -129,7 +138,7 @@ onMounted(loadPendaftar)
     @update:active-tab="activeTab = $event"
   >
     <template v-if="selectedItem">
-      <PendaftaranDetailTabs
+      <LazyPendaftaranDetailTabs
         :active-tab="activeTab"
         :item="selectedItem"
         :field-sections="fieldSections"
@@ -149,7 +158,7 @@ onMounted(loadPendaftar)
     </template>
 
     <template v-if="selectedItem" #footer>
-      <PendaftaranDetailFooter
+      <LazyPendaftaranDetailFooter
         :status="selectedItem.status"
         :is-berkas-verified="isBerkasVerified"
         :is-berkas-rejected="isBerkasRejected"
@@ -162,15 +171,16 @@ onMounted(loadPendaftar)
     </template>
 
     <template #overlay>
-      <PendaftaranFilePreview
+      <LazyPendaftaranFilePreview
         :model-value="isFilePreviewOpen"
         :file="previewFile"
         @update:model-value="handleFilePreviewVisibilityChange"
       />
     </template>
-  </PendaftaranDetailDrawer>
+  </LazyPendaftaranDetailDrawer>
 
-  <PendaftaranDecisionModals
+  <LazyPendaftaranDecisionModals
+    v-if="hasLoadedDetailUi"
     :approve-open="isApproveModalOpen"
     :reject-open="isRejectModalOpen"
     :reject-guard-open="isRejectGuardOpen"

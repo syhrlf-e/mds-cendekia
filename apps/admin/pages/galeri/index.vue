@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AdminGalleryFormModal from '~/components/galeri/AdminGalleryFormModal.vue'
 import AdminGalleryTable from '~/components/galeri/AdminGalleryTable.vue'
 import AdminGalleryToolbar from '~/components/galeri/AdminGalleryToolbar.vue'
 import {
@@ -31,6 +30,7 @@ const {
 const saving = ref(false)
 const savingOrder = ref(false)
 const isFormOpen = ref(false)
+const hasLoadedFormModal = ref(false)
 const isEdit = ref(false)
 const editingId = ref('')
 const imagePreview = ref('')
@@ -88,6 +88,7 @@ const refreshGalleryList = async () => {
 const openCreate = () => {
   resetForm()
   form.value.isUtama = !primaryGalleryItem.value
+  hasLoadedFormModal.value = true
   isFormOpen.value = true
 }
 
@@ -103,6 +104,7 @@ const openEdit = (item: GalleryItem) => {
     urutan: item.urutan,
     isUtama: item.isUtama
   }
+  hasLoadedFormModal.value = true
   isFormOpen.value = true
 }
 
@@ -325,7 +327,8 @@ onBeforeUnmount(() => {
       @page-change="currentPage = $event"
     />
 
-    <AdminGalleryFormModal
+    <LazyAdminGalleryFormModal
+      v-if="hasLoadedFormModal"
       v-model="isFormOpen"
       v-model:form="form"
       :is-edit="isEdit"
