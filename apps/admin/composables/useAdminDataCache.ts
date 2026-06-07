@@ -90,7 +90,13 @@ export const useAdminDataCache = () => {
 
   const fetchDashboardSummary = async (options: LoadOptions = {}) => {
     if (dashboardSummaryRequest) {
-      await dashboardSummaryRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) dashboardSummaryLoading.value = true
+      try {
+        await dashboardSummaryRequest
+      } finally {
+        if (shouldShowLoading) dashboardSummaryLoading.value = false
+      }
       return
     }
 
@@ -123,7 +129,13 @@ export const useAdminDataCache = () => {
 
   const fetchPendaftar = async (options: LoadOptions = {}) => {
     if (pendaftarRequest) {
-      await pendaftarRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) pendaftarLoading.value = true
+      try {
+        await pendaftarRequest
+      } finally {
+        if (shouldShowLoading) pendaftarLoading.value = false
+      }
       return
     }
 
@@ -157,7 +169,13 @@ export const useAdminDataCache = () => {
 
   const fetchStudents = async (options: LoadOptions = {}) => {
     if (studentsRequest) {
-      await studentsRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) studentsLoading.value = true
+      try {
+        await studentsRequest
+      } finally {
+        if (shouldShowLoading) studentsLoading.value = false
+      }
       return
     }
 
@@ -190,7 +208,13 @@ export const useAdminDataCache = () => {
 
   const fetchNews = async (options: LoadOptions = {}) => {
     if (newsRequest) {
-      await newsRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) newsLoading.value = true
+      try {
+        await newsRequest
+      } finally {
+        if (shouldShowLoading) newsLoading.value = false
+      }
       return
     }
 
@@ -224,7 +248,13 @@ export const useAdminDataCache = () => {
 
   const fetchGallery = async (options: LoadOptions = {}) => {
     if (galleryRequest) {
-      await galleryRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) galleryLoading.value = true
+      try {
+        await galleryRequest
+      } finally {
+        if (shouldShowLoading) galleryLoading.value = false
+      }
       return
     }
 
@@ -258,7 +288,13 @@ export const useAdminDataCache = () => {
 
   const fetchTimeline = async (options: LoadOptions = {}) => {
     if (timelineRequest) {
-      await timelineRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) timelineLoading.value = true
+      try {
+        await timelineRequest
+      } finally {
+        if (shouldShowLoading) timelineLoading.value = false
+      }
       return
     }
 
@@ -292,7 +328,13 @@ export const useAdminDataCache = () => {
 
   const fetchPackages = async (options: LoadOptions = {}) => {
     if (packagesRequest) {
-      await packagesRequest
+      const shouldShowLoading = !options.background
+      if (shouldShowLoading) packagesLoading.value = true
+      try {
+        await packagesRequest
+      } finally {
+        if (shouldShowLoading) packagesLoading.value = false
+      }
       return
     }
 

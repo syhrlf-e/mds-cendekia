@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { preloadRouteComponents } from '#app'
 import { CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, Menu, Newspaper, PackageOpen, School, Settings, Users, X } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { useAccessibleDialog } from '~/composables/useAccessibleDialog'
@@ -9,6 +10,15 @@ const router = useRouter()
 const { clearAdminSession } = useAdminSession()
 const { logout } = useAdminAuthService()
 const { addToast } = useToast()
+const {
+  loadDashboardSummary,
+  loadPendaftar,
+  loadStudents,
+  loadTimeline,
+  loadPackages,
+  loadNews,
+  loadGallery
+} = useAdminDataCache()
 const adminUsername = useState<string>('admin-auth:username', () => '')
 const isHydrated = ref(false)
 const isMobileNavigationOpen = ref(false)
@@ -31,6 +41,36 @@ const menu = [
 const settingsMenu = { name: 'Pengaturan', path: '/pengaturan', icon: Settings, pageTitle: 'Pengaturan' }
 
 const isActive = (path: string) => route.path.startsWith(path)
+
+const prefetchAdminMenu = (path: string) => {
+  if (isActive(path)) return
+
+  void preloadRouteComponents(path)
+
+  switch (path) {
+    case '/dashboard':
+      void loadDashboardSummary({ background: true })
+      break
+    case '/pendaftaran':
+      void loadPendaftar({ background: true })
+      break
+    case '/siswa':
+      void loadStudents({ background: true })
+      break
+    case '/timeline-ppdb':
+      void loadTimeline({ background: true })
+      break
+    case '/paket-sekolah':
+      void loadPackages({ background: true })
+      break
+    case '/berita':
+      void loadNews({ background: true })
+      break
+    case '/galeri':
+      void loadGallery({ background: true })
+      break
+  }
+}
 
 const formatAdminName = (username: string) => {
   const normalized = username.trim().replace(/[._-]+/g, ' ')
@@ -158,6 +198,8 @@ onBeforeUnmount(() => {
                 :to="item.path"
                 class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
                 :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                @pointerenter="prefetchAdminMenu(item.path)"
+                @focus="prefetchAdminMenu(item.path)"
               >
                 <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
                 {{ item.name }}
@@ -169,6 +211,8 @@ onBeforeUnmount(() => {
                 :to="settingsMenu.path"
                 class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
                 :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                @pointerenter="prefetchAdminMenu(settingsMenu.path)"
+                @focus="prefetchAdminMenu(settingsMenu.path)"
               >
                 <component :is="settingsMenu.icon" class="h-5 w-5 shrink-0 transition-colors" />
                 {{ settingsMenu.name }}
@@ -200,6 +244,8 @@ onBeforeUnmount(() => {
           :to="item.path"
           class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
           :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+          @pointerenter="prefetchAdminMenu(item.path)"
+          @focus="prefetchAdminMenu(item.path)"
         >
           <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
           {{ item.name }}
@@ -211,6 +257,8 @@ onBeforeUnmount(() => {
           :to="settingsMenu.path"
           class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
           :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+          @pointerenter="prefetchAdminMenu(settingsMenu.path)"
+          @focus="prefetchAdminMenu(settingsMenu.path)"
         >
           <component :is="settingsMenu.icon" class="h-5 w-5 shrink-0 transition-colors" />
           {{ settingsMenu.name }}
