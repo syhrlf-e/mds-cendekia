@@ -90,7 +90,7 @@ export const useAdminDataCache = () => {
 
   const fetchDashboardSummary = async (options: LoadOptions = {}) => {
     if (dashboardSummaryRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasDashboardSummaryCache.value
       if (shouldShowLoading) dashboardSummaryLoading.value = true
       try {
         await dashboardSummaryRequest
@@ -100,7 +100,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasDashboardSummaryCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) dashboardSummaryLoading.value = true
     dashboardSummaryError.value = ''
@@ -129,7 +129,7 @@ export const useAdminDataCache = () => {
 
   const fetchPendaftar = async (options: LoadOptions = {}) => {
     if (pendaftarRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasPendaftarCache.value
       if (shouldShowLoading) pendaftarLoading.value = true
       try {
         await pendaftarRequest
@@ -139,7 +139,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasPendaftarCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) pendaftarLoading.value = true
     pendaftarError.value = ''
@@ -150,7 +150,7 @@ export const useAdminDataCache = () => {
         if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
-          if (options.background && pendaftar.value.length) return
+          if (options.background && hasPendaftarCache.value) return
           pendaftarError.value = readErrorMessage(error, 'Data pendaftar belum bisa diambil.')
           if (!pendaftar.value.length) pendaftar.value = []
           return
@@ -169,7 +169,7 @@ export const useAdminDataCache = () => {
 
   const fetchStudents = async (options: LoadOptions = {}) => {
     if (studentsRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasStudentsCache.value
       if (shouldShowLoading) studentsLoading.value = true
       try {
         await studentsRequest
@@ -179,7 +179,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasStudentsCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) studentsLoading.value = true
     studentsError.value = ''
@@ -189,7 +189,7 @@ export const useAdminDataCache = () => {
         const { data, error } = await siswaService.listStudents()
         if (requestGeneration !== getAdminSessionGeneration()) return
 
-        if (error && options.background && students.value.length) return
+        if (error && options.background && hasStudentsCache.value) return
 
         students.value = data
         studentsError.value = error ? readErrorMessage(error, 'Data siswa belum bisa diambil dari server.') : ''
@@ -208,7 +208,7 @@ export const useAdminDataCache = () => {
 
   const fetchNews = async (options: LoadOptions = {}) => {
     if (newsRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasNewsCache.value
       if (shouldShowLoading) newsLoading.value = true
       try {
         await newsRequest
@@ -218,7 +218,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasNewsCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) newsLoading.value = true
     newsError.value = ''
@@ -229,7 +229,7 @@ export const useAdminDataCache = () => {
         if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
-          if (options.background && news.value.length) return
+          if (options.background && hasNewsCache.value) return
           newsError.value = readErrorMessage(error, 'Data berita belum bisa diambil dari server.')
           if (!news.value.length) news.value = []
           return
@@ -248,7 +248,7 @@ export const useAdminDataCache = () => {
 
   const fetchGallery = async (options: LoadOptions = {}) => {
     if (galleryRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasGalleryCache.value
       if (shouldShowLoading) galleryLoading.value = true
       try {
         await galleryRequest
@@ -258,7 +258,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasGalleryCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) galleryLoading.value = true
     galleryError.value = ''
@@ -269,7 +269,7 @@ export const useAdminDataCache = () => {
         if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
-          if (options.background && galleryItems.value.length) return
+          if (options.background && hasGalleryCache.value) return
           galleryError.value = readErrorMessage(error, 'Data galeri belum bisa diambil dari server.')
           if (!galleryItems.value.length) galleryItems.value = []
           return
@@ -288,7 +288,7 @@ export const useAdminDataCache = () => {
 
   const fetchTimeline = async (options: LoadOptions = {}) => {
     if (timelineRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasTimelineCache.value
       if (shouldShowLoading) timelineLoading.value = true
       try {
         await timelineRequest
@@ -298,7 +298,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasTimelineCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) timelineLoading.value = true
     timelineError.value = ''
@@ -309,7 +309,7 @@ export const useAdminDataCache = () => {
         if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error || !data?.success) {
-          if (options.background && timelineItems.value.length) return
+          if (options.background && hasTimelineCache.value) return
           timelineError.value = readErrorMessage(error, 'Data pelaksanaan PPDB belum bisa diambil dari server.')
           if (!timelineItems.value.length) timelineItems.value = []
           return
@@ -328,7 +328,7 @@ export const useAdminDataCache = () => {
 
   const fetchPackages = async (options: LoadOptions = {}) => {
     if (packagesRequest) {
-      const shouldShowLoading = !options.background
+      const shouldShowLoading = !options.background && !hasPackagesCache.value
       if (shouldShowLoading) packagesLoading.value = true
       try {
         await packagesRequest
@@ -338,7 +338,7 @@ export const useAdminDataCache = () => {
       return
     }
 
-    const shouldShowLoading = !options.background
+    const shouldShowLoading = !options.background && !hasPackagesCache.value
     const requestGeneration = getAdminSessionGeneration()
     if (shouldShowLoading) packagesLoading.value = true
     packagesError.value = ''
@@ -349,7 +349,7 @@ export const useAdminDataCache = () => {
         if (requestGeneration !== getAdminSessionGeneration()) return
 
         if (error) {
-          if (options.background && packages.value.length) return
+          if (options.background && hasPackagesCache.value) return
           packagesError.value = readErrorMessage(error, 'Data paket sekolah belum bisa diambil dari server.')
           if (!packages.value.length) packages.value = []
           return
@@ -429,13 +429,20 @@ export const useAdminDataCache = () => {
     await fetchPackages(options)
   }
 
-  const refreshDashboardSummary = () => loadDashboardSummary({ force: true })
-  const refreshPendaftar = () => loadPendaftar({ force: true })
-  const refreshStudents = () => loadStudents({ force: true })
-  const refreshNews = () => loadNews({ force: true })
-  const refreshGallery = () => loadGallery({ force: true })
-  const refreshTimeline = () => loadTimeline({ force: true })
-  const refreshPackages = () => loadPackages({ force: true })
+  const refreshDashboardSummary = () =>
+    loadDashboardSummary({ force: true, background: hasDashboardSummaryCache.value })
+  const refreshPendaftar = () =>
+    loadPendaftar({ force: true, background: hasPendaftarCache.value })
+  const refreshStudents = () =>
+    loadStudents({ force: true, background: hasStudentsCache.value })
+  const refreshNews = () =>
+    loadNews({ force: true, background: hasNewsCache.value })
+  const refreshGallery = () =>
+    loadGallery({ force: true, background: hasGalleryCache.value })
+  const refreshTimeline = () =>
+    loadTimeline({ force: true, background: hasTimelineCache.value })
+  const refreshPackages = () =>
+    loadPackages({ force: true, background: hasPackagesCache.value })
 
   const prefetchDashboardSummary = () =>
     loadDashboardSummary({ background: hasDashboardSummaryCache.value })
