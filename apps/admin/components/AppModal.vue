@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
 import { computed, ref, useId } from 'vue'
+import { useAccessibleDialog } from '~/composables/useAccessibleDialog'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean

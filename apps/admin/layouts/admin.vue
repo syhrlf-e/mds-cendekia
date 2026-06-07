@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, MonitorX, Newspaper, PackageOpen, School, Settings, Users } from 'lucide-vue-next'
+import { CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, Menu, Newspaper, PackageOpen, School, Settings, Users, X } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
+import { useAccessibleDialog } from '~/composables/useAccessibleDialog'
 import { useAdminAuthService } from '~/services/useAdminAuthService'
 
 const route = useRoute()
@@ -10,9 +11,12 @@ const { logout } = useAdminAuthService()
 const { addToast } = useToast()
 const adminUsername = useState<string>('admin-auth:username', () => '')
 const isHydrated = ref(false)
+const isMobileNavigationOpen = ref(false)
 const isAdminMenuOpen = ref(false)
 const isLogoutModalOpen = ref(false)
 const isLoggingOut = ref(false)
+const mobileNavigationRef = ref<HTMLElement | null>(null)
+let desktopMediaQuery: MediaQueryList | null = null
 
 const menu = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -71,24 +75,111 @@ const openLogoutModal = () => {
   isLogoutModalOpen.value = true
 }
 
+const closeMobileNavigation = () => {
+  isMobileNavigationOpen.value = false
+}
+
+const handleDesktopViewport = (event: MediaQueryListEvent | MediaQueryList) => {
+  if (event.matches) closeMobileNavigation()
+}
+
+useAccessibleDialog({
+  isOpen: isMobileNavigationOpen,
+  dialogRef: mobileNavigationRef,
+  close: closeMobileNavigation,
+  closeOnEscape: () => true
+})
+
+watch(() => route.path, () => {
+  closeMobileNavigation()
+  isAdminMenuOpen.value = false
+})
+
 onMounted(() => {
   isHydrated.value = true
+  desktopMediaQuery = window.matchMedia('(min-width: 1280px)')
+  desktopMediaQuery.addEventListener('change', handleDesktopViewport)
+  handleDesktopViewport(desktopMediaQuery)
+})
+
+onBeforeUnmount(() => {
+  desktopMediaQuery?.removeEventListener('change', handleDesktopViewport)
 })
 </script>
 
 <template>
-  <div class="flex h-screen min-w-5xl overflow-hidden bg-gray-100 text-text-primary">
-    <div class="fixed inset-0 z-100 flex flex-col items-center justify-center bg-bg-surface p-8 text-center lg:hidden">
-      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-error/10 text-error">
-        <MonitorX class="h-8 w-8" />
-      </div>
-      <h2 class="mb-2 text-[28px] font-semibold leading-[1.2] tracking-[-0.2px] text-text-primary">Akses Dibatasi</h2>
-      <p class="max-w-md text-[17px] leading-[1.47] tracking-[-0.2px] text-text-secondary">
-        Halaman Admin hanya dapat diakses melalui perangkat <strong>Desktop</strong>. Silakan buka halaman ini di komputer atau laptop Anda.
-      </p>
-    </div>
+  <div class="flex h-dvh min-w-0 overflow-hidden bg-gray-100 text-text-primary">
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-to-class="opacity-0"
+      >
+        <div v-if="isMobileNavigationOpen" class="fixed inset-0 z-[90] xl:hidden">
+          <button
+            type="button"
+            class="absolute inset-0 bg-black/45"
+            aria-label="Tutup navigasi"
+            @click="closeMobileNavigation"
+          />
 
-    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface lg:flex">
+          <aside
+            ref="mobileNavigationRef"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigasi admin"
+            tabindex="-1"
+            class="relative flex h-full w-[min(320px,calc(100vw-48px))] flex-col overflow-hidden bg-bg-surface shadow-2xl"
+          >
+            <div class="flex h-18 shrink-0 items-center gap-3 border-b border-border-soft px-5">
+              <img
+                src="/images/logo-mds-main.png"
+                alt="Logo MDS Cendekia"
+                class="h-10 w-10 object-contain"
+              >
+              <div class="grow text-[18px] font-extrabold leading-tight tracking-[-0.15px] text-text-primary">
+                MDS Panel
+              </div>
+              <button
+                type="button"
+                class="flex h-11 w-11 items-center justify-center rounded-xl text-text-secondary transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30"
+                aria-label="Tutup navigasi"
+                @click="closeMobileNavigation"
+              >
+                <X class="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav class="flex min-h-0 grow flex-col gap-1.5 overflow-y-auto px-4 py-5">
+              <NuxtLink
+                v-for="item in menu"
+                :key="item.name"
+                :to="item.path"
+                class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+              >
+                <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
+                {{ item.name }}
+              </NuxtLink>
+            </nav>
+
+            <div class="shrink-0 border-t border-border-soft p-4">
+              <NuxtLink
+                :to="settingsMenu.path"
+                class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+              >
+                <component :is="settingsMenu.icon" class="h-5 w-5 shrink-0 transition-colors" />
+                {{ settingsMenu.name }}
+              </NuxtLink>
+            </div>
+          </aside>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface xl:flex">
       <div class="flex h-20 shrink-0 items-center gap-3 border-b border-border-soft px-6">
         <img
           src="/images/logo-mds-main.png"
@@ -127,15 +218,24 @@ onMounted(() => {
       </div>
     </aside>
 
-    <main class="relative hidden h-full min-w-0 grow flex-col overflow-hidden bg-gray-100 lg:flex">
-      <header class="relative z-30 mt-4 flex h-20 shrink-0 items-center justify-between">
-        <div class="flex h-16 max-w-[764px] items-center rounded-full bg-bg-surface px-8">
-          <p class="truncate font-heading text-[26px] font-normal leading-normal text-dashboard-text">
+    <main class="relative flex h-full min-w-0 grow flex-col overflow-hidden bg-gray-100">
+      <header class="relative z-30 flex h-20 shrink-0 items-center justify-between gap-3 px-4 xl:mt-4 xl:px-0">
+        <div class="flex h-14 min-w-0 grow items-center gap-2 rounded-2xl bg-bg-surface px-2 sm:h-16 sm:gap-3 sm:px-4 xl:max-w-[764px] xl:rounded-full xl:px-8">
+          <button
+            type="button"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-dashboard-text transition-colors hover:bg-bg-base focus:outline-none focus:ring-2 focus:ring-brand/30 xl:hidden"
+            aria-label="Buka navigasi"
+            :aria-expanded="isMobileNavigationOpen"
+            @click="isMobileNavigationOpen = true"
+          >
+            <Menu class="h-5 w-5" />
+          </button>
+          <p class="truncate font-heading text-lg font-normal leading-normal text-dashboard-text sm:text-xl xl:text-[26px]">
             {{ activePageTitle }}
           </p>
         </div>
 
-        <div class="relative h-20 w-[253px] shrink-0">
+        <div class="relative h-14 w-14 shrink-0 sm:h-16 sm:w-16 xl:h-20 xl:w-[253px]">
           <div
             v-if="isAdminMenuOpen"
             class="fixed inset-0 z-10"
@@ -143,29 +243,35 @@ onMounted(() => {
           />
 
           <div
-            class="absolute right-0 top-0 z-20 flex w-[253px] flex-col overflow-hidden rounded-[40px] bg-bg-surface transition-[height] duration-300 ease-out"
-            :class="isAdminMenuOpen ? 'h-36' : 'h-20'"
+            class="absolute right-0 top-0 z-20 flex flex-col overflow-hidden bg-bg-surface transition-[height,width] duration-300 ease-out"
+            :class="[
+              isAdminMenuOpen ? 'h-34 w-[min(253px,calc(100vw-32px))] rounded-3xl xl:h-36 xl:w-[253px] xl:rounded-[40px]' : 'h-14 w-14 rounded-2xl sm:h-16 sm:w-16 xl:h-20 xl:w-[253px] xl:rounded-[40px]'
+            ]"
           >
             <button
               type="button"
-              class="flex h-20 w-[253px] shrink-0 items-center gap-3 border-0 bg-bg-surface px-4 text-dashboard-text outline-none focus:outline-none"
+              class="flex h-14 w-full shrink-0 items-center gap-3 border-0 bg-bg-surface px-2 text-dashboard-text outline-none focus:outline-none sm:h-16 xl:h-20 xl:px-4"
               :aria-expanded="isAdminMenuOpen"
+              aria-label="Buka menu akun admin"
               @click="isAdminMenuOpen = !isAdminMenuOpen"
             >
-              <div class="flex size-[46px] shrink-0 items-center justify-center rounded-full bg-brand font-heading text-xl font-medium text-white">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-lg font-medium text-white sm:size-12 xl:size-[46px] xl:text-xl">
                 {{ isHydrated ? adminInitial : 'A' }}
               </div>
-              <p class="min-w-0 grow truncate text-left font-heading text-base font-medium leading-normal text-dashboard-text">
+              <p
+                class="min-w-0 grow truncate text-left font-heading text-base font-medium leading-normal text-dashboard-text"
+                :class="isAdminMenuOpen ? 'block' : 'hidden xl:block'"
+              >
                 {{ visibleAdminDisplayName }}
               </p>
               <ChevronDown
                 class="size-5 shrink-0 text-dashboard-text transition-transform duration-300"
-                :class="isAdminMenuOpen ? 'rotate-180' : ''"
+                :class="[isAdminMenuOpen ? 'rotate-180' : '', isAdminMenuOpen ? 'block' : 'hidden xl:block']"
               />
             </button>
 
             <div
-              class="flex h-16 shrink-0 items-center justify-center border-t border-border-soft transition-opacity duration-200"
+              class="flex h-18 shrink-0 items-center justify-center border-t border-border-soft transition-opacity duration-200 xl:h-16"
               :class="isAdminMenuOpen ? 'opacity-100 delay-100' : 'pointer-events-none opacity-0'"
             >
               <button
@@ -182,7 +288,7 @@ onMounted(() => {
         </div>
       </header>
 
-      <div class="min-h-0 grow overflow-y-auto py-4">
+      <div class="min-h-0 grow overflow-auto px-4 pb-4 xl:px-0 xl:py-4">
         <NuxtPage />
       </div>
     </main>

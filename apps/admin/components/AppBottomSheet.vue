@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useId } from 'vue'
+import { useAccessibleDialog } from '~/composables/useAccessibleDialog'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean

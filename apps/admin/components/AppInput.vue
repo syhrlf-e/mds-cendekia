@@ -21,6 +21,8 @@ const props = withDefaults(
     name?: string
     type?: string
     autocomplete?: string
+    autocapitalize?: string
+    spellcheck?: boolean
     inputmode?: InputMode
     maxlength?: number
     placeholder?: string
@@ -51,6 +53,8 @@ const inputId = computed(() => {
   if (props.name) return `input-${props.name}`
   return `input-${fallbackId}`
 })
+const errorId = computed(() => `${inputId.value}-error`)
+const isInvalid = computed(() => Boolean(props.error || props.invalid))
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -65,6 +69,12 @@ const handleInput = (event: Event) => {
 
   emit('update:modelValue', sanitizedValue)
 }
+
+const focus = () => {
+  document.getElementById(inputId.value)?.focus()
+}
+
+defineExpose({ focus })
 </script>
 
 <template>
@@ -97,11 +107,17 @@ const handleInput = (event: Event) => {
         :name="name"
         :type="type"
         :autocomplete="autocomplete"
+        :autocapitalize="autocapitalize"
+        :spellcheck="spellcheck"
         :value="modelValue"
         :inputmode="inputmode"
         :maxlength="maxlength"
         :placeholder="placeholder"
+        :required="required"
         :disabled="disabled"
+        :aria-required="required || undefined"
+        :aria-invalid="isInvalid || undefined"
+        :aria-describedby="error ? errorId : undefined"
         :class="[
           'h-11 w-full rounded-lg border bg-bg-surface text-[17px] leading-[1.47] tracking-[-0.2px] text-text-primary outline-none transition-colors placeholder:text-text-muted',
           prefix ? 'pl-11 pr-4' : 'px-4',
@@ -120,6 +136,8 @@ const handleInput = (event: Event) => {
 
     <span
       v-if="error"
+      :id="errorId"
+      role="alert"
       class="text-xs text-error"
     >
       {{ error }}

@@ -37,6 +37,7 @@ const variantClasses = computed(() => {
   <button
     :type="type"
     :disabled="disabled || loading"
+    :aria-busy="loading || undefined"
     :class="[
       'inline-flex min-h-11 items-center justify-center font-medium leading-none transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97]',
       variantClasses,
@@ -44,7 +45,7 @@ const variantClasses = computed(() => {
     ]"
     @click="$emit('click', $event)"
   >
-    <div v-if="loading" class="dot-wave mr-2">
+    <div v-if="loading" class="dot-wave mr-2" aria-hidden="true">
       <span class="bg-current"></span>
       <span class="bg-current"></span>
       <span class="bg-current"></span>
