@@ -35,7 +35,7 @@ export default defineNuxtConfig({
     port: 3001
   },
 
-  devtools: { enabled: true },
+  devtools: { enabled: import.meta.dev },
 
   runtimeConfig: {
     public: {

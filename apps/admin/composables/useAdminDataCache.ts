@@ -395,17 +395,8 @@ export const useAdminDataCache = () => {
   const refreshTimeline = () => loadTimeline({ force: true })
   const refreshPackages = () => loadPackages({ force: true })
 
-  const prefetchAdminData = async () => {
-    await Promise.allSettled([
-      loadDashboardSummary({ background: hasDashboardSummaryCache.value }),
-      loadPendaftar({ background: hasPendaftarCache.value }),
-      loadStudents({ background: hasStudentsCache.value }),
-      loadTimeline({ background: hasTimelineCache.value }),
-      loadPackages({ background: hasPackagesCache.value }),
-      loadNews({ background: hasNewsCache.value }),
-      loadGallery({ background: hasGalleryCache.value })
-    ])
-  }
+  const prefetchDashboardSummary = () =>
+    loadDashboardSummary({ background: hasDashboardSummaryCache.value })
 
   const clearAdminDataCache = () => {
     dashboardSummary.value = createEmptyDashboardSummary()
@@ -467,7 +458,7 @@ export const useAdminDataCache = () => {
     refreshGallery,
     refreshTimeline,
     refreshPackages,
-    prefetchAdminData,
+    prefetchDashboardSummary,
     clearAdminDataCache
   }
 }
