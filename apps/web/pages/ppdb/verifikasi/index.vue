@@ -149,18 +149,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-116px)] bg-white pb-28 pt-10 md:min-h-[calc(100vh-132px)] md:py-14">
+  <div class="min-h-[calc(100vh-116px)] bg-white pb-28 pt-[68px] md:min-h-[calc(100vh-132px)] md:py-14">
     <button
       v-if="viewState === 'idle'"
       type="button"
-      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/90 py-2 pl-2 pr-3 text-[13px] font-medium text-text-primary shadow-sm backdrop-blur transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
+      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1 rounded-lg py-2 pl-1 pr-2 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
       @click="router.push('/ppdb')"
     >
-      <ChevronLeft class="h-4.5 w-4.5" />
+      <ChevronLeft class="h-[18px] w-[18px]" />
       Kembali
     </button>
 
-    <div class="public-navbar-container flex min-h-[calc(100vh-196px)] items-center justify-center md:min-h-[calc(100vh-244px)]">
+    <div class="public-navbar-container flex min-h-[calc(100vh-200px)] items-start justify-center md:min-h-[calc(100vh-244px)] md:items-center">
       <section class="w-full max-w-xl">
 
         <!-- ── STATE: IDLE ── -->

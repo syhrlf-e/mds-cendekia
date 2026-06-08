@@ -115,11 +115,11 @@ const handleInput = (event: Event) => {
         :aria-invalid="error || invalid ? 'true' : 'false'"
         :aria-describedby="describedBy"
         :class="[
-          'h-11 w-full rounded-lg border bg-bg-surface text-sm leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted md:text-base',
+          'h-11 w-full rounded-lg border bg-bg-surface text-sm leading-normal tracking-normal text-text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-colors placeholder:text-text-muted md:text-base',
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
             ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'
-            : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
+            : 'border-border-soft focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
           disabled
             ? 'cursor-not-allowed bg-bg-parchment text-text-muted opacity-100'
             : ''
