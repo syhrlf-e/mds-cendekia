@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ChevronLeft, SearchX } from 'lucide-vue-next'
+import { SearchX } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
 
-definePageMeta({ layout: 'ppdb-form' })
+definePageMeta({
+  layout: 'ppdb-form',
+  ppdbHeaderTitle: 'Cek Status',
+  ppdbBackPath: '/ppdb'
+})
 
 type CheckState = 'initial' | 'loading' | 'success' | 'not-found'
 type StatusResult = {
@@ -236,16 +240,6 @@ const checkAnother = () => {
 
 <template>
   <div class="h-[calc(100vh-116px)] overflow-hidden bg-bg-base pb-28 pt-[68px] md:h-[calc(100vh-132px)] md:py-8">
-    <button
-      v-if="!hasResult"
-      type="button"
-      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1.5 rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 focus:outline-none sm:hidden"
-      @click="router.push('/ppdb')"
-    >
-      <ChevronLeft class="h-[18px] w-[18px]" />
-      Kembali
-    </button>
-
     <div class="public-navbar-container h-full">
       <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-start md:justify-center">
         <div class="mb-7 text-center md:mb-8">

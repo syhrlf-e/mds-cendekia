@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import {
   agamaOptions,
   createDefaultProgramOptions,
@@ -24,7 +24,10 @@ useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
 definePageMeta({
   layout: 'ppdb-form',
-  middleware: ['ppdb-verified-client']
+  middleware: ['ppdb-verified-client'],
+  hideMobilePpdbFooter: true,
+  ppdbHeaderTitle: 'Formulir PPDB',
+  ppdbBackPath: '/ppdb'
 })
 
 const {
@@ -196,13 +199,34 @@ const {
   nextPath: '/ppdb/daftar/berkas',
   fallbackPath: '/ppdb'
 })
+
+const handleMobileHeaderBack = (event: Event) => {
+  event.preventDefault()
+  const target = (event as CustomEvent<{ to?: string }>).detail?.to || '/ppdb'
+  requestLeave(target)
+}
+
+onMounted(() => {
+  window.addEventListener('ppdb-mobile-back', handleMobileHeaderBack)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('ppdb-mobile-back', handleMobileHeaderBack)
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
+  <div class="min-h-screen bg-bg-base pb-48 pt-[150px] md:py-10 xl:py-12">
+    <div class="fixed inset-x-0 top-[61px] z-40 bg-bg-base px-4 pb-4 pt-4 sm:hidden">
+      <div class="mx-auto w-full max-w-6xl">
+        <h1 class="font-heading text-xl font-bold leading-tight text-text-primary">Formulir Pendaftaran</h1>
+        <p class="mt-1 text-sm leading-5 text-text-secondary">Lengkapi data di bawah ini dengan benar.</p>
+      </div>
+    </div>
+
     <div class="public-navbar-container">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-2">
-        <div class="mb-4 md:mb-5">
+        <div class="mb-4 hidden sm:block md:mb-5">
           <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
           <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
         </div>
@@ -386,10 +410,10 @@ const {
         </div>
       </AppAccordion>
 
-      <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="mt-5 hidden gap-3 sm:flex sm:items-center sm:justify-between">
         <AppButton
           variant="secondary"
-          class="w-full sm:w-auto"
+          class="sm:w-auto"
           @click="requestLeave('/ppdb')"
         >
           Kembali
@@ -398,7 +422,7 @@ const {
           variant="primary"
           :disabled="!isAllValid"
           @click="proceedNext"
-          class="w-full sm:w-auto shadow-md"
+          class="sm:w-auto shadow-md"
         >
           Berikutnya
         </AppButton>
@@ -409,6 +433,27 @@ const {
         >
           {{ nextIncompleteSectionMessage }}
         </p>
+        </div>
+
+        <div class="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+          <p
+            v-if="nextIncompleteSectionMessage"
+            role="status"
+            class="mx-auto mb-2 max-w-xl text-center text-xs leading-5 text-text-secondary"
+          >
+            {{ nextIncompleteSectionMessage }}
+          </p>
+          <AppButton
+            variant="primary"
+            :disabled="!isAllValid"
+            class="mx-auto flex w-full max-w-xl shadow-md"
+            @click="proceedNext"
+          >
+            Berikutnya
+          </AppButton>
+          <p class="mx-auto mt-2 max-w-xl text-center text-[11px] leading-4 text-text-secondary">
+            Butuh bantuan? Hubungi admin PPDB melalui kanal resmi sekolah.
+          </p>
         </div>
       </div>
     </div>

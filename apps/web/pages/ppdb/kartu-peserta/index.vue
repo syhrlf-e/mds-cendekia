@@ -3,7 +3,11 @@ import { AlertCircle } from 'lucide-vue-next'
 
 useHead({ title: 'Kartu Peserta | PPDB MDS Cendekia' })
 
-definePageMeta({ layout: 'ppdb-form' })
+definePageMeta({
+  layout: 'ppdb-form',
+  ppdbHeaderTitle: 'Kartu Peserta',
+  ppdbBackPath: '/ppdb'
+})
 </script>
 
 <template>

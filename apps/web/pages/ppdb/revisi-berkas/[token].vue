@@ -4,7 +4,11 @@ import { computed, onMounted, ref } from 'vue'
 
 useHead({ title: 'Revisi Berkas | PPDB MDS Cendekia' })
 
-definePageMeta({ layout: 'ppdb-form' })
+definePageMeta({
+  layout: 'ppdb-form',
+  ppdbHeaderTitle: 'Revisi Berkas',
+  ppdbBackPath: '/ppdb'
+})
 
 type MagicUrlState = 'loading' | 'valid' | 'invalid'
 

@@ -6,7 +6,9 @@ useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 definePageMeta({
   layout: 'ppdb-form',
-  middleware: ['ppdb-verified-client']
+  middleware: ['ppdb-verified-client'],
+  ppdbHeaderTitle: 'Upload Berkas',
+  ppdbBackPath: '/ppdb/daftar'
 })
 
 const router = useRouter()
@@ -212,6 +214,20 @@ const requestLeave = (path: string) => {
   pendingNavigationPath.value = path
   isLeaveGuardOpen.value = true
 }
+
+const handleMobileHeaderBack = (event: Event) => {
+  event.preventDefault()
+  const target = (event as CustomEvent<{ to?: string }>).detail?.to || '/ppdb/daftar'
+  requestLeave(target)
+}
+
+onMounted(() => {
+  window.addEventListener('ppdb-mobile-back', handleMobileHeaderBack)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('ppdb-mobile-back', handleMobileHeaderBack)
+})
 
 const confirmLeave = () => {
   isLeaveGuardOpen.value = false
