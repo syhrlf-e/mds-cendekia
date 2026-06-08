@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { SearchX } from 'lucide-vue-next'
+import { ChevronLeft, SearchX } from 'lucide-vue-next'
 
 useHead({ title: 'Cek Status | PPDB MDS Cendekia' })
 
@@ -235,9 +235,19 @@ const checkAnother = () => {
 </script>
 
 <template>
-  <div class="h-[calc(100vh-116px)] overflow-hidden bg-bg-base py-6 md:h-[calc(100vh-132px)] md:py-8">
+  <div class="h-[calc(100vh-116px)] overflow-hidden bg-bg-base pb-28 pt-[68px] md:h-[calc(100vh-132px)] md:py-8">
+    <button
+      v-if="!hasResult"
+      type="button"
+      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1.5 rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 focus:outline-none sm:hidden"
+      @click="router.push('/ppdb')"
+    >
+      <ChevronLeft class="h-[18px] w-[18px]" />
+      Kembali
+    </button>
+
     <div class="public-navbar-container h-full">
-      <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-center">
+      <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-start md:justify-center">
         <div class="mb-7 text-center md:mb-8">
           <h1 class="mb-2.5 font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:text-3xl">
             Cek Status Pendaftaran
@@ -347,11 +357,11 @@ const checkAnother = () => {
           </div>
         </div>
 
-          <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between md:pt-0">
+          <div class="hidden gap-3 pt-1 sm:flex sm:justify-between md:pt-0">
             <AppButton
               variant="secondary"
               type="button"
-              class="w-full sm:w-auto"
+              class="sm:w-auto"
               @click="router.push('/ppdb')"
             >
               Kembali
@@ -362,7 +372,22 @@ const checkAnother = () => {
               variant="primary"
               :disabled="isChecking"
               :loading="isChecking"
-              class="w-full sm:w-auto"
+              class="sm:w-auto"
+            >
+              {{ rightButtonLabel }}
+            </AppButton>
+          </div>
+
+          <div
+            v-if="!hasResult"
+            class="fixed inset-x-0 bottom-12 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden"
+          >
+            <AppButton
+              type="submit"
+              variant="primary"
+              :disabled="isChecking"
+              :loading="isChecking"
+              class="mx-auto flex w-full max-w-xl"
             >
               {{ rightButtonLabel }}
             </AppButton>

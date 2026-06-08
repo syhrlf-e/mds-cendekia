@@ -153,7 +153,7 @@ onMounted(() => {
     <button
       v-if="viewState === 'idle'"
       type="button"
-      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1 rounded-lg py-2 pl-1 pr-2 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
+      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1.5 rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-text-primary transition-colors hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 focus:outline-none sm:hidden"
       @click="router.push('/ppdb')"
     >
       <ChevronLeft class="h-[18px] w-[18px]" />
