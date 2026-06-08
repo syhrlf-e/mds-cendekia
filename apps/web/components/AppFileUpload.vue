@@ -15,6 +15,7 @@ const error = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const fallbackId = useId()
 const fileInputId = computed(() => `file-upload-${fallbackId}`)
+const errorId = computed(() => `${fileInputId.value}-error`)
 const acceptText = computed(() => props.accept.split(',').map(ext => ext.trim().replace(/^\./, '').toUpperCase()).join(', '))
 
 const handleFileChange = (event: Event) => {
@@ -66,6 +67,8 @@ const formatSize = (bytes: number) => {
         :id="fileInputId"
         type="file"
         :accept="accept"
+        :aria-invalid="error ? 'true' : 'false'"
+        :aria-describedby="error ? errorId : undefined"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         @change="handleFileChange"
       >
@@ -109,6 +112,14 @@ const formatSize = (bytes: number) => {
       </button>
     </div>
 
-    <span v-if="error" class="text-xs text-error">{{ error }}</span>
+    <span
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      aria-live="polite"
+      class="text-xs text-error"
+    >
+      {{ error }}
+    </span>
   </div>
 </template>

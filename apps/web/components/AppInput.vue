@@ -133,6 +133,8 @@ const handleInput = (event: Event) => {
     <span
       v-if="error"
       :id="errorId"
+      role="alert"
+      aria-live="polite"
       class="text-xs text-error"
     >
       {{ error }}

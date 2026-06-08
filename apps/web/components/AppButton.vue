@@ -20,7 +20,7 @@ const variantClasses = computed(() => {
     case 'primary':
       return 'rounded-full bg-brand px-5 py-3 text-sm text-white hover:bg-brand-hover focus:ring-brand'
     case 'secondary':
-      return 'rounded-full border-2 border-brand bg-transparent px-5 py-3 text-sm text-brand hover:bg-primary-50 focus:ring-brand'
+      return 'rounded-full border border-transparent bg-transparent px-5 py-3 text-sm text-text-primary hover:bg-slate-100 focus:ring-slate-300'
     case 'ghost':
       return 'rounded-lg border border-border-soft bg-bg-surface px-4 py-2 text-sm text-text-primary hover:bg-bg-parchment focus:ring-brand'
     case 'danger':

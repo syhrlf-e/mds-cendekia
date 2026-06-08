@@ -54,6 +54,10 @@ const state = ref<CheckState>('initial')
 const resultData = ref<StatusResult | null>(null)
 const isMobile = ref(false)
 const isClosingResult = ref(false)
+const errors = ref({
+  nomorPendaftaran: '',
+  nisn: ''
+})
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
@@ -132,6 +136,23 @@ const getNomorPendaftaranLookupVariants = (value: string) => {
   return Array.from(new Set([stripped, formatted].filter(Boolean)))
 }
 
+const validateInputs = () => {
+  errors.value.nomorPendaftaran = nomorPendaftaran.value.trim()
+    ? ''
+    : 'Nomor pendaftaran wajib diisi.'
+  errors.value.nisn = nisn.value.trim()
+    ? nisn.value.trim().length === 10
+      ? ''
+      : 'NISN harus terdiri dari 10 digit.'
+    : 'NISN wajib diisi.'
+
+  return !errors.value.nomorPendaftaran && !errors.value.nisn
+}
+
+const clearFieldError = (field: keyof typeof errors.value) => {
+  errors.value[field] = ''
+}
+
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-'
 
@@ -148,7 +169,7 @@ const handleCheck = async () => {
     return
   }
 
-  if (!nomorPendaftaran.value.trim() || !nisn.value.trim()) return
+  if (!validateInputs()) return
 
   state.value = 'loading'
   resultData.value = null
@@ -206,6 +227,8 @@ const checkAnother = () => {
     resultData.value = null
     nomorPendaftaran.value = ''
     nisn.value = ''
+    errors.value.nomorPendaftaran = ''
+    errors.value.nisn = ''
     isClosingResult.value = false
   }, 300)
 }
@@ -231,7 +254,10 @@ const checkAnother = () => {
               label="Nomor Pendaftaran"
               placeholder="Contoh: MDS-2025-0001"
               required
+              :error="errors.nomorPendaftaran"
               :disabled="isChecking || hasResult"
+              @blur="validateInputs"
+              @focus="clearFieldError('nomorPendaftaran')"
             />
             <AppInput
               v-model="nisn"
@@ -241,7 +267,10 @@ const checkAnother = () => {
               inputmode="numeric"
               :maxlength="10"
               :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
+              :error="errors.nisn"
               :disabled="isChecking || hasResult"
+              @blur="validateInputs"
+              @focus="clearFieldError('nisn')"
             />
           </div>
 
@@ -331,7 +360,7 @@ const checkAnother = () => {
             <AppButton
               type="submit"
               variant="primary"
-              :disabled="((!nomorPendaftaran.trim() || !nisn.trim()) && !hasResult) || isChecking"
+              :disabled="isChecking"
               :loading="isChecking"
               class="w-full sm:w-auto"
             >

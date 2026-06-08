@@ -40,6 +40,11 @@ const idPendaftaran = ref('')
 const selectedDocumentName = ref('')
 const selectedFile = ref<File | null>(null)
 const isSubmitting = ref(false)
+const fieldErrors = ref({
+  nisn: '',
+  documentName: '',
+  file: ''
+})
 
 const apiBaseUrl = computed(() => {
   return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
@@ -55,10 +60,6 @@ const selectedDocumentType = computed(() => {
 
 const documentTypeOptions = computed(() => {
   return documentTypes.value.map(item => ({ label: item.nama, value: item.nama }))
-})
-
-const canSubmit = computed(() => {
-  return nisn.value.trim().length >= 8 && !!selectedDocumentName.value && !!selectedFile.value && !isSubmitting.value
 })
 
 const postRevisionApi = async <T,>(endpoint: string, body: FormData, timeout: number) => {
@@ -115,10 +116,29 @@ const getAcceptAttribute = (format: string) => {
 const handleFileChange = (event: Event) => {
   const input = event.target as HTMLInputElement
   selectedFile.value = input.files?.[0] || null
+  if (selectedFile.value) fieldErrors.value.file = ''
 }
 
 const handleDocumentChange = () => {
   selectedFile.value = null
+  fieldErrors.value.documentName = ''
+  fieldErrors.value.file = ''
+}
+
+const validateRevisionForm = () => {
+  fieldErrors.value.nisn = nisn.value.trim()
+    ? nisn.value.trim().length >= 8
+      ? ''
+      : 'NISN minimal terdiri dari 8 digit.'
+    : 'NISN wajib diisi.'
+  fieldErrors.value.documentName = selectedDocumentName.value
+    ? ''
+    : 'Jenis berkas wajib dipilih.'
+  fieldErrors.value.file = selectedFile.value
+    ? ''
+    : 'Dokumen revisi wajib diunggah.'
+
+  return !fieldErrors.value.nisn && !fieldErrors.value.documentName && !fieldErrors.value.file
 }
 
 const validateMagicUrl = async () => {
@@ -149,7 +169,7 @@ const validateMagicUrl = async () => {
 }
 
 const handleSubmit = async () => {
-  if (!canSubmit.value) return
+  if (isSubmitting.value || !validateRevisionForm()) return
 
   isSubmitting.value = true
 
@@ -222,6 +242,9 @@ onMounted(validateMagicUrl)
           inputmode="numeric"
           :maxlength="10"
           :sanitizer="(value) => String(value ?? '').replace(/\\D/g, '').slice(0, 10)"
+          :error="fieldErrors.nisn"
+          @blur="validateRevisionForm"
+          @focus="fieldErrors.nisn = ''"
         />
 
         <AppSelect
@@ -230,7 +253,9 @@ onMounted(validateMagicUrl)
           required
           :options="documentTypeOptions"
           placeholder="Pilih jenis berkas"
+          :error="fieldErrors.documentName"
           @update:model-value="handleDocumentChange"
+          @blur="validateRevisionForm"
         />
 
         <div>
@@ -256,9 +281,17 @@ onMounted(validateMagicUrl)
               @change="handleFileChange"
             >
           </label>
+          <p
+            v-if="fieldErrors.file"
+            role="alert"
+            aria-live="polite"
+            class="mt-1.5 text-xs text-error"
+          >
+            {{ fieldErrors.file }}
+          </p>
         </div>
 
-        <AppButton :disabled="!canSubmit" :loading="isSubmitting" class="w-full" @click="handleSubmit">
+        <AppButton :disabled="isSubmitting" :loading="isSubmitting" class="w-full" @click="handleSubmit">
           Kirim Revisi
         </AppButton>
       </form>

@@ -24,6 +24,7 @@ const emit = defineEmits<{
 const currentYear = new Date().getFullYear()
 const resolvedMaxYear = computed(() => props.maxYear ?? currentYear - 1)
 const inputId = `date-input-${useId()}`
+const errorId = computed(() => `${inputId}-error`)
 
 const isOpen = ref(false)
 const day = ref('')
@@ -167,6 +168,9 @@ onBeforeUnmount(() => {
       :id="inputId"
       type="button"
       :disabled="disabled"
+      :aria-required="required ? 'true' : undefined"
+      :aria-invalid="error ? 'true' : 'false'"
+      :aria-describedby="error ? errorId : undefined"
       :class="[
         'flex h-11 w-full items-center justify-between rounded-lg border bg-bg-surface px-4 text-left text-sm outline-none transition-colors md:text-base',
         error ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10' : 'border-border focus:border-sky-500/70 focus:ring-2 focus:ring-sky-500/12',
@@ -179,7 +183,15 @@ onBeforeUnmount(() => {
       <span class="text-text-secondary">⌄</span>
     </button>
 
-    <span v-if="error" class="text-xs text-error">{{ error }}</span>
+    <span
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      aria-live="polite"
+      class="text-xs text-error"
+    >
+      {{ error }}
+    </span>
 
     <Teleport to="body">
       <div

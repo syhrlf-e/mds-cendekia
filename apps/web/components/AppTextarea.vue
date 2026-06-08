@@ -25,6 +25,7 @@ const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
 const fallbackId = useId()
 const textareaId = computed(() => props.id || `textarea-${fallbackId}`)
+const errorId = computed(() => `${textareaId.value}-error`)
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement
@@ -51,6 +52,9 @@ const handleInput = (event: Event) => {
       :disabled="disabled"
       :maxlength="maxlength"
       :rows="rows"
+      :aria-required="required ? 'true' : undefined"
+      :aria-invalid="error ? 'true' : 'false'"
+      :aria-describedby="error ? errorId : undefined"
       :class="[
         'min-h-28 w-full resize-y rounded-lg border bg-bg-surface p-3.5 text-sm leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted md:min-h-30 md:p-4 md:text-base',
         error
@@ -62,6 +66,14 @@ const handleInput = (event: Event) => {
       @blur="emit('blur', $event)"
       @focus="emit('focus', $event)"
     ></textarea>
-    <span v-if="error" class="text-xs text-error">{{ error }}</span>
+    <span
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      aria-live="polite"
+      class="text-xs text-error"
+    >
+      {{ error }}
+    </span>
   </div>
 </template>

@@ -175,6 +175,12 @@ const {
 })
 
 const isAllValid = computed(() => isAcc1Valid.value && isAcc2Valid.value && isAcc3Valid.value)
+const nextIncompleteSectionMessage = computed(() => {
+  if (isAllValid.value) return ''
+  if (!isAcc1Valid.value) return 'Lengkapi Data Diri Siswa untuk melanjutkan.'
+  if (!isAcc2Valid.value) return 'Lengkapi Data Asal Sekolah untuk melanjutkan.'
+  return 'Lengkapi Data Orang Tua / Wali untuk melanjutkan.'
+})
 
 const {
   isLeaveGuardOpen,
@@ -396,6 +402,13 @@ const {
         >
           Berikutnya
         </AppButton>
+        <p
+          v-if="nextIncompleteSectionMessage"
+          role="status"
+          class="text-center text-xs leading-5 text-text-secondary sm:text-left"
+        >
+          {{ nextIncompleteSectionMessage }}
+        </p>
         </div>
       </div>
     </div>

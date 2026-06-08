@@ -22,6 +22,7 @@ const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
 const fallbackId = useId()
 const selectId = computed(() => props.id || `select-${fallbackId}`)
+const errorId = computed(() => `${selectId.value}-error`)
 const selectedValue = computed(() => props.modelValue === null || props.modelValue === undefined ? '' : String(props.modelValue))
 const selectedOption = computed(() => props.options.find(option => String(option.value) === selectedValue.value))
 const isOpen = ref(false)
@@ -86,6 +87,9 @@ onBeforeUnmount(() => {
       role="combobox"
       :aria-expanded="isOpen"
       :aria-controls="`${selectId}-listbox`"
+      :aria-required="required ? 'true' : undefined"
+      :aria-invalid="error ? 'true' : 'false'"
+      :aria-describedby="error ? errorId : undefined"
       :class="[
         'flex h-11 w-full items-center justify-between rounded-lg border bg-bg-surface px-4 text-left outline-none transition-colors',
         error 
@@ -130,6 +134,14 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <span v-if="error" class="text-xs text-error">{{ error }}</span>
+    <span
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      aria-live="polite"
+      class="text-xs text-error"
+    >
+      {{ error }}
+    </span>
   </div>
 </template>

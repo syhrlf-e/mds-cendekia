@@ -47,6 +47,20 @@ const berkas = reactive({
 const isAllUploaded = computed(() => {
   return berkas.foto && berkas.rapor && berkas.skRapor && berkas.ijazah && berkas.akta && berkas.kk
 })
+const missingUploadMessage = computed(() => {
+  if (isAllUploaded.value) return ''
+
+  const missingItems = [
+    !berkas.foto ? 'foto siswa' : '',
+    !berkas.rapor ? 'rapor SMP' : '',
+    !berkas.skRapor ? 'surat keterangan nilai rapor' : '',
+    !berkas.ijazah ? 'ijazah atau SKL' : '',
+    !berkas.akta ? 'akta kelahiran' : '',
+    !berkas.kk ? 'kartu keluarga' : ''
+  ].filter(Boolean)
+
+  return `Lengkapi ${missingItems.slice(0, 2).join(' dan ')}${missingItems.length > 2 ? ` serta ${missingItems.length - 2} dokumen lainnya` : ''} untuk mengirim pendaftaran.`
+})
 
 const isConfirmModalOpen = ref(false)
 const isLeaveGuardOpen = ref(false)
@@ -589,6 +603,13 @@ const submitForm = async () => {
             Kirim Pendaftaran
           </AppButton>
         </div>
+        <p
+          v-if="missingUploadMessage"
+          role="status"
+          class="-mt-1 text-center text-xs leading-5 text-text-secondary sm:text-right"
+        >
+          {{ missingUploadMessage }}
+        </p>
 
       </div>
     </div>

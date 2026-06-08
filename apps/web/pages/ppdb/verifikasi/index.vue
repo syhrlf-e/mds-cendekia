@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { ArrowLeft } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
 import { sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
 import type { EmailVerificationResult } from '~/services/usePpdbEmailVerificationService'
 import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerificationService'
@@ -20,11 +21,10 @@ const email = ref('')
 const viewState = ref<VerificationViewState>('idle')
 const isSubmitting = ref(false)
 const formError = ref('')
-const errorAlert = ref<HTMLElement | null>(null)
 
 const normalizedEmail = computed(() => sanitizeEmail(email.value))
 const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
-const canRequestVerification = computed(() => isEmailValid.value && !isSubmitting.value)
+const canRequestVerification = computed(() => !isSubmitting.value)
 const hasEmailError = computed(() => Boolean(formError.value && viewState.value === 'idle'))
 
 const spamFolderMessage = 'Belum terlihat? Cek folder Spam, Promosi, atau tab Pembaruan.'
@@ -35,10 +35,8 @@ const redirectTarget = computed(() => {
   return redirect && redirect.startsWith('/ppdb/daftar') ? redirect : '/ppdb/daftar'
 })
 
-const setFormError = async (message: string) => {
+const setFormError = (message: string) => {
   formError.value = message
-  await nextTick()
-  errorAlert.value?.focus()
 }
 
 const activateVerifiedState = (response?: EmailVerificationResult | null) => {
@@ -58,6 +56,17 @@ const requestVerificationEmail = async () => {
   if (!canRequestVerification.value) return
 
   formError.value = ''
+
+  if (!normalizedEmail.value) {
+    setFormError('Email aktif wajib diisi.')
+    return
+  }
+
+  if (!isEmailValid.value) {
+    setFormError('Masukkan format email yang valid, contoh nama@email.com.')
+    return
+  }
+
   isSubmitting.value = true
 
   try {
@@ -65,18 +74,18 @@ const requestVerificationEmail = async () => {
 
     if (!response.success) {
       if (response.status === 'rate_limited') {
-        await setFormError(rateLimitedMessage)
+        setFormError(rateLimitedMessage)
         return
       }
 
-      await setFormError('Tautan verifikasi belum bisa dikirim. Periksa kembali alamat email Anda, lalu coba lagi.')
+      setFormError('Tautan verifikasi belum bisa dikirim. Periksa kembali alamat email Anda, lalu coba lagi.')
       return
     }
 
     biodata.value.email = normalizedEmail.value
     viewState.value = 'sent'
   } catch {
-    await setFormError('Tautan verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
+    setFormError('Tautan verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
   } finally {
     isSubmitting.value = false
   }
@@ -140,7 +149,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-116px)] bg-white py-10 md:min-h-[calc(100vh-132px)] md:py-14">
+  <div class="min-h-[calc(100vh-116px)] bg-white pb-28 pt-10 md:min-h-[calc(100vh-132px)] md:py-14">
+    <button
+      v-if="viewState === 'idle'"
+      type="button"
+      class="fixed left-4 top-[76px] z-40 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/90 px-3 text-sm font-medium text-text-primary shadow-sm backdrop-blur transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
+      @click="router.push('/ppdb')"
+    >
+      <ArrowLeft class="h-4 w-4" />
+      Kembali
+    </button>
+
     <div class="public-navbar-container flex min-h-[calc(100vh-196px)] items-center justify-center md:min-h-[calc(100vh-244px)]">
       <section class="w-full max-w-xl">
 
@@ -169,36 +188,36 @@ onMounted(() => {
               autocapitalize="none"
               spellcheck="false"
               :invalid="hasEmailError"
+              :error="hasEmailError ? formError : ''"
               described-by="ppdb-verification-error"
               :sanitizer="sanitizeEmail"
             />
 
             <p
               v-if="formError"
-              ref="errorAlert"
               id="ppdb-verification-error"
               role="alert"
               aria-live="assertive"
-              tabindex="-1"
-              class="rounded-xl border border-error/20 bg-status-rejected-bg px-4 py-3 text-sm leading-6 text-error outline-none focus:ring-2 focus:ring-error/20"
+              class="sr-only"
             >
               {{ formError }}
             </p>
 
-            <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between">
-              <AppButton
-                variant="secondary"
-                type="button"
-                class="w-full sm:w-auto"
-                @click="router.push('/ppdb')"
-              >
+            <div class="hidden gap-3 pt-1 sm:flex sm:justify-between">
+              <AppButton variant="secondary" type="button" class="sm:w-auto" @click="router.push('/ppdb')">
                 Kembali
               </AppButton>
+              <AppButton type="submit" variant="primary" class="sm:w-auto" :disabled="isSubmitting" :loading="isSubmitting" :aria-busy="isSubmitting ? 'true' : undefined">
+                Kirim Tautan Verifikasi
+              </AppButton>
+            </div>
+
+            <div class="fixed inset-x-0 bottom-12 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
               <AppButton
                 type="submit"
                 variant="primary"
-                class="w-full sm:w-auto"
-                :disabled="!canRequestVerification"
+                class="mx-auto flex w-full max-w-xl"
+                :disabled="isSubmitting"
                 :loading="isSubmitting"
                 :aria-busy="isSubmitting ? 'true' : undefined"
               >
@@ -273,9 +292,16 @@ onMounted(() => {
           <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
             Anda sekarang dapat melanjutkan pengisian formulir pendaftaran. Pastikan seluruh data yang diisi sesuai dengan dokumen resmi.
           </p>
-          <AppButton variant="primary" class="w-full sm:w-auto" @click="continueToForm">
-            Lanjut ke Formulir Pendaftaran
-          </AppButton>
+          <div class="hidden sm:block">
+            <AppButton variant="primary" class="sm:w-auto" @click="continueToForm">
+              Lanjut ke Formulir Pendaftaran
+            </AppButton>
+          </div>
+          <div class="fixed inset-x-0 bottom-12 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+            <AppButton variant="primary" class="mx-auto flex w-full max-w-xl" @click="continueToForm">
+              Lanjut ke Formulir Pendaftaran
+            </AppButton>
+          </div>
         </div>
 
         <!-- ── STATE: EXPIRED ── -->
@@ -296,16 +322,23 @@ onMounted(() => {
           >
             {{ formError }}
           </p>
-          <AppButton
-            variant="primary"
-            class="w-full sm:w-auto"
-            :disabled="!canRequestVerification"
-            :loading="isSubmitting"
-            :aria-busy="isSubmitting ? 'true' : undefined"
-            @click="requestVerificationEmail"
-          >
-            Kirim Ulang Tautan Verifikasi
-          </AppButton>
+          <div class="hidden sm:block">
+            <AppButton variant="primary" class="sm:w-auto" :disabled="!canRequestVerification" :loading="isSubmitting" :aria-busy="isSubmitting ? 'true' : undefined" @click="requestVerificationEmail">
+              Kirim Ulang Tautan Verifikasi
+            </AppButton>
+          </div>
+          <div class="fixed inset-x-0 bottom-12 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+            <AppButton
+              variant="primary"
+              class="mx-auto flex w-full max-w-xl"
+              :disabled="isSubmitting"
+              :loading="isSubmitting"
+              :aria-busy="isSubmitting ? 'true' : undefined"
+              @click="requestVerificationEmail"
+            >
+              Kirim Ulang Tautan Verifikasi
+            </AppButton>
+          </div>
         </div>
 
         <!-- ── STATE: FAILED ── -->
@@ -316,9 +349,16 @@ onMounted(() => {
           <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
             Tautan yang Anda buka tidak valid atau sudah pernah digunakan. Silakan kembali dan minta tautan verifikasi yang baru.
           </p>
-          <AppButton variant="primary" class="w-full sm:w-auto" @click="viewState = 'idle'">
-            Kembali ke Verifikasi Email
-          </AppButton>
+          <div class="hidden sm:block">
+            <AppButton variant="primary" class="sm:w-auto" @click="viewState = 'idle'">
+              Kembali ke Verifikasi Email
+            </AppButton>
+          </div>
+          <div class="fixed inset-x-0 bottom-12 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+            <AppButton variant="primary" class="mx-auto flex w-full max-w-xl" @click="viewState = 'idle'">
+              Kembali ke Verifikasi Email
+            </AppButton>
+          </div>
         </div>
 
       </section>
