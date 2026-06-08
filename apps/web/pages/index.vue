@@ -252,6 +252,48 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
+    <section class="border-t border-neutral-200 bg-bg-base px-0 py-16 md:py-28 lg:py-30">
+      <div class="public-container">
+        <div class="flex flex-col gap-10 md:gap-12 lg:flex-row lg:gap-14 2xl:gap-20">
+          <div class="lg:w-1/3">
+            <h2 class="mb-4 font-heading text-2xl font-normal leading-tight text-text-public-heading md:mb-5 md:text-4xl lg:text-4xl 2xl:mb-6 2xl:text-5xl">
+              Legalitas &<br/>Keabsahan.
+            </h2>
+            <p class="max-w-md font-sans text-sm leading-7 text-neutral-600 md:text-lg md:leading-relaxed 2xl:text-xl">
+              Informasi legalitas yayasan kami hadir sebagai bentuk transparansi bagi orang tua dan calon peserta didik.
+            </p>
+          </div>
+          <div class="flex flex-col justify-center lg:w-2/3 lg:pl-6 xl:pl-10 2xl:pl-16">
+            <div class="mb-6 border-b border-neutral-200 pb-6 md:mb-7 md:pb-7 2xl:mb-8 2xl:pb-8">
+              <p class="mb-2 font-sans text-xs font-medium capitalize tracking-wide text-gray-500 md:mb-3 md:text-sm">Badan Hukum</p>
+              <p class="font-heading text-xl font-medium leading-snug text-text-public-heading md:text-2xl 2xl:text-3xl">Yayasan Mukti Daris Sasmita Cendekia</p>
+            </div>
+
+            <div class="mb-6 flex flex-col gap-6 border-b border-neutral-200 pb-6 md:mb-7 md:flex-row md:justify-between md:gap-4 md:pb-7 2xl:mb-8 2xl:gap-8 2xl:pb-8">
+              <div class="md:w-1/2">
+                <p class="mb-2 font-sans text-xs font-medium capitalize tracking-wide text-gray-500 md:mb-3 md:text-sm">Akta Pendirian</p>
+                <p class="font-heading text-xl font-medium text-text-public-heading md:text-2xl 2xl:text-3xl">Nomor 25</p>
+                <p class="mt-1.5 font-sans text-sm text-neutral-600 md:mt-2 md:text-base">Tanggal 4 Maret 2026</p>
+              </div>
+              <div class="md:w-1/2">
+                <p class="mb-2 font-sans text-xs font-medium capitalize tracking-wide text-gray-500 md:mb-3 md:text-sm">Status Kelembagaan</p>
+                <p class="font-heading text-xl font-medium text-text-public-heading md:text-2xl 2xl:text-3xl">Yayasan Pendidikan</p>
+                <p class="mt-1.5 font-sans text-sm text-neutral-600 md:mt-2 md:text-base">Bergerak pada layanan pendidikan kesetaraan.</p>
+              </div>
+            </div>
+
+            <div class="pb-2">
+              <p class="mb-2 font-sans text-xs font-medium capitalize tracking-wide text-gray-500 md:mb-3 md:text-sm">Kedudukan Hukum Yayasan</p>
+              <p class="font-heading text-base font-medium leading-relaxed text-text-public-heading md:text-lg 2xl:text-xl">
+                Perum Bumi Gesya Cikarang, Desa Jayasampurna<br class="hidden md:block"/>
+                Kecamatan Serang Baru, Kab. Bekasi, Jawa Barat (17330)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-16 pt-24 md:pb-20 md:pt-36 lg:pt-40 xl:pt-48 2xl:pb-25 2xl:pt-[326px]">
       <div class="public-container flex flex-col">
         <h2 class="mb-8 max-w-sm text-left font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:mb-12 md:max-w-3xl md:text-4xl lg:mb-16 2xl:mb-20 2xl:max-w-4xl 2xl:text-5xl">
@@ -480,37 +522,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
       </div>
     </section>
 
-    <!-- Section FAQ -->
-    <PublicFaqSection
-      title="Pertanyaan yang sering"
-      highlight="ditanyakan."
-      :items="faqList"
-    />
-
-    <!-- Section 7: CTA Banner -->
-    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-14 pt-24 md:pt-44 lg:pb-20 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-60">
-      <div class="public-container">
-        <div class="relative flex min-h-64 w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-brand px-4 py-9 text-center shadow-lg md:min-h-80 md:py-12 2xl:h-[356px] 2xl:rounded-4xl 2xl:py-0">
-          <!-- Background Image -->
-          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
-
-          <!-- Content -->
-          <div class="relative z-10 flex max-w-sm flex-col items-center px-3 sm:max-w-2xl md:max-w-none md:px-4">
-            <h2 class="mb-4 font-heading text-2xl font-semibold leading-tight text-white md:text-4xl lg:mb-8 lg:text-4xl 2xl:mb-10 2xl:text-5xl">
-              Siap mengambil kesempatan ini?
-            </h2>
-            <p class="mb-6 max-w-sm font-sans text-sm font-medium leading-relaxed text-white sm:max-w-2xl md:text-lg 2xl:mb-10 2xl:max-w-[800px] 2xl:text-xl">
-              Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
-            </p>
-            <NuxtLink to="/ppdb" class="flex h-12 w-full max-w-[280px] cursor-pointer items-center justify-center rounded-full bg-white px-6 font-sans text-sm font-medium text-brand transition-opacity hover:opacity-90 md:h-14 md:max-w-[315px] md:text-base lg:text-lg 2xl:h-[58px] 2xl:text-xl">
-              Daftarkan Diri Kamu di Sini
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 8: Berita / Blog -->
+    <!-- Section 7: Berita / Blog -->
     <section id="berita" class="relative flex flex-col items-center justify-center bg-bg-public-muted px-0 py-24 md:py-32 lg:py-32 xl:py-36 2xl:py-40">
       <div class="public-container flex flex-col items-center">
         <!-- Headline -->
@@ -618,6 +630,36 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
             </div>
           </template>
         </ClientOnly>
+      </div>
+    </section>
+
+    <!-- Section FAQ -->
+    <PublicFaqSection
+      title="Pertanyaan yang sering"
+      highlight="ditanyakan."
+      :items="faqList"
+    />
+
+    <!-- Section 8: CTA Banner -->
+    <section class="relative flex flex-col items-center justify-center bg-white px-0 pb-14 pt-24 md:pt-44 lg:pb-20 lg:pt-48 xl:pt-56 2xl:pb-25 2xl:pt-60">
+      <div class="public-container">
+        <div class="relative flex min-h-64 w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-brand px-4 py-9 text-center shadow-lg md:min-h-80 md:py-12 2xl:h-[356px] 2xl:rounded-4xl 2xl:py-0">
+          <!-- Background Image -->
+          <img src="/images/cardgradasi.png" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 z-0 h-full w-full scale-[2] object-cover opacity-80" />
+
+          <!-- Content -->
+          <div class="relative z-10 flex max-w-sm flex-col items-center px-3 sm:max-w-2xl md:max-w-none md:px-4">
+            <h2 class="mb-4 font-heading text-2xl font-semibold leading-tight text-white md:text-4xl lg:mb-8 lg:text-4xl 2xl:mb-10 2xl:text-5xl">
+              Siap mengambil kesempatan ini?
+            </h2>
+            <p class="mb-6 max-w-sm font-sans text-sm font-medium leading-relaxed text-white sm:max-w-2xl md:text-lg 2xl:mb-10 2xl:max-w-[800px] 2xl:text-xl">
+              Kuota pendaftaran untuk siswa sangat terbatas. Mari bangun masa depan yang lebih cerah bersama kami.
+            </p>
+            <NuxtLink to="/ppdb" class="flex h-12 w-full max-w-[280px] cursor-pointer items-center justify-center rounded-full bg-white px-6 font-sans text-sm font-medium text-brand transition-opacity hover:opacity-90 md:h-14 md:max-w-[315px] md:text-base lg:text-lg 2xl:h-[58px] 2xl:text-xl">
+              Daftarkan Diri Kamu di Sini
+            </NuxtLink>
+          </div>
+        </div>
       </div>
     </section>
   </div>

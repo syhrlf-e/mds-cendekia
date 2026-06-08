@@ -1,5 +1,5 @@
 export type PpdbVerificationSession = {
-  nisn: string
+  nisn?: string
   email: string
   verifiedAt: string
   expiresAt?: string
@@ -16,7 +16,7 @@ const readSession = (): PpdbVerificationSession | null => {
     if (!rawSession) return null
 
     const session = JSON.parse(rawSession) as PpdbVerificationSession
-    if (!session.nisn || !session.email || !session.verifiedAt) return null
+    if (!session.email || !session.verifiedAt) return null
 
     if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
       sessionStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)

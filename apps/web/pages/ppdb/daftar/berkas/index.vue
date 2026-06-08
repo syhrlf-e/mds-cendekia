@@ -4,7 +4,10 @@ import { Check } from 'lucide-vue-next'
 
 useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
-definePageMeta({ layout: 'ppdb-form' })
+definePageMeta({
+  layout: 'ppdb-form',
+  middleware: ['ppdb-verified-client']
+})
 
 const router = useRouter()
 const route = useRoute()

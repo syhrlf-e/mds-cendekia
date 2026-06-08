@@ -22,7 +22,10 @@ import {
 
 useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
-definePageMeta({ layout: 'ppdb-form' })
+definePageMeta({
+  layout: 'ppdb-form',
+  middleware: ['ppdb-verified-client']
+})
 
 const {
   biodata,
