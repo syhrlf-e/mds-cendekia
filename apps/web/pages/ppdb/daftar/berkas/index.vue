@@ -7,6 +7,7 @@ useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 definePageMeta({
   layout: 'ppdb-form',
   middleware: ['ppdb-verified-client'],
+  hideMobilePpdbFooter: true,
   ppdbHeaderTitle: 'Upload Berkas',
   ppdbBackPath: '/ppdb/daftar'
 })
@@ -48,20 +49,6 @@ const berkas = reactive({
 
 const isAllUploaded = computed(() => {
   return berkas.foto && berkas.rapor && berkas.skRapor && berkas.ijazah && berkas.akta && berkas.kk
-})
-const missingUploadMessage = computed(() => {
-  if (isAllUploaded.value) return ''
-
-  const missingItems = [
-    !berkas.foto ? 'foto siswa' : '',
-    !berkas.rapor ? 'rapor SMP' : '',
-    !berkas.skRapor ? 'surat keterangan nilai rapor' : '',
-    !berkas.ijazah ? 'ijazah atau SKL' : '',
-    !berkas.akta ? 'akta kelahiran' : '',
-    !berkas.kk ? 'kartu keluarga' : ''
-  ].filter(Boolean)
-
-  return `Lengkapi ${missingItems.slice(0, 2).join(' dan ')}${missingItems.length > 2 ? ` serta ${missingItems.length - 2} dokumen lainnya` : ''} untuk mengirim pendaftaran.`
 })
 
 const isConfirmModalOpen = ref(false)
@@ -583,7 +570,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base py-6 md:py-10 xl:py-12">
+  <div class="min-h-screen bg-bg-base pb-44 pt-6 md:py-10 xl:py-12">
     <div class="public-navbar-container">
       <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 md:gap-6">
 
@@ -601,10 +588,10 @@ const submitForm = async () => {
           <AppFileUpload v-model="berkas.kk" label="6. Kartu Keluarga" accept=".pdf" :maxSize="2" />
         </div>
 
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+        <div class="hidden gap-3 sm:flex sm:justify-between">
           <AppButton
             variant="secondary"
-            class="w-full sm:w-auto"
+            class="sm:w-auto"
             @click="requestLeave('/ppdb/daftar')"
           >
             Kembali
@@ -614,18 +601,24 @@ const submitForm = async () => {
             variant="primary"
             :disabled="!isAllUploaded"
             @click="proceedSubmit"
-            class="w-full sm:w-auto shadow-md"
+            class="sm:w-auto shadow-md"
           >
             Kirim Pendaftaran
           </AppButton>
         </div>
-        <p
-          v-if="missingUploadMessage"
-          role="status"
-          class="-mt-1 text-center text-xs leading-5 text-text-secondary sm:text-right"
-        >
-          {{ missingUploadMessage }}
-        </p>
+        <div class="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+          <AppButton
+            variant="primary"
+            :disabled="!isAllUploaded"
+            class="mx-auto flex w-full max-w-xl shadow-md"
+            @click="proceedSubmit"
+          >
+            Kirim Pendaftaran
+          </AppButton>
+          <p class="mx-auto mt-2 max-w-xl text-center text-[11px] leading-4 text-text-secondary">
+            Pastikan setiap dokumen sudah benar sebelum dikirim.
+          </p>
+        </div>
 
       </div>
     </div>

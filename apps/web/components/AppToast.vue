@@ -24,7 +24,7 @@ const getToastClass = (type: string) => {
 </script>
 
 <template>
-  <div class="fixed top-4 left-1/2 z-50 flex w-full max-w-[min(calc(100vw-32px),460px)] -translate-x-1/2 flex-col items-center gap-2.5 px-4 pointer-events-none">
+  <div class="fixed top-4 left-1/2 z-[100] flex w-full max-w-[min(calc(100vw-32px),460px)] -translate-x-1/2 flex-col items-center gap-2.5 px-4 pointer-events-none">
     <TransitionGroup name="toast">
       <div
         v-for="toast in toasts"

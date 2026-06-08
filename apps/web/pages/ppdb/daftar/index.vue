@@ -40,6 +40,7 @@ const {
   resetForm
 } = usePpdbRegistrationForm()
 const { ensureVerifiedOrRedirect } = usePpdbVerificationGate()
+const { addToast } = useToast()
 
 const form = biodata.value
 
@@ -184,6 +185,20 @@ const nextIncompleteSectionMessage = computed(() => {
   if (!isAcc2Valid.value) return 'Lengkapi Data Asal Sekolah untuk melanjutkan.'
   return 'Lengkapi Data Orang Tua / Wali untuk melanjutkan.'
 })
+
+const showIncompleteFormToast = () => {
+  if (!nextIncompleteSectionMessage.value) return
+  addToast(nextIncompleteSectionMessage.value, 'warning')
+}
+
+const handleProceedClick = () => {
+  if (!isAllValid.value) {
+    showIncompleteFormToast()
+    return
+  }
+
+  proceedNext()
+}
 
 const {
   isLeaveGuardOpen,
@@ -420,9 +435,12 @@ onUnmounted(() => {
         </AppButton>
         <AppButton
           variant="primary"
-          :disabled="!isAllValid"
-          @click="proceedNext"
-          class="sm:w-auto shadow-md"
+          :aria-disabled="!isAllValid ? 'true' : undefined"
+          :class="[
+            'sm:w-auto shadow-md',
+            !isAllValid ? 'cursor-not-allowed opacity-40 hover:bg-brand active:scale-100' : ''
+          ]"
+          @click="handleProceedClick"
         >
           Berikutnya
         </AppButton>
@@ -445,9 +463,12 @@ onUnmounted(() => {
           </p>
           <AppButton
             variant="primary"
-            :disabled="!isAllValid"
-            class="mx-auto flex w-full max-w-xl shadow-md"
-            @click="proceedNext"
+            :aria-disabled="!isAllValid ? 'true' : undefined"
+            :class="[
+              'mx-auto flex w-full max-w-xl shadow-md',
+              !isAllValid ? 'cursor-not-allowed opacity-40 hover:bg-brand active:scale-100' : ''
+            ]"
+            @click="handleProceedClick"
           >
             Berikutnya
           </AppButton>
