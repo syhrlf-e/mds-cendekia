@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { buildWhatsAppConsultationUrl } from '~/config/publicContact'
 
 type NavItem = {
   id: number
@@ -38,13 +39,7 @@ const getRouteActiveLabel = () => {
 const activeMenuLabel = ref(getRouteActiveLabel())
 let isScrollListenerActive = false
 
-const consultationMessage = 'Halo Admin MDS Cendekia, ini adalah pesan testing dari tombol Konsultasi pada website MDS Cendekia. Mohon konfirmasi jika pesan ini berhasil diterima. Terima kasih.'
-
-const whatsappNumber = computed(() => String(config.public.whatsappNumber || '').replace(/\D/g, ''))
-const consultationUrl = computed(() => whatsappNumber.value
-  ? `https://wa.me/${whatsappNumber.value}?text=${encodeURIComponent(consultationMessage)}`
-  : ''
-)
+const consultationUrl = computed(() => buildWhatsAppConsultationUrl(config.public.whatsappNumber))
 
 const handleConsultationClick = (event: MouseEvent) => {
   mobileMenuOpen.value = false

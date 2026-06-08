@@ -114,7 +114,7 @@ export default defineNuxtConfig({
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
       ppdbEmailVerificationMock: '',
-      whatsappNumber: '6282313380653',
+      whatsappNumber: import.meta.env.NUXT_PUBLIC_WHATSAPP_NUMBER || '',
       siteUrl: '',
       siteName: 'MDS Cendekia',
       siteDescription: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.',
