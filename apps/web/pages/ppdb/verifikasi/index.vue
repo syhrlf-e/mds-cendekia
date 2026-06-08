@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
-import { ArrowRight } from 'lucide-vue-next'
 import { sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
 import type { EmailVerificationResult } from '~/services/usePpdbEmailVerificationService'
 import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerificationService'
@@ -13,7 +12,7 @@ type VerificationViewState = 'idle' | 'sent' | 'success' | 'expired' | 'failed'
 
 const router = useRouter()
 const route = useRoute()
-const { saveTemporaryEmailVerification } = usePpdbVerificationGate()
+const { getVerificationSession, saveTemporaryEmailVerification } = usePpdbVerificationGate()
 const { biodata } = usePpdbRegistrationForm()
 const { isMockVerificationEnabled, requestEmailVerification } = usePpdbEmailVerificationService()
 
@@ -28,10 +27,7 @@ const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized
 const canRequestVerification = computed(() => isEmailValid.value && !isSubmitting.value)
 const hasEmailError = computed(() => Boolean(formError.value && viewState.value === 'idle'))
 
-const emailSentMessage = 'Link verifikasi sudah kami kirim ke email kamu.'
-const spamFolderMessage = 'Belum terlihat? Cek folder spam, promosi, atau tab pembaruan di email kamu.'
-const expiredMessage = 'Link verifikasi sudah kedaluwarsa.'
-const failedMessage = 'Verifikasi email belum berhasil.'
+const spamFolderMessage = 'Belum terlihat? Cek folder Spam, Promosi, atau tab Pembaruan.'
 const rateLimitedMessage = 'Permintaan verifikasi terlalu sering. Tunggu beberapa saat, lalu coba lagi.'
 
 const redirectTarget = computed(() => {
@@ -50,8 +46,7 @@ const activateVerifiedState = (response?: EmailVerificationResult | null) => {
 
   saveTemporaryEmailVerification({
     email: normalizedEmail.value,
-    expiresAt: response?.sessionExpiresAt || response?.expiresAt,
-    token: response?.token
+    expiresAt: response?.sessionExpiresAt
   })
 
   biodata.value.email = normalizedEmail.value
@@ -74,14 +69,14 @@ const requestVerificationEmail = async () => {
         return
       }
 
-      await setFormError('Link verifikasi belum bisa dikirim. Periksa kembali email kamu, lalu coba lagi.')
+      await setFormError('Tautan verifikasi belum bisa dikirim. Periksa kembali alamat email Anda, lalu coba lagi.')
       return
     }
 
     biodata.value.email = normalizedEmail.value
     viewState.value = 'sent'
   } catch {
-    await setFormError('Link verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
+    await setFormError('Tautan verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
   } finally {
     isSubmitting.value = false
   }
@@ -110,6 +105,13 @@ const simulateFailedVerification = () => {
 }
 
 onMounted(() => {
+  const activeVerification = getVerificationSession()
+  if (activeVerification) {
+    biodata.value.email = activeVerification.email
+    router.replace(redirectTarget.value)
+    return
+  }
+
   const queryEmail = Array.isArray(route.query.email) ? route.query.email[0] : route.query.email
   email.value = sanitizeEmail(queryEmail || biodata.value.email)
 
@@ -141,13 +143,15 @@ onMounted(() => {
   <div class="min-h-[calc(100vh-116px)] bg-white py-10 md:min-h-[calc(100vh-132px)] md:py-14">
     <div class="public-navbar-container flex min-h-[calc(100vh-196px)] items-center justify-center md:min-h-[calc(100vh-244px)]">
       <section class="w-full max-w-xl">
+
+        <!-- ── STATE: IDLE ── -->
         <div v-if="viewState === 'idle'" class="rounded-[2rem] bg-bg-base px-6 py-8 md:px-10 md:py-10">
           <div class="mb-7 text-center">
             <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
               Verifikasi Email Pendaftaran
             </h1>
             <p class="mx-auto max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-              Masukkan email aktif kamu. Kami akan mengirimkan link verifikasi sebelum kamu melanjutkan ke formulir PPDB.
+              Masukkan email aktif Anda. Kami akan mengirimkan tautan verifikasi sebelum Anda melanjutkan ke formulir PPDB.
             </p>
           </div>
 
@@ -198,62 +202,89 @@ onMounted(() => {
                 :loading="isSubmitting"
                 :aria-busy="isSubmitting ? 'true' : undefined"
               >
-                Verifikasi Email
+                Kirim Tautan Verifikasi
               </AppButton>
             </div>
           </form>
         </div>
 
-        <div v-else-if="viewState === 'sent'" class="mx-auto max-w-lg text-center">
-          <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-            {{ emailSentMessage }}
-          </h1>
-          <p class="mx-auto max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-            Buka email dari MDS Cendekia, lalu klik tombol verifikasi yang tersedia.
-          </p>
-          <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-            {{ spamFolderMessage }}
-          </p>
-          <p class="mt-5 rounded-2xl bg-bg-base px-4 py-3 text-sm font-medium text-text-primary">
-            {{ normalizedEmail }}
-          </p>
-          <div v-if="isMockVerificationEnabled" class="mt-6 rounded-2xl bg-bg-base p-4 text-left">
+        <!-- ── STATE: SENT ── -->
+        <div v-else-if="viewState === 'sent'" class="rounded-[2rem] bg-bg-base px-6 py-8 md:px-10 md:py-10">
+
+          <!-- Header -->
+          <div class="mb-6">
+            <h1 class="font-heading text-xl font-semibold leading-snug text-text-primary md:text-2xl">
+              Tautan verifikasi telah kami kirim ke {{ normalizedEmail }}
+            </h1>
+            <p class="mt-2 text-sm leading-relaxed text-text-secondary">
+              Tautan verifikasi berlaku selama 10 menit sejak email dikirim.
+            </p>
+          </div>
+
+          <!-- Divider -->
+          <div class="mb-5 h-px bg-border" />
+
+          <!-- Steps -->
+          <ol class="mb-5 flex flex-col gap-3">
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 text-sm font-semibold text-text-primary">1.</span>
+              <p class="text-sm leading-relaxed text-text-secondary">
+                Buka inbox email Anda dan cari pesan dari <span class="font-medium text-text-primary">MDS Cendekia</span>.
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 text-sm font-semibold text-text-primary">2.</span>
+              <p class="text-sm leading-relaxed text-text-secondary">
+                Klik tautan verifikasi di dalam email tersebut untuk mengkonfirmasi alamat email Anda.
+              </p>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="shrink-0 text-sm font-semibold text-text-primary">3.</span>
+              <p class="text-sm leading-relaxed text-text-secondary">
+                {{ spamFolderMessage }}
+              </p>
+            </li>
+          </ol>
+
+          <!-- Dummy FE panel -->
+          <div v-if="isMockVerificationEnabled" class="rounded-xl border border-dashed border-border bg-white p-4">
             <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-              Mode dummy FE
+              Mode Dummy FE
             </p>
             <div class="flex flex-col gap-2 sm:flex-row">
               <AppButton variant="primary" class="w-full sm:w-auto" @click="simulateVerifiedEmail">
-                Simulasi berhasil
+                Simulasi Berhasil
               </AppButton>
               <AppButton variant="ghost" class="w-full sm:w-auto" @click="simulateExpiredToken">
-                Simulasi expired
+                Simulasi Expired
               </AppButton>
               <AppButton variant="ghost" class="w-full sm:w-auto" @click="simulateFailedVerification">
-                Simulasi gagal
+                Simulasi Gagal
               </AppButton>
             </div>
           </div>
         </div>
 
-        <div v-else-if="viewState === 'success'" class="mx-auto max-w-lg text-center">
+        <!-- ── STATE: SUCCESS ── -->
+        <div v-else-if="viewState === 'success'" class="rounded-[2rem] bg-bg-base px-6 py-8 text-center md:px-10 md:py-10">
           <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-            Terima kasih, email kamu sudah diverifikasi.
+            Email Anda berhasil diverifikasi.
           </h1>
           <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-            Kamu sekarang bisa melanjutkan pengisian formulir pendaftaran. Pastikan data yang diisi sesuai dengan dokumen resmi.
+            Anda sekarang dapat melanjutkan pengisian formulir pendaftaran. Pastikan seluruh data yang diisi sesuai dengan dokumen resmi.
           </p>
           <AppButton variant="primary" class="w-full sm:w-auto" @click="continueToForm">
-            Lanjut mengisi formulir pendaftaran
-            <ArrowRight class="ml-2 h-4 w-4" />
+            Lanjut ke Formulir Pendaftaran
           </AppButton>
         </div>
 
-        <div v-else-if="viewState === 'expired'" class="mx-auto max-w-lg text-center">
+        <!-- ── STATE: EXPIRED ── -->
+        <div v-else-if="viewState === 'expired'" class="rounded-[2rem] bg-bg-base px-6 py-8 text-center md:px-10 md:py-10">
           <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-            {{ expiredMessage }}
+            Tautan verifikasi sudah kedaluwarsa.
           </h1>
-          <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-            Untuk keamanan, link verifikasi hanya berlaku sementara. Silakan kirim ulang link verifikasi memakai email yang sama.
+          <p class="mx-auto mb-6 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            Demi keamanan, tautan verifikasi hanya berlaku selama 10 menit. Silakan kirim ulang tautan menggunakan email yang sama.
           </p>
           <p
             v-if="formError"
@@ -265,22 +296,31 @@ onMounted(() => {
           >
             {{ formError }}
           </p>
-          <AppButton variant="primary" class="w-full sm:w-auto" :disabled="!canRequestVerification" :loading="isSubmitting" :aria-busy="isSubmitting ? 'true' : undefined" @click="requestVerificationEmail">
-            Kirim ulang link verifikasi
+          <AppButton
+            variant="primary"
+            class="w-full sm:w-auto"
+            :disabled="!canRequestVerification"
+            :loading="isSubmitting"
+            :aria-busy="isSubmitting ? 'true' : undefined"
+            @click="requestVerificationEmail"
+          >
+            Kirim Ulang Tautan Verifikasi
           </AppButton>
         </div>
 
-        <div v-else class="mx-auto max-w-lg text-center">
+        <!-- ── STATE: FAILED ── -->
+        <div v-else class="rounded-[2rem] bg-bg-base px-6 py-8 text-center md:px-10 md:py-10">
           <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-            {{ failedMessage }}
+            Verifikasi email tidak berhasil.
           </h1>
           <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
-            Link yang kamu buka tidak valid atau sudah digunakan. Silakan kembali ke halaman verifikasi dan minta link baru.
+            Tautan yang Anda buka tidak valid atau sudah pernah digunakan. Silakan kembali dan minta tautan verifikasi yang baru.
           </p>
           <AppButton variant="primary" class="w-full sm:w-auto" @click="viewState = 'idle'">
-            Kembali ke verifikasi email
+            Kembali ke Verifikasi Email
           </AppButton>
         </div>
+
       </section>
     </div>
   </div>

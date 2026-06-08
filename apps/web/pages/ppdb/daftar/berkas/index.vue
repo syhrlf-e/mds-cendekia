@@ -12,7 +12,7 @@ definePageMeta({
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
-const { ensureVerifiedOrRedirect } = usePpdbVerificationGate()
+const { clearVerificationSession, ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -545,6 +545,7 @@ const submitForm = async () => {
   nomorPendaftaran.value = registration.kode
   clearPendingRegistration()
   resetForm()
+  clearVerificationSession()
   isSubmitting.value = false
   submitStage.value = 'idle'
   isSuccessSheetOpen.value = true

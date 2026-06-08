@@ -3,30 +3,58 @@ export type PpdbVerificationSession = {
   email: string
   status: 'verified'
   verifiedAt: string
-  expiresAt?: string
-  token?: string
+  expiresAt: string
 }
 
 export const PPDB_VERIFICATION_STORAGE_KEY = 'ppdb-verification-session'
+const PPDB_VERIFICATION_LEGACY_STORAGE_KEY = PPDB_VERIFICATION_STORAGE_KEY
+const TEMPORARY_VERIFICATION_DURATION_MS = 24 * 60 * 60 * 1000
+
+const removeStoredVerificationSession = () => {
+  localStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)
+  sessionStorage.removeItem(PPDB_VERIFICATION_LEGACY_STORAGE_KEY)
+}
+
+const parseVerificationSession = (rawSession: string | null): PpdbVerificationSession | null => {
+  if (!rawSession) return null
+
+  const session = JSON.parse(rawSession) as Partial<PpdbVerificationSession>
+  if (!session.email || session.status !== 'verified' || !session.verifiedAt) return null
+
+  const expiresAt = session.expiresAt
+    || new Date(new Date(session.verifiedAt).getTime() + TEMPORARY_VERIFICATION_DURATION_MS).toISOString()
+
+  if (!Number.isFinite(new Date(expiresAt).getTime()) || new Date(expiresAt).getTime() <= Date.now()) {
+    return null
+  }
+
+  return {
+    ...session,
+    email: session.email,
+    status: 'verified',
+    verifiedAt: session.verifiedAt,
+    expiresAt
+  }
+}
 
 export const readPpdbVerificationSession = (): PpdbVerificationSession | null => {
   if (!import.meta.client) return null
 
   try {
-    const rawSession = sessionStorage.getItem(PPDB_VERIFICATION_STORAGE_KEY)
-    if (!rawSession) return null
+    const storedSession = parseVerificationSession(localStorage.getItem(PPDB_VERIFICATION_STORAGE_KEY))
+    if (storedSession) return storedSession
 
-    const session = JSON.parse(rawSession) as PpdbVerificationSession
-    if (!session.email || session.status !== 'verified' || !session.verifiedAt) return null
-
-    if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
-      sessionStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)
-      return null
+    const legacySession = parseVerificationSession(sessionStorage.getItem(PPDB_VERIFICATION_LEGACY_STORAGE_KEY))
+    if (legacySession) {
+      localStorage.setItem(PPDB_VERIFICATION_STORAGE_KEY, JSON.stringify(legacySession))
+      sessionStorage.removeItem(PPDB_VERIFICATION_LEGACY_STORAGE_KEY)
+      return legacySession
     }
 
-    return session
+    removeStoredVerificationSession()
+    return null
   } catch {
-    sessionStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)
+    removeStoredVerificationSession()
     return null
   }
 }
@@ -43,20 +71,27 @@ export const usePpdbVerificationGate = () => {
 
   const saveVerificationSession = (session: PpdbVerificationSession) => {
     if (!import.meta.client) return
-    sessionStorage.setItem(PPDB_VERIFICATION_STORAGE_KEY, JSON.stringify(session))
+    localStorage.setItem(PPDB_VERIFICATION_STORAGE_KEY, JSON.stringify(session))
   }
 
-  const saveTemporaryEmailVerification = (session: Omit<PpdbVerificationSession, 'status' | 'verifiedAt'> & { verifiedAt?: string }) => {
+  const saveTemporaryEmailVerification = (
+    session: Omit<PpdbVerificationSession, 'status' | 'verifiedAt' | 'expiresAt'>
+      & { verifiedAt?: string, expiresAt?: string }
+  ) => {
+    const verifiedAt = session.verifiedAt || new Date().toISOString()
+
     saveVerificationSession({
       ...session,
       status: 'verified',
-      verifiedAt: session.verifiedAt || new Date().toISOString()
+      verifiedAt,
+      expiresAt: session.expiresAt
+        || new Date(new Date(verifiedAt).getTime() + TEMPORARY_VERIFICATION_DURATION_MS).toISOString()
     })
   }
 
   const clearVerificationSession = () => {
     if (!import.meta.client) return
-    sessionStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)
+    removeStoredVerificationSession()
   }
 
   const redirectToVerification = () => {
