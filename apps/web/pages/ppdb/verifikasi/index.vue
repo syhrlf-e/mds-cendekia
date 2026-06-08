@@ -1,226 +1,169 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { Check, MailCheck } from 'lucide-vue-next'
-import { sanitizeDigits, sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { ArrowRight } from 'lucide-vue-next'
+import { sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
+import type { EmailVerificationResult } from '~/services/usePpdbEmailVerificationService'
+import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerificationService'
 
-useHead({ title: 'Verifikasi Pendaftaran | PPDB MDS Cendekia' })
+useHead({ title: 'Verifikasi Email | PPDB MDS Cendekia' })
 
 definePageMeta({ layout: 'ppdb-form' })
 
-type VerificationResponse = {
-  success?: boolean
-  status?: boolean
-  message?: string
-  expires_in?: number
-  data?: {
-    expires_in?: number
-    expires_at?: string
-    session_expires_at?: string
-    token?: string
-  }
-}
+type VerificationViewState = 'idle' | 'sent' | 'success' | 'expired' | 'failed'
 
-const config = useRuntimeConfig()
 const router = useRouter()
 const route = useRoute()
-const { saveVerificationSession } = usePpdbVerificationGate()
+const { saveTemporaryEmailVerification } = usePpdbVerificationGate()
 const { biodata } = usePpdbRegistrationForm()
+const { requestEmailVerification } = usePpdbEmailVerificationService()
 
-const nisn = ref('')
 const email = ref('')
-const code = ref('')
-const hasRequestedCode = ref(false)
-const isRequestingCode = ref(false)
-const isVerifyingCode = ref(false)
-const isInfoModalOpen = ref(false)
+const viewState = ref<VerificationViewState>('idle')
+const isSubmitting = ref(false)
 const formError = ref('')
-const cooldownSeconds = ref(0)
-let cooldownTimer: ReturnType<typeof window.setInterval> | null = null
+const errorAlert = ref<HTMLElement | null>(null)
 
-const apiBaseUrl = computed(() => String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, ''))
-const requestCodeEndpoint = computed(() => `${apiBaseUrl.value}/register/verification/request`)
-const verifyCodeEndpoint = computed(() => `${apiBaseUrl.value}/register/verification/verify`)
-
-const normalizedNisn = computed(() => sanitizeDigits(nisn.value, 10))
 const normalizedEmail = computed(() => sanitizeEmail(email.value))
-const normalizedCode = computed(() => sanitizeDigits(code.value, 8))
-const isIdentityValid = computed(() => normalizedNisn.value.length === 10 && /.+@.+\..+/.test(normalizedEmail.value))
-const isCodeValid = computed(() => normalizedCode.value.length >= 4)
-const canRequestCode = computed(() => isIdentityValid.value && !isRequestingCode.value && cooldownSeconds.value <= 0)
-const canVerifyCode = computed(() => hasRequestedCode.value && isCodeValid.value && !isVerifyingCode.value)
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
+const canRequestVerification = computed(() => isEmailValid.value && !isSubmitting.value)
+const hasEmailError = computed(() => Boolean(formError.value && viewState.value === 'idle'))
 
-const requestButtonLabel = computed(() => {
-  if (isRequestingCode.value) return 'Mengirim Kode'
-  if (cooldownSeconds.value > 0) return `Kirim Ulang ${cooldownSeconds.value}s`
-  return hasRequestedCode.value ? 'Kirim Ulang Kode' : 'Dapatkan Kode'
+const emailSentMessage = 'Link verifikasi sudah kami kirim ke email kamu.'
+const spamFolderMessage = 'Belum terlihat? Cek folder spam, promosi, atau tab pembaruan di email kamu.'
+const expiredMessage = 'Link verifikasi sudah kedaluwarsa.'
+const failedMessage = 'Verifikasi email belum berhasil.'
+const rateLimitedMessage = 'Permintaan verifikasi terlalu sering. Tunggu beberapa saat, lalu coba lagi.'
+
+const redirectTarget = computed(() => {
+  const redirect = Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect
+  return redirect && redirect.startsWith('/ppdb/daftar') ? redirect : '/ppdb/daftar'
 })
 
-const readErrorMessage = (error: any, fallback: string) => {
-  return error?.data?.message ||
-    error?.response?._data?.message ||
-    error?.message ||
-    fallback
+const setFormError = async (message: string) => {
+  formError.value = message
+  await nextTick()
+  errorAlert.value?.focus()
 }
 
-const isSuccessResponse = (response?: VerificationResponse | null) => {
-  return response?.success === true || response?.status === true
+const activateVerifiedState = (response?: EmailVerificationResult | null) => {
+  if (!normalizedEmail.value) return
+
+  saveTemporaryEmailVerification({
+    email: normalizedEmail.value,
+    expiresAt: response?.sessionExpiresAt || response?.expiresAt,
+    token: response?.token
+  })
+
+  biodata.value.email = normalizedEmail.value
+  viewState.value = 'success'
+  formError.value = ''
 }
 
-const startCooldown = (seconds = 60) => {
-  cooldownSeconds.value = seconds
-  if (cooldownTimer) window.clearInterval(cooldownTimer)
-
-  cooldownTimer = window.setInterval(() => {
-    cooldownSeconds.value = Math.max(0, cooldownSeconds.value - 1)
-    if (cooldownSeconds.value <= 0 && cooldownTimer) {
-      window.clearInterval(cooldownTimer)
-      cooldownTimer = null
-    }
-  }, 1000)
-}
-
-const requestCode = async () => {
-  if (!canRequestCode.value) return
+const requestVerificationEmail = async () => {
+  if (!canRequestVerification.value) return
 
   formError.value = ''
-  isRequestingCode.value = true
+  isSubmitting.value = true
 
   try {
-    const response = await $fetch<VerificationResponse>(requestCodeEndpoint.value, {
-      method: 'POST',
-      credentials: 'include',
-      body: {
-        nisn: normalizedNisn.value,
-        email: normalizedEmail.value
-      }
-    })
+    const response = await requestEmailVerification(normalizedEmail.value)
 
-    if (!isSuccessResponse(response)) {
-      throw new Error(response?.message || 'Kode verifikasi belum bisa dikirim.')
+    if (!response.success) {
+      if (response.status === 'rate_limited') {
+        await setFormError(rateLimitedMessage)
+        return
+      }
+
+      await setFormError('Link verifikasi belum bisa dikirim. Periksa kembali email kamu, lalu coba lagi.')
+      return
     }
 
-    hasRequestedCode.value = true
-    code.value = ''
-    isInfoModalOpen.value = true
-    startCooldown(response.data?.expires_in || response.expires_in || 60)
-  } catch (error) {
-    formError.value = readErrorMessage(error, 'Kode verifikasi belum bisa dikirim. Silakan coba lagi.')
-  } finally {
-    isRequestingCode.value = false
-  }
-}
-
-const verifyCode = async () => {
-  if (!canVerifyCode.value) return
-
-  formError.value = ''
-  isVerifyingCode.value = true
-
-  try {
-    const response = await $fetch<VerificationResponse>(verifyCodeEndpoint.value, {
-      method: 'POST',
-      credentials: 'include',
-      body: {
-        nisn: normalizedNisn.value,
-        email: normalizedEmail.value,
-        code: normalizedCode.value
-      }
-    })
-
-    if (!isSuccessResponse(response)) {
-      throw new Error(response?.message || 'Kode verifikasi belum sesuai.')
-    }
-
-    saveVerificationSession({
-      nisn: normalizedNisn.value,
-      email: normalizedEmail.value,
-      verifiedAt: new Date().toISOString(),
-      expiresAt: response.data?.session_expires_at || response.data?.expires_at,
-      token: response.data?.token
-    })
-
-    biodata.value.nisn = normalizedNisn.value
     biodata.value.email = normalizedEmail.value
-
-    const redirect = Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect
-    router.push(redirect && redirect.startsWith('/ppdb/daftar') ? redirect : '/ppdb/daftar')
-  } catch (error) {
-    formError.value = readErrorMessage(error, 'Kode verifikasi belum sesuai atau sudah kedaluwarsa.')
+    viewState.value = 'sent'
+  } catch {
+    await setFormError('Link verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
   } finally {
-    isVerifyingCode.value = false
+    isSubmitting.value = false
   }
+}
+
+const continueToForm = () => {
+  router.push(redirectTarget.value)
 }
 
 onMounted(() => {
-  nisn.value = sanitizeDigits(biodata.value.nisn, 10)
-  email.value = sanitizeEmail(biodata.value.email)
-})
+  const queryEmail = Array.isArray(route.query.email) ? route.query.email[0] : route.query.email
+  email.value = sanitizeEmail(queryEmail || biodata.value.email)
 
-onUnmounted(() => {
-  if (cooldownTimer) window.clearInterval(cooldownTimer)
+  const verifiedQuery = Array.isArray(route.query.verified) ? route.query.verified[0] : route.query.verified
+  const statusQuery = Array.isArray(route.query.status) ? route.query.status[0] : route.query.status
+
+  if ((verifiedQuery === '1' || statusQuery === 'success' || statusQuery === 'verified') && isEmailValid.value) {
+    activateVerifiedState()
+    return
+  }
+
+  if (statusQuery === 'expired' || statusQuery === 'token_expired') {
+    viewState.value = 'expired'
+    return
+  }
+
+  if (statusQuery === 'rate_limited' || statusQuery === 'too_many_requests') {
+    setFormError(rateLimitedMessage)
+    return
+  }
+
+  if (statusQuery === 'failed') {
+    viewState.value = 'failed'
+  }
 })
 </script>
 
 <template>
-  <div class="h-[calc(100vh-116px)] overflow-hidden bg-bg-base py-6 md:h-[calc(100vh-132px)] md:py-8">
-    <div class="public-navbar-container h-full">
-      <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-center">
-        <div class="mb-7 text-center md:mb-8">
-          <h1 class="mb-2.5 font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:text-3xl">
-            Verifikasi Sebelum Mendaftar
-          </h1>
-          <p class="mx-auto max-w-sm text-sm leading-6 text-text-secondary md:max-w-lg md:text-base md:leading-relaxed">
-            Masukkan NISN dan email untuk mendapatkan kode verifikasi sebelum mengisi formulir.
-          </p>
-        </div>
+  <div class="min-h-[calc(100vh-116px)] bg-white py-10 md:min-h-[calc(100vh-132px)] md:py-14">
+    <div class="public-navbar-container flex min-h-[calc(100vh-196px)] items-center justify-center md:min-h-[calc(100vh-244px)]">
+      <section class="w-full max-w-xl">
+        <div v-if="viewState === 'idle'" class="rounded-[2rem] bg-bg-base px-6 py-8 md:px-10 md:py-10">
+          <div class="mb-7 text-center">
+            <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+              Verifikasi Email Pendaftaran
+            </h1>
+            <p class="mx-auto max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+              Masukkan email aktif kamu. Kami akan mengirimkan link verifikasi sebelum kamu melanjutkan ke formulir PPDB.
+            </p>
+          </div>
 
-        <form
-          class="flex flex-col gap-4 md:gap-5"
-          @submit.prevent="hasRequestedCode ? verifyCode() : requestCode()"
-        >
-          <div class="grid gap-4 sm:grid-cols-2 md:gap-5">
-            <AppInput
-              v-model="nisn"
-              label="NISN"
-              placeholder="10 digit NISN"
-              required
-              inputmode="numeric"
-              :maxlength="10"
-              :disabled="hasRequestedCode"
-              :sanitizer="(value) => sanitizeDigits(value, 10)"
-            />
+          <form class="flex flex-col gap-5" @submit.prevent="requestVerificationEmail">
             <AppInput
               v-model="email"
-              label="Email"
+              id="ppdb-verification-email"
+              name="email"
+              label="Email aktif untuk verifikasi"
               placeholder="nama@email.com"
               required
               type="email"
               inputmode="email"
               autocomplete="email"
-              :disabled="hasRequestedCode"
+              autocapitalize="none"
+              spellcheck="false"
+              :invalid="hasEmailError"
+              described-by="ppdb-verification-error"
               :sanitizer="sanitizeEmail"
             />
 
-            <Transition name="code-field">
-              <AppInput
-                v-if="hasRequestedCode"
-                v-model="code"
-                label="Kode Verifikasi"
-                placeholder="Masukkan kode dari email"
-                required
-                inputmode="numeric"
-                :maxlength="8"
-                :sanitizer="(value) => sanitizeDigits(value, 8)"
-                class="sm:col-span-2"
-              />
-            </Transition>
-          </div>
+            <p
+              v-if="formError"
+              ref="errorAlert"
+              id="ppdb-verification-error"
+              role="alert"
+              aria-live="assertive"
+              tabindex="-1"
+              class="rounded-xl border border-error/20 bg-status-rejected-bg px-4 py-3 text-sm leading-6 text-error outline-none focus:ring-2 focus:ring-error/20"
+            >
+              {{ formError }}
+            </p>
 
-          <p v-if="formError" class="rounded-xl border border-error/20 bg-status-rejected-bg px-4 py-3 text-sm leading-6 text-error">
-            {{ formError }}
-          </p>
-
-          <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between md:pt-0">
+            <div class="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between">
               <AppButton
                 variant="secondary"
                 type="button"
@@ -229,68 +172,82 @@ onUnmounted(() => {
               >
                 Kembali
               </AppButton>
+              <AppButton
+                type="submit"
+                variant="primary"
+                class="w-full sm:w-auto"
+                :disabled="!canRequestVerification"
+                :loading="isSubmitting"
+                :aria-busy="isSubmitting ? 'true' : undefined"
+              >
+                Verifikasi Email
+              </AppButton>
+            </div>
+          </form>
+        </div>
 
-              <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                <AppButton
-                  type="button"
-                  variant="ghost"
-                  class="w-full sm:w-auto"
-                  :disabled="!isIdentityValid || isRequestingCode || cooldownSeconds > 0"
-                  :loading="isRequestingCode"
-                  @click="requestCode"
-                >
-                  {{ requestButtonLabel }}
-                </AppButton>
-                <AppButton
-                  v-if="hasRequestedCode"
-                  type="submit"
-                  variant="primary"
-                  class="w-full sm:w-auto"
-                  :disabled="!canVerifyCode"
-                  :loading="isVerifyingCode"
-                >
-                  Verifikasi
-                </AppButton>
-              </div>
-          </div>
-        </form>
-      </div>
+        <div v-else-if="viewState === 'sent'" class="mx-auto max-w-lg text-center">
+          <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+            {{ emailSentMessage }}
+          </h1>
+          <p class="mx-auto max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            Buka email dari MDS Cendekia, lalu klik tombol verifikasi yang tersedia.
+          </p>
+          <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            {{ spamFolderMessage }}
+          </p>
+          <p class="mt-5 rounded-2xl bg-bg-base px-4 py-3 text-sm font-medium text-text-primary">
+            {{ normalizedEmail }}
+          </p>
+        </div>
+
+        <div v-else-if="viewState === 'success'" class="mx-auto max-w-lg text-center">
+          <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+            Terima kasih, email kamu sudah diverifikasi.
+          </h1>
+          <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            Kamu sekarang bisa melanjutkan pengisian formulir pendaftaran. Pastikan data yang diisi sesuai dengan dokumen resmi.
+          </p>
+          <AppButton variant="primary" class="w-full sm:w-auto" @click="continueToForm">
+            Lanjut mengisi formulir pendaftaran
+            <ArrowRight class="ml-2 h-4 w-4" />
+          </AppButton>
+        </div>
+
+        <div v-else-if="viewState === 'expired'" class="mx-auto max-w-lg text-center">
+          <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+            {{ expiredMessage }}
+          </h1>
+          <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            Untuk keamanan, link verifikasi hanya berlaku sementara. Silakan kirim ulang link verifikasi memakai email yang sama.
+          </p>
+          <p
+            v-if="formError"
+            ref="errorAlert"
+            role="alert"
+            aria-live="assertive"
+            tabindex="-1"
+            class="mx-auto mb-5 max-w-md rounded-xl border border-error/20 bg-status-rejected-bg px-4 py-3 text-sm leading-6 text-error outline-none focus:ring-2 focus:ring-error/20"
+          >
+            {{ formError }}
+          </p>
+          <AppButton variant="primary" class="w-full sm:w-auto" :disabled="!canRequestVerification" :loading="isSubmitting" :aria-busy="isSubmitting ? 'true' : undefined" @click="requestVerificationEmail">
+            Kirim ulang link verifikasi
+          </AppButton>
+        </div>
+
+        <div v-else class="mx-auto max-w-lg text-center">
+          <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+            {{ failedMessage }}
+          </h1>
+          <p class="mx-auto mb-7 max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            Link yang kamu buka tidak valid atau sudah digunakan. Silakan kembali ke halaman verifikasi dan minta link baru.
+          </p>
+          <AppButton variant="primary" class="w-full sm:w-auto" @click="viewState = 'idle'">
+            Kembali ke verifikasi email
+          </AppButton>
+        </div>
+      </section>
     </div>
   </div>
-
-  <AppModal v-model="isInfoModalOpen" title="Kode Verifikasi Dikirim" width="max-w-md">
-    <div class="flex items-start gap-4">
-      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-status-approved-bg text-success">
-        <MailCheck class="h-5 w-5" />
-      </div>
-      <div>
-        <p class="text-sm leading-6 text-text-primary">
-          Silakan cek email kamu dan masukkan kode verifikasi untuk melanjutkan pendaftaran.
-        </p>
-        <p class="mt-2 text-xs leading-5 text-text-secondary">
-          Demi keamanan, NISN dan email dikunci setelah kode dikirim.
-        </p>
-      </div>
-    </div>
-
-    <template #footer>
-      <AppButton variant="primary" @click="isInfoModalOpen = false">
-        <Check class="mr-2 h-4 w-4" />
-        Mengerti
-      </AppButton>
-    </template>
-  </AppModal>
 </template>
-
-<style scoped>
-.code-field-enter-active,
-.code-field-leave-active {
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-
-.code-field-enter-from,
-.code-field-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-</style>

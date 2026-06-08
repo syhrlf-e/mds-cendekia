@@ -6,5 +6,10 @@ export const publicApiEndpoints = {
   },
   gallery: {
     list: '/api/gallery/all'
+  },
+  ppdbVerification: {
+    requestEmail: '/register/verification/request',
+    checkEmailStatus: '/register/verification/status',
+    confirmToken: '/register/verification/confirm'
   }
 } as const

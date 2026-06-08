@@ -25,6 +25,8 @@ const props = withDefaults(
     maxlength?: number
     placeholder?: string
     error?: string
+    invalid?: boolean
+    describedBy?: string
     required?: boolean
     disabled?: boolean
     prefix?: string
@@ -48,6 +50,15 @@ const inputId = computed(() => {
   if (props.id) return props.id
   if (props.name) return `input-${props.name}`
   return `input-${fallbackId}`
+})
+const errorId = computed(() => `${inputId.value}-error`)
+const describedBy = computed(() => {
+  const ids = [
+    props.describedBy,
+    props.error ? errorId.value : ''
+  ].filter(Boolean)
+
+  return ids.length ? ids.join(' ') : undefined
 })
 
 const handleInput = (event: Event) => {
@@ -100,6 +111,9 @@ const handleInput = (event: Event) => {
         :maxlength="maxlength"
         :placeholder="placeholder"
         :disabled="disabled"
+        :aria-required="required ? 'true' : undefined"
+        :aria-invalid="error || invalid ? 'true' : 'false'"
+        :aria-describedby="describedBy"
         :class="[
           'h-11 w-full rounded-lg border bg-bg-surface text-sm leading-normal tracking-normal text-text-primary outline-none transition-colors placeholder:text-text-muted md:text-base',
           prefix ? 'pl-11 pr-4' : 'px-4',
@@ -118,6 +132,7 @@ const handleInput = (event: Event) => {
 
     <span
       v-if="error"
+      :id="errorId"
       class="text-xs text-error"
     >
       {{ error }}

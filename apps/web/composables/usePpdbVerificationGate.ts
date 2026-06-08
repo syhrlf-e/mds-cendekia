@@ -1,6 +1,7 @@
 export type PpdbVerificationSession = {
   nisn?: string
   email: string
+  status: 'verified'
   verifiedAt: string
   expiresAt?: string
   token?: string
@@ -8,7 +9,7 @@ export type PpdbVerificationSession = {
 
 export const PPDB_VERIFICATION_STORAGE_KEY = 'ppdb-verification-session'
 
-const readSession = (): PpdbVerificationSession | null => {
+export const readPpdbVerificationSession = (): PpdbVerificationSession | null => {
   if (!import.meta.client) return null
 
   try {
@@ -16,7 +17,7 @@ const readSession = (): PpdbVerificationSession | null => {
     if (!rawSession) return null
 
     const session = JSON.parse(rawSession) as PpdbVerificationSession
-    if (!session.email || !session.verifiedAt) return null
+    if (!session.email || session.status !== 'verified' || !session.verifiedAt) return null
 
     if (session.expiresAt && new Date(session.expiresAt).getTime() <= Date.now()) {
       sessionStorage.removeItem(PPDB_VERIFICATION_STORAGE_KEY)
@@ -30,17 +31,27 @@ const readSession = (): PpdbVerificationSession | null => {
   }
 }
 
+export const hasValidPpdbVerificationSession = () => Boolean(readPpdbVerificationSession())
+
 export const usePpdbVerificationGate = () => {
   const router = useRouter()
   const route = useRoute()
 
-  const getVerificationSession = () => readSession()
+  const getVerificationSession = () => readPpdbVerificationSession()
 
-  const hasValidVerification = () => Boolean(readSession())
+  const hasValidVerification = () => hasValidPpdbVerificationSession()
 
   const saveVerificationSession = (session: PpdbVerificationSession) => {
     if (!import.meta.client) return
     sessionStorage.setItem(PPDB_VERIFICATION_STORAGE_KEY, JSON.stringify(session))
+  }
+
+  const saveTemporaryEmailVerification = (session: Omit<PpdbVerificationSession, 'status' | 'verifiedAt'> & { verifiedAt?: string }) => {
+    saveVerificationSession({
+      ...session,
+      status: 'verified',
+      verifiedAt: session.verifiedAt || new Date().toISOString()
+    })
   }
 
   const clearVerificationSession = () => {
@@ -67,6 +78,7 @@ export const usePpdbVerificationGate = () => {
     getVerificationSession,
     hasValidVerification,
     saveVerificationSession,
+    saveTemporaryEmailVerification,
     clearVerificationSession,
     ensureVerifiedOrRedirect
   }
