@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft } from 'lucide-vue-next'
+import { ChevronLeft } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import { sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
 import type { EmailVerificationResult } from '~/services/usePpdbEmailVerificationService'
@@ -153,10 +153,10 @@ onMounted(() => {
     <button
       v-if="viewState === 'idle'"
       type="button"
-      class="fixed left-4 top-[76px] z-40 inline-flex min-h-11 items-center gap-2 rounded-full bg-white/90 px-3 text-sm font-medium text-text-primary shadow-sm backdrop-blur transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
+      class="fixed left-4 top-[76px] z-40 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/90 py-2 pl-2 pr-3 text-[13px] font-medium text-text-primary shadow-sm backdrop-blur transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 sm:hidden"
       @click="router.push('/ppdb')"
     >
-      <ArrowLeft class="h-4 w-4" />
+      <ChevronLeft class="h-4.5 w-4.5" />
       Kembali
     </button>
 
