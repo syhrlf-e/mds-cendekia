@@ -15,7 +15,7 @@ const router = useRouter()
 const route = useRoute()
 const { saveTemporaryEmailVerification } = usePpdbVerificationGate()
 const { biodata } = usePpdbRegistrationForm()
-const { requestEmailVerification } = usePpdbEmailVerificationService()
+const { isMockVerificationEnabled, requestEmailVerification } = usePpdbEmailVerificationService()
 
 const email = ref('')
 const viewState = ref<VerificationViewState>('idle')
@@ -89,6 +89,24 @@ const requestVerificationEmail = async () => {
 
 const continueToForm = () => {
   router.push(redirectTarget.value)
+}
+
+const simulateVerifiedEmail = () => {
+  activateVerifiedState({
+    success: true,
+    status: 'verified',
+    token: 'mock-email-verification-token'
+  })
+}
+
+const simulateExpiredToken = () => {
+  viewState.value = 'expired'
+  formError.value = ''
+}
+
+const simulateFailedVerification = () => {
+  viewState.value = 'failed'
+  formError.value = ''
 }
 
 onMounted(() => {
@@ -199,6 +217,22 @@ onMounted(() => {
           <p class="mt-5 rounded-2xl bg-bg-base px-4 py-3 text-sm font-medium text-text-primary">
             {{ normalizedEmail }}
           </p>
+          <div v-if="isMockVerificationEnabled" class="mt-6 rounded-2xl bg-bg-base p-4 text-left">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
+              Mode dummy FE
+            </p>
+            <div class="flex flex-col gap-2 sm:flex-row">
+              <AppButton variant="primary" class="w-full sm:w-auto" @click="simulateVerifiedEmail">
+                Simulasi berhasil
+              </AppButton>
+              <AppButton variant="ghost" class="w-full sm:w-auto" @click="simulateExpiredToken">
+                Simulasi expired
+              </AppButton>
+              <AppButton variant="ghost" class="w-full sm:w-auto" @click="simulateFailedVerification">
+                Simulasi gagal
+              </AppButton>
+            </div>
+          </div>
         </div>
 
         <div v-else-if="viewState === 'success'" class="mx-auto max-w-lg text-center">

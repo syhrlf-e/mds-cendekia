@@ -113,6 +113,7 @@ export default defineNuxtConfig({
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
+      ppdbEmailVerificationMock: '',
       whatsappNumber: '',
       siteUrl: '',
       siteName: 'MDS Cendekia',
