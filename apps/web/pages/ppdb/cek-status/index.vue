@@ -243,10 +243,10 @@ const checkAnother = () => {
     <div class="public-navbar-container h-full">
       <div class="mx-auto flex h-full w-full max-w-160 flex-col justify-start md:justify-center">
         <div class="mb-7 text-center md:mb-8">
-          <h1 class="mb-2.5 font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:text-3xl">
+          <h1 class="mb-2.5 hidden font-heading text-2xl font-semibold leading-tight text-text-primary md:mb-3 md:block md:text-3xl">
             Cek Status Pendaftaran
           </h1>
-          <p class="mx-auto max-w-sm text-sm leading-6 text-text-secondary md:max-w-none md:text-base md:leading-relaxed">
+          <p class="mx-auto max-w-sm text-base leading-6 text-text-secondary md:max-w-none md:text-base md:leading-relaxed">
             Masukkan nomor pendaftaran dan NISN untuk melihat hasil seleksi.
           </p>
         </div>

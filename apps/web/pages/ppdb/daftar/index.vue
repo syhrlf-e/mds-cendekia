@@ -231,19 +231,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-bg-base pb-48 pt-[150px] md:py-10 xl:py-12">
-    <div class="fixed inset-x-0 top-[61px] z-40 bg-bg-base px-4 pb-4 pt-4 sm:hidden">
-      <div class="mx-auto w-full max-w-6xl">
-        <h1 class="font-heading text-xl font-bold leading-tight text-text-primary">Formulir Pendaftaran</h1>
-        <p class="mt-1 text-sm leading-5 text-text-secondary">Lengkapi data di bawah ini dengan benar.</p>
-      </div>
-    </div>
-
+  <div class="min-h-screen bg-bg-base pb-48 pt-4 md:py-10 xl:py-12">
     <div class="public-navbar-container">
-      <div class="mx-auto flex w-full max-w-6xl flex-col gap-2">
-        <div class="mb-4 hidden sm:block md:mb-5">
-          <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Formulir Pendaftaran</h1>
-          <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-3 md:gap-2">
+        <div class="mb-1 md:mb-5">
+          <h1 class="hidden font-heading text-2xl font-bold leading-tight text-text-primary md:block md:text-3xl">Formulir Pendaftaran</h1>
+          <p class="max-w-md text-base leading-6 text-text-secondary md:mt-1.5 md:max-w-2xl md:text-base md:leading-relaxed">Lengkapi data di bawah ini dengan benar.</p>
         </div>
 
       <AppAccordion

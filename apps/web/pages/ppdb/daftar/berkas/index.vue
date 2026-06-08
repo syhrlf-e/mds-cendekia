@@ -575,8 +575,8 @@ const submitForm = async () => {
       <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 md:gap-6">
 
         <div class="mb-1 md:mb-2">
-          <h1 class="font-heading text-2xl font-bold leading-tight text-text-primary md:text-3xl">Upload Berkas</h1>
-          <p class="mt-1.5 max-w-md text-sm leading-6 text-text-secondary md:max-w-2xl md:text-base md:leading-relaxed">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
+          <h1 class="hidden font-heading text-2xl font-bold leading-tight text-text-primary md:block md:text-3xl">Upload Berkas</h1>
+          <p class="max-w-md text-base leading-6 text-text-secondary md:mt-1.5 md:max-w-2xl md:text-base md:leading-relaxed">Unggah dokumen persyaratan untuk menyelesaikan pendaftaran.</p>
         </div>
 
         <div class="flex flex-col gap-4 rounded-2xl border border-border bg-bg-surface p-3.5 shadow-sm md:gap-6 md:p-6 xl:p-8">

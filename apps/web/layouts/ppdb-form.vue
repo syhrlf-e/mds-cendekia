@@ -26,17 +26,17 @@ const goBack = () => {
   <div class="flex min-h-screen flex-col bg-bg-base font-sans">
     <header class="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur-md">
       <div class="public-navbar-container">
-        <div class="grid min-h-[60px] grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 md:hidden">
+        <div class="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 md:hidden">
           <button
             type="button"
             class="inline-flex h-11 w-11 items-center justify-center text-text-primary transition-colors hover:text-brand focus:text-brand active:text-brand focus:outline-none"
             :aria-label="`Kembali ke ${mobileBackPath}`"
             @click="goBack"
           >
-            <ChevronLeft class="h-5 w-5" aria-hidden="true" />
+            <ChevronLeft class="h-6 w-6" aria-hidden="true" />
           </button>
 
-          <p class="truncate text-center font-heading text-sm font-semibold text-text-primary">
+          <p class="truncate text-center font-heading text-[15px] font-semibold leading-tight text-text-primary">
             {{ mobileHeaderTitle }}
           </p>
 
@@ -44,7 +44,7 @@ const goBack = () => {
             <img
               src="/images/logo-mds-main.png"
               alt="Logo Yayasan Mukti Daris Sasmita Cendekia"
-              class="h-8 w-8 shrink-0 object-contain"
+              class="h-9 w-9 shrink-0 object-contain"
               fetchpriority="high"
               loading="eager"
             />

@@ -159,10 +159,10 @@ onMounted(() => {
         <!-- ── STATE: IDLE ── -->
         <div v-if="viewState === 'idle'" class="rounded-[2rem] bg-bg-base px-6 py-8 md:px-10 md:py-10">
           <div class="mb-7 text-center">
-            <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+            <h1 class="mb-3 hidden font-heading text-2xl font-semibold leading-tight text-text-primary md:block md:text-3xl">
               Verifikasi Email Pendaftaran
             </h1>
-            <p class="mx-auto max-w-md text-sm leading-6 text-text-secondary md:text-base md:leading-relaxed">
+            <p class="mx-auto max-w-md text-base leading-6 text-text-secondary md:text-base md:leading-relaxed">
               Masukkan email aktif Anda. Kami akan mengirimkan tautan verifikasi sebelum Anda melanjutkan ke formulir PPDB.
             </p>
           </div>
