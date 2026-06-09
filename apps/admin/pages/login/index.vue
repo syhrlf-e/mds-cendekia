@@ -158,6 +158,18 @@ const handleLogin = async () => {
       id: data.data?.id,
       username: data.data?.username || username.value.trim()
     })
+
+    const hasUsableSession = await verifyAdminSession({
+      force: true
+    })
+
+    if (!hasUsableSession) {
+      isSubmitting.value = false
+      password.value = ''
+      await setLoginError('Login berhasil, tetapi sesi admin tidak dapat digunakan. Silakan login kembali.')
+      return
+    }
+
     void prefetchDashboardSummary()
     await router.push('/dashboard')
     return

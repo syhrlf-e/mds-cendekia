@@ -1,16 +1,20 @@
 export type GalleryDto = {
-  id?: string | number
-  nama?: string
-  deskripsi?: string
-  gambar?: string
-  is_utama?: boolean | number | string
-  isUtama?: boolean | number | string
-  utama?: boolean | number | string
-  urutan?: number | string
-  sort_order?: number | string
-  order?: number | string
-  created_at?: string
-  updated_at?: string
+  id: string
+  nama: string
+  deskripsi: string
+  gambar: string
+  slug: string
+  order: number
+  is_head: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type CreateGalleryResponse = Omit<GalleryDto, 'slug' | 'order' | 'is_head'>
+
+export type GalleryMutationResponse = {
+  success: boolean
+  message: string
 }
 
 export type GalleryItem = {
@@ -18,8 +22,9 @@ export type GalleryItem = {
   nama: string
   deskripsi: string
   gambar: string
-  isUtama: boolean
-  urutan: number
+  slug: string
+  isHead: boolean
+  order: number
   createdAt: string
   updatedAt: string
 }
@@ -28,6 +33,4 @@ export type GalleryFormState = {
   nama: string
   deskripsi: string
   gambar: File | null
-  isUtama?: boolean
-  urutan?: number
 }

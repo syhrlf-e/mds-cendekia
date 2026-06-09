@@ -5,11 +5,14 @@ export const publicApiEndpoints = {
     detailBySlug: (slug: string) => `/api/berita/slug/${encodeURIComponent(slug)}`
   },
   gallery: {
-    list: '/api/gallery/all'
+    list: '/api/gallery/all',
+    detail: (id: string) => `/api/gallery/${encodeURIComponent(id)}`,
+    detailBySlug: (slug: string) => `/api/gallery/slug/${encodeURIComponent(slug)}`
   },
   ppdbVerification: {
-    requestEmail: '/register/verification/request',
-    checkEmailStatus: '/register/verification/status',
-    confirmToken: '/register/verification/confirm'
+    requestEmail: '/auth/email/request-verification',
+    verifyToken: '/auth/email/verify',
+    session: '/auth/email/session',
+    checkValidation: '/auth/email/verify/polling'
   }
 } as const

@@ -5,28 +5,6 @@ const normalizeText = (value: unknown) => String(value || '').trim()
 
 const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
 
-const normalizeBoolean = (value: unknown) => {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'number') return value === 1
-
-  const normalized = normalizeText(value).toLowerCase()
-  return ['1', 'true', 'ya', 'yes', 'utama'].includes(normalized)
-}
-
-const normalizeNumber = (value: unknown) => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-const readArrayPayload = (payload: any): GalleryDto[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.data?.data)) return payload.data.data
-  if (Array.isArray(payload?.gallery)) return payload.gallery
-  if (Array.isArray(payload?.data?.gallery)) return payload.data.gallery
-  return []
-}
-
 const normalizeAssetPath = (path: string) => path
   .split('/')
   .map(segment => encodeURIComponent(segment))
@@ -53,8 +31,9 @@ const mapPublicGalleryItem = (item: GalleryDto, apiBaseUrl: string): GalleryItem
     nama,
     deskripsi: normalizeText(item.deskripsi),
     gambar: normalizeAssetUrl(item.gambar, apiBaseUrl),
-    isUtama: normalizeBoolean(item.is_utama ?? item.isUtama ?? item.utama),
-    urutan: normalizeNumber(item.urutan ?? item.sort_order ?? item.order),
+    slug: normalizeText(item.slug),
+    isHead: item.is_head,
+    order: item.order,
     createdAt: normalizeText(item.created_at),
     updatedAt: normalizeText(item.updated_at)
   }
@@ -66,24 +45,19 @@ export const usePublicGalleryService = () => {
   const listPublicGallery = async (limit = 12) => {
     try {
       const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
-      const data = await $fetch<any>(publicApiEndpoints.gallery.list, {
+      const data = await $fetch<GalleryDto[]>(publicApiEndpoints.gallery.list, {
         baseURL: apiBaseUrl,
         query: { limit: String(limit) },
+        retry: 0,
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
         }
       })
-      const rows = readArrayPayload(data)
-      const mappedRows = rows
+      const mappedRows = data
         .map(item => mapPublicGalleryItem(item, apiBaseUrl))
         .filter((item): item is GalleryItem => Boolean(item))
-        .sort((firstItem, secondItem) => {
-          if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
-          if (firstItem.urutan) return -1
-          if (secondItem.urutan) return 1
-          return 0
-        })
+        .sort((firstItem, secondItem) => firstItem.order - secondItem.order)
 
       return {
         data: mappedRows,
@@ -97,7 +71,35 @@ export const usePublicGalleryService = () => {
     }
   }
 
+  const getPublicGalleryByEndpoint = async (endpoint: string) => {
+    try {
+      const apiBaseUrl = normalizeBaseUrl(config.public.apiBaseUrl)
+      const data = await $fetch<GalleryDto>(endpoint, {
+        baseURL: apiBaseUrl,
+        retry: 0
+      })
+
+      return {
+        data: mapPublicGalleryItem(data, apiBaseUrl),
+        error: null
+      }
+    } catch (error) {
+      return {
+        data: null,
+        error
+      }
+    }
+  }
+
+  const getPublicGalleryById = (id: string) =>
+    getPublicGalleryByEndpoint(publicApiEndpoints.gallery.detail(id))
+
+  const getPublicGalleryBySlug = (slug: string) =>
+    getPublicGalleryByEndpoint(publicApiEndpoints.gallery.detailBySlug(slug))
+
   return {
-    listPublicGallery
+    listPublicGallery,
+    getPublicGalleryById,
+    getPublicGalleryBySlug
   }
 }

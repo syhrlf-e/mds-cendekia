@@ -1,64 +1,145 @@
 import { publicApiEndpoints } from '~/services/publicApiEndpoints'
 
-export type EmailVerificationStatus = 'pending' | 'verified' | 'expired' | 'failed' | 'rate_limited'
+export type EmailVerificationStatus =
+  | 'pending'
+  | 'verified'
+  | 'unverified'
+  | 'registered'
+  | 'expired'
+  | 'failed'
+  | 'rate_limited'
 
 export type EmailVerificationResult = {
   success: boolean
   message?: string
   status?: EmailVerificationStatus
+  email?: string
+  isVerified?: boolean
+  isRegistered?: boolean
   expiresAt?: string
   sessionExpiresAt?: string
-  token?: string
 }
 
 type RawEmailVerificationResponse = {
   success?: boolean
-  status?: boolean | EmailVerificationStatus
+  status?: boolean | string
   message?: string
+  email?: string
+  is_verified?: boolean
+  is_validated?: boolean
+  is_registered?: boolean
   data?: {
-    status?: EmailVerificationStatus
+    success?: boolean
+    status?: boolean | string
+    message?: string
+    email?: string
+    is_verified?: boolean
+    is_validated?: boolean
+    is_registered?: boolean
     expires_at?: string
     session_expires_at?: string
-    token?: string
   }
 }
 
 const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
 
-const normalizeSuccess = (response?: RawEmailVerificationResponse | null) => {
-  return response?.success === true || response?.status === true
+const readBoolean = (...values: unknown[]) => {
+  for (const value of values) {
+    if (typeof value === 'boolean') return value
+    if (value === 1 || value === '1' || value === 'true') return true
+    if (value === 0 || value === '0' || value === 'false') return false
+  }
+
+  return undefined
 }
 
-const normalizeStatus = (response?: RawEmailVerificationResponse | null): EmailVerificationStatus | undefined => {
-  if (!response) return undefined
-  if (typeof response.status === 'string') return response.status
-  return response.data?.status
+const normalizeStatusValue = (value: unknown): EmailVerificationStatus | undefined => {
+  const normalized = String(value || '').trim().toLowerCase()
+  if (!normalized) return undefined
+
+  if (normalized.includes('register') || normalized.includes('terdaftar')) return 'registered'
+  if (normalized.includes('rate') || normalized.includes('too_many')) return 'rate_limited'
+  if (normalized.includes('expire') || normalized.includes('kedaluwarsa') || normalized.includes('kadaluarsa')) return 'expired'
+  if (
+    normalized.includes('unverified')
+    || normalized.includes('not_verified')
+    || normalized.includes('belum diverifikasi')
+    || normalized.includes('belum terverifikasi')
+    || normalized.includes('tidak diverifikasi')
+    || normalized.includes('tidak terverifikasi')
+  ) return 'unverified'
+  if (
+    normalized.includes('verified')
+    || normalized.includes('validated')
+    || normalized.includes('diverifikasi')
+    || normalized.includes('terverifikasi')
+    || normalized === 'success'
+  ) return 'verified'
+  if (normalized.includes('pending') || normalized.includes('waiting')) return 'pending'
+  if (normalized.includes('fail') || normalized.includes('invalid') || normalized.includes('error')) return 'failed'
+
+  return undefined
 }
 
-const mapVerificationResponse = (response?: RawEmailVerificationResponse | null): EmailVerificationResult => {
+const mapVerificationResponse = (
+  response?: RawEmailVerificationResponse | null,
+  successStatus?: EmailVerificationStatus
+): EmailVerificationResult => {
+  const data = response?.data
+  const isVerified = readBoolean(
+    response?.is_verified,
+    response?.is_validated,
+    data?.is_verified,
+    data?.is_validated
+  )
+  const isRegistered = readBoolean(response?.is_registered, data?.is_registered)
+  const rawStatus = typeof response?.status === 'string' ? response.status : data?.status
+  const status = isRegistered
+    ? 'registered'
+    : isVerified
+      ? 'verified'
+      : normalizeStatusValue(rawStatus) || normalizeStatusValue(response?.message || data?.message)
+  const explicitSuccess = readBoolean(response?.success, data?.success, response?.status)
+  const resolvedStatus = status || (explicitSuccess === true ? successStatus : undefined)
+
   return {
-    success: normalizeSuccess(response),
-    message: response?.message,
-    status: normalizeStatus(response),
-    expiresAt: response?.data?.expires_at,
-    sessionExpiresAt: response?.data?.session_expires_at,
-    token: response?.data?.token
+    success: explicitSuccess ?? (resolvedStatus === 'verified' || resolvedStatus === 'pending' || resolvedStatus === 'unverified'),
+    message: response?.message || data?.message,
+    status: resolvedStatus,
+    email: response?.email || data?.email,
+    isVerified,
+    isRegistered,
+    expiresAt: data?.expires_at,
+    sessionExpiresAt: data?.session_expires_at
   }
 }
 
 const mapVerificationError = (error: any): EmailVerificationResult => {
   const statusCode = Number(error?.statusCode || error?.response?.status || 0)
+  const responseData = error?.data || error?.response?._data
+  const message = String(responseData?.message || '').trim()
 
   if (statusCode === 429) {
     return {
       success: false,
-      status: 'rate_limited'
+      status: 'rate_limited',
+      message
+    }
+  }
+
+  if (statusCode === 401 && /terdaftar|registered/i.test(message)) {
+    return {
+      success: false,
+      status: 'registered',
+      isRegistered: true,
+      message
     }
   }
 
   return {
     success: false,
-    status: 'failed'
+    status: normalizeStatusValue(responseData?.status) || normalizeStatusValue(message) || 'failed',
+    message
   }
 }
 
@@ -86,11 +167,12 @@ export const usePpdbEmailVerificationService = () => {
 
   const createMockResult = (status: EmailVerificationStatus): EmailVerificationResult => {
     return {
-      success: status === 'pending' || status === 'verified',
+      success: status === 'pending' || status === 'verified' || status === 'unverified',
       status,
+      isVerified: status === 'verified',
+      isRegistered: status === 'registered',
       expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      sessionExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      token: status === 'verified' ? 'mock-email-verification-token' : undefined
+      sessionExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
     }
   }
 
@@ -110,7 +192,7 @@ export const usePpdbEmailVerificationService = () => {
         body: { email }
       })
 
-      return mapVerificationResponse(response)
+      return mapVerificationResponse(response, 'pending')
     } catch (error) {
       return mapVerificationError(error)
     }
@@ -119,18 +201,18 @@ export const usePpdbEmailVerificationService = () => {
   const checkEmailVerificationStatus = async (email: string) => {
     if (isMockVerificationEnabled.value) {
       await waitForMockResponse()
-      return createMockResult(readMockStatusFromValue(email))
+      return createMockResult('pending')
     }
 
     try {
-      const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.checkEmailStatus, {
+      const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.checkValidation, {
         baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
-        method: 'GET',
+        method: 'POST',
         credentials: 'include',
-        query: { email }
+        body: { email }
       })
 
-      return mapVerificationResponse(response)
+      return mapVerificationResponse(response, 'verified')
     } catch (error) {
       return mapVerificationError(error)
     }
@@ -143,14 +225,33 @@ export const usePpdbEmailVerificationService = () => {
     }
 
     try {
-      const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.confirmToken, {
+      const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.verifyToken, {
         baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { token }
       })
 
-      return mapVerificationResponse(response)
+      return mapVerificationResponse(response, 'verified')
+    } catch (error) {
+      return mapVerificationError(error)
+    }
+  }
+
+  const getEmailVerificationSession = async () => {
+    if (isMockVerificationEnabled.value) {
+      await waitForMockResponse()
+      return createMockResult('verified')
+    }
+
+    try {
+      const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.session, {
+        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      return mapVerificationResponse(response, 'verified')
     } catch (error) {
       return mapVerificationError(error)
     }
@@ -160,6 +261,7 @@ export const usePpdbEmailVerificationService = () => {
     isMockVerificationEnabled,
     requestEmailVerification,
     checkEmailVerificationStatus,
-    confirmEmailVerificationToken
+    confirmEmailVerificationToken,
+    getEmailVerificationSession
   }
 }

@@ -31,12 +31,14 @@ const props = withDefaults(
     disabled?: boolean
     prefix?: string
     sanitizer?: Sanitizer
+    size?: 'default' | 'comfortable'
   }>(),
   {
     modelValue: '',
     type: 'text',
     disabled: false,
-    required: false
+    required: false,
+    size: 'default'
   }
 )
 
@@ -61,6 +63,20 @@ const describedBy = computed(() => {
   return ids.length ? ids.join(' ') : undefined
 })
 
+const isComfortable = computed(() => props.size === 'comfortable')
+
+const labelClass = computed(() => {
+  return isComfortable.value
+    ? 'text-sm font-medium text-text-primary'
+    : 'text-xs font-medium text-text-primary md:text-sm'
+})
+
+const inputSizeClass = computed(() => {
+  return isComfortable.value
+    ? 'h-12 text-base'
+    : 'h-11 text-sm md:text-base'
+})
+
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
 
@@ -81,7 +97,7 @@ const handleInput = (event: Event) => {
     <label
       v-if="label && inputId"
       :for="inputId"
-      class="text-xs font-medium text-text-primary md:text-sm"
+      :class="labelClass"
     >
       {{ label }}
 
@@ -115,7 +131,8 @@ const handleInput = (event: Event) => {
         :aria-invalid="error || invalid ? 'true' : 'false'"
         :aria-describedby="describedBy"
         :class="[
-          'h-11 w-full rounded-lg border bg-bg-surface text-sm leading-normal tracking-normal text-text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-colors placeholder:text-text-muted md:text-base',
+          'w-full rounded-lg border bg-bg-surface leading-normal tracking-normal text-text-primary shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-colors placeholder:text-text-muted',
+          inputSizeClass,
           prefix ? 'pl-11 pr-4' : 'px-4',
           error
             ? 'border-error focus:border-error focus:ring-3 focus:ring-error/10'

@@ -85,8 +85,9 @@ const galleryFallbackItems: GalleryItem[] = [
     nama: 'Galeri Lingkungan',
     deskripsi: '',
     gambar: '/images/logo-mds-main.png',
-    isUtama: true,
-    urutan: 1,
+    slug: 'galeri-lingkungan',
+    isHead: true,
+    order: 1,
     createdAt: '',
     updatedAt: ''
   }
@@ -94,7 +95,7 @@ const galleryFallbackItems: GalleryItem[] = [
 
 const displayGalleryItems = computed(() => publicGalleryItems.value.length ? publicGalleryItems.value : galleryFallbackItems)
 const primaryGalleryIndex = computed(() => {
-  const featuredIndex = displayGalleryItems.value.findIndex(item => item.isUtama)
+  const featuredIndex = displayGalleryItems.value.findIndex(item => item.isHead)
   return featuredIndex >= 0 ? featuredIndex : 0
 })
 const activeGalleryItem = computed(() => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { sanitizeEmail } from '~/composables/usePpdbFormSanitizers'
 import type { EmailVerificationResult } from '~/services/usePpdbEmailVerificationService'
 import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerificationService'
@@ -16,14 +16,22 @@ type VerificationViewState = 'idle' | 'sent' | 'success' | 'expired' | 'failed'
 
 const router = useRouter()
 const route = useRoute()
-const { getVerificationSession, saveTemporaryEmailVerification } = usePpdbVerificationGate()
+const { getPendingEmail, savePendingEmail, clearPendingEmail } = usePpdbVerificationGate()
 const { biodata } = usePpdbRegistrationForm()
-const { isMockVerificationEnabled, requestEmailVerification } = usePpdbEmailVerificationService()
+const {
+  isMockVerificationEnabled,
+  requestEmailVerification,
+  checkEmailVerificationStatus,
+  getEmailVerificationSession
+} = usePpdbEmailVerificationService()
 
 const email = ref('')
 const viewState = ref<VerificationViewState>('idle')
 const isSubmitting = ref(false)
 const formError = ref('')
+const verificationExpiresAt = ref('')
+let pollingTimer: ReturnType<typeof setInterval> | null = null
+let pollingRequestActive = false
 
 const normalizedEmail = computed(() => sanitizeEmail(email.value))
 const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value))
@@ -45,14 +53,77 @@ const setFormError = (message: string) => {
 const activateVerifiedState = (response?: EmailVerificationResult | null) => {
   if (!normalizedEmail.value) return
 
-  saveTemporaryEmailVerification({
-    email: normalizedEmail.value,
-    expiresAt: response?.sessionExpiresAt
-  })
-
+  stopPolling()
+  clearPendingEmail()
   biodata.value.email = normalizedEmail.value
   viewState.value = 'success'
   formError.value = ''
+
+  window.setTimeout(() => {
+    router.replace(redirectTarget.value)
+  }, response?.sessionExpiresAt ? 500 : 800)
+}
+
+const stopPolling = () => {
+  if (!pollingTimer) return
+  clearInterval(pollingTimer)
+  pollingTimer = null
+}
+
+const handleVerificationStatus = (response: EmailVerificationResult) => {
+  if (response.email && !normalizedEmail.value) {
+    email.value = sanitizeEmail(response.email)
+  }
+
+  if (response.status === 'verified' || response.isVerified) {
+    activateVerifiedState(response)
+    return true
+  }
+
+  if (response.status === 'registered' || response.isRegistered) {
+    stopPolling()
+    clearPendingEmail()
+    viewState.value = 'idle'
+    setFormError(response.message || 'Email ini sudah terdaftar. Gunakan email lain untuk pendaftaran baru.')
+    return true
+  }
+
+  if (response.status === 'expired') {
+    stopPolling()
+    viewState.value = 'expired'
+    return true
+  }
+
+  return false
+}
+
+const pollVerificationStatus = async () => {
+  if (pollingRequestActive || viewState.value !== 'sent') return
+
+  if (verificationExpiresAt.value) {
+    const expiresAt = new Date(verificationExpiresAt.value).getTime()
+    if (Number.isFinite(expiresAt) && expiresAt <= Date.now()) {
+      stopPolling()
+      viewState.value = 'expired'
+      return
+    }
+  }
+
+  pollingRequestActive = true
+
+  try {
+    handleVerificationStatus(await checkEmailVerificationStatus(normalizedEmail.value))
+  } finally {
+    pollingRequestActive = false
+  }
+}
+
+const startPolling = () => {
+  stopPolling()
+  void pollVerificationStatus()
+  pollingTimer = setInterval(() => {
+    void pollVerificationStatus()
+  }, 3000)
 }
 
 const requestVerificationEmail = async () => {
@@ -76,6 +147,11 @@ const requestVerificationEmail = async () => {
     const response = await requestEmailVerification(normalizedEmail.value)
 
     if (!response.success) {
+      if (response.status === 'registered' || response.isRegistered) {
+        setFormError(response.message || 'Email ini sudah terdaftar. Gunakan email lain untuk pendaftaran baru.')
+        return
+      }
+
       if (response.status === 'rate_limited') {
         setFormError(rateLimitedMessage)
         return
@@ -85,8 +161,13 @@ const requestVerificationEmail = async () => {
       return
     }
 
+    if (handleVerificationStatus(response)) return
+
     biodata.value.email = normalizedEmail.value
+    savePendingEmail(normalizedEmail.value)
+    verificationExpiresAt.value = response.expiresAt || new Date(Date.now() + 10 * 60 * 1000).toISOString()
     viewState.value = 'sent'
+    startPolling()
   } catch {
     setFormError('Tautan verifikasi belum bisa dikirim. Silakan periksa email dan coba lagi.')
   } finally {
@@ -98,11 +179,25 @@ const continueToForm = () => {
   router.push(redirectTarget.value)
 }
 
+const changeVerificationEmail = () => {
+  stopPolling()
+  clearPendingEmail()
+  verificationExpiresAt.value = ''
+  email.value = ''
+  biodata.value.email = ''
+  formError.value = ''
+  viewState.value = 'idle'
+
+  nextTick(() => {
+    document.getElementById('ppdb-verification-email')?.focus()
+  })
+}
+
 const simulateVerifiedEmail = () => {
   activateVerifiedState({
     success: true,
     status: 'verified',
-    token: 'mock-email-verification-token'
+    isVerified: true
   })
 }
 
@@ -116,24 +211,17 @@ const simulateFailedVerification = () => {
   formError.value = ''
 }
 
-onMounted(() => {
-  const activeVerification = getVerificationSession()
-  if (activeVerification) {
-    biodata.value.email = activeVerification.email
-    router.replace(redirectTarget.value)
+onMounted(async () => {
+  const activeSession = await getEmailVerificationSession()
+  if (activeSession.success && activeSession.status === 'verified' && !activeSession.isRegistered) {
+    if (activeSession.email) biodata.value.email = sanitizeEmail(activeSession.email)
+    await router.replace(redirectTarget.value)
     return
   }
 
   const queryEmail = Array.isArray(route.query.email) ? route.query.email[0] : route.query.email
-  email.value = sanitizeEmail(queryEmail || biodata.value.email)
-
-  const verifiedQuery = Array.isArray(route.query.verified) ? route.query.verified[0] : route.query.verified
+  email.value = sanitizeEmail(queryEmail || getPendingEmail() || biodata.value.email)
   const statusQuery = Array.isArray(route.query.status) ? route.query.status[0] : route.query.status
-
-  if ((verifiedQuery === '1' || statusQuery === 'success' || statusQuery === 'verified') && isEmailValid.value) {
-    activateVerifiedState()
-    return
-  }
 
   if (statusQuery === 'expired' || statusQuery === 'token_expired') {
     viewState.value = 'expired'
@@ -147,8 +235,17 @@ onMounted(() => {
 
   if (statusQuery === 'failed') {
     viewState.value = 'failed'
+    return
+  }
+
+  if (email.value) {
+    viewState.value = 'sent'
+    verificationExpiresAt.value = new Date(Date.now() + 10 * 60 * 1000).toISOString()
+    startPolling()
   }
 })
+
+onBeforeUnmount(stopPolling)
 </script>
 
 <template>
@@ -159,11 +256,11 @@ onMounted(() => {
         <!-- ── STATE: IDLE ── -->
         <div v-if="viewState === 'idle'" class="rounded-[2rem] bg-bg-base px-6 py-8 md:px-10 md:py-10">
           <div class="mb-7 text-center">
-            <h1 class="mb-3 hidden font-heading text-2xl font-semibold leading-tight text-text-primary md:block md:text-3xl">
-              Verifikasi Email Pendaftaran
+            <h1 class="mb-3 font-heading text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+              Masukkan Email Aktif Anda
             </h1>
             <p class="mx-auto max-w-md text-base leading-6 text-text-secondary md:text-base md:leading-relaxed">
-              Masukkan email aktif Anda. Kami akan mengirimkan tautan verifikasi sebelum Anda melanjutkan ke formulir PPDB.
+              Kami akan mengirimkan tautan verifikasi sebelum Anda melanjutkan ke formulir PPDB.
             </p>
           </div>
 
@@ -173,6 +270,7 @@ onMounted(() => {
               id="ppdb-verification-email"
               name="email"
               label="Email aktif untuk verifikasi"
+              size="comfortable"
               placeholder="nama@email.com"
               required
               type="email"
@@ -229,7 +327,7 @@ onMounted(() => {
               Tautan verifikasi telah kami kirim ke {{ normalizedEmail }}
             </h1>
             <p class="mt-2 text-sm leading-relaxed text-text-secondary">
-              Tautan verifikasi berlaku selama 10 menit sejak email dikirim.
+              Tautan verifikasi berlaku selama 10 menit. Halaman ini akan melanjutkan otomatis setelah email berhasil diverifikasi.
             </p>
           </div>
 
@@ -247,7 +345,7 @@ onMounted(() => {
             <li class="flex items-start gap-3">
               <span class="shrink-0 text-sm font-semibold text-text-primary">2.</span>
               <p class="text-sm leading-relaxed text-text-secondary">
-                Klik tautan verifikasi di dalam email tersebut untuk mengkonfirmasi alamat email Anda.
+                Klik tombol verifikasi di dalam email tersebut. Anda tidak perlu menutup halaman ini.
               </p>
             </li>
             <li class="flex items-start gap-3">
@@ -257,6 +355,15 @@ onMounted(() => {
               </p>
             </li>
           </ol>
+
+          <div class="mb-5 border-t border-border pt-5">
+            <p class="mb-3 text-sm leading-relaxed text-text-secondary">
+              Alamat email salah atau ingin menggunakan email lain?
+            </p>
+            <AppButton variant="secondary" class="w-full sm:w-auto" @click="changeVerificationEmail">
+              Ganti Email
+            </AppButton>
+          </div>
 
           <!-- Dummy FE panel -->
           <div v-if="isMockVerificationEnabled" class="rounded-xl border border-dashed border-border bg-white p-4">

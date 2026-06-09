@@ -15,7 +15,7 @@ definePageMeta({
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
-const { clearVerificationSession, ensureVerifiedOrRedirect } = usePpdbVerificationGate()
+const { clearPendingEmail, ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -148,8 +148,8 @@ const openSuccessPreview = () => {
   isSuccessSheetOpen.value = true
 }
 
-onMounted(() => {
-  if (!ensureVerifiedOrRedirect()) return
+onMounted(async () => {
+  if (!await ensureVerifiedOrRedirect()) return
 
   updateDeviceType()
   openSuccessPreview()
@@ -562,7 +562,7 @@ const submitForm = async () => {
   nomorPendaftaran.value = registration.kode
   clearPendingRegistration()
   resetForm()
-  clearVerificationSession()
+  clearPendingEmail()
   isSubmitting.value = false
   submitStage.value = 'idle'
   isSuccessSheetOpen.value = true

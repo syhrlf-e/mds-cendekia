@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { Edit2, GripVertical, Image as ImageIcon, Images, Trash2 } from 'lucide-vue-next'
+import { Edit2, Image as ImageIcon, Images, Trash2 } from 'lucide-vue-next'
 import type { GalleryItem } from '~/types/adminGallery'
 
-const props = defineProps<{
+defineProps<{
   loading: boolean
   error: string
   filteredCount: number
   pagedItems: GalleryItem[]
-  from: number
-  searchQuery: string
-  savingOrder: boolean
-  draggedItemId: string
 }>()
 
 defineEmits<{
@@ -18,13 +14,7 @@ defineEmits<{
   create: []
   edit: [item: GalleryItem]
   delete: [item: GalleryItem]
-  dragStart: [item: GalleryItem, event: DragEvent]
-  drop: [item: GalleryItem]
-  dragEnd: []
 }>()
-
-const canDragRows = computed(() => !props.searchQuery.trim() && !props.savingOrder)
-const canDragItem = (item: GalleryItem) => canDragRows.value && !item.isUtama
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
@@ -104,17 +94,9 @@ const formatDate = (dateString: string) => {
       v-else
       class="overflow-hidden rounded-xl border border-border-soft"
     >
-      <div
-        v-if="searchQuery.trim()"
-        class="border-b border-border-soft bg-status-pending-bg px-4 py-3 text-sm text-status-pending-text"
-      >
-        Drag & drop aktif saat pencarian kosong, supaya urutan yang disimpan tetap sesuai seluruh data.
-      </div>
-
       <table class="w-full border-collapse text-left">
         <thead class="bg-bg-base">
           <tr class="h-12 text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            <th class="w-14 px-4"></th>
             <th class="w-20 px-4">Urutan</th>
             <th class="min-w-80 px-4">Galeri</th>
             <th class="w-40 px-4">Tipe</th>
@@ -124,34 +106,12 @@ const formatDate = (dateString: string) => {
         </thead>
         <tbody class="divide-y divide-border-soft">
           <tr
-            v-for="(item, index) in pagedItems"
+            v-for="item in pagedItems"
             :key="item.id"
-            :draggable="canDragItem(item)"
             class="h-[76px] text-sm text-text-primary transition-colors hover:bg-bg-base"
-            :class="draggedItemId === item.id ? 'bg-primary-50 opacity-60' : ''"
-            @dragstart="$emit('dragStart', item, $event)"
-            @dragover.prevent
-            @drop.prevent="$emit('drop', item)"
-            @dragend="$emit('dragEnd')"
           >
-            <td class="px-4">
-              <button
-                v-if="!item.isUtama"
-                type="button"
-                :disabled="!canDragItem(item)"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-muted transition-colors hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
-                title="Geser urutan"
-              >
-                <GripVertical class="h-4 w-4" />
-              </button>
-              <span
-                v-else
-                class="inline-flex h-9 w-9 items-center justify-center"
-                aria-label="Gambar utama tidak bisa digeser"
-              ></span>
-            </td>
             <td class="px-4 font-medium text-text-secondary">
-              {{ from + index }}
+              {{ item.order }}
             </td>
             <td class="px-4">
               <div class="flex min-w-0 items-center gap-3">
@@ -180,9 +140,9 @@ const formatDate = (dateString: string) => {
             <td class="px-4">
               <span
                 class="inline-flex rounded-full px-3 py-1 text-xs font-medium"
-                :class="item.isUtama ? 'bg-primary-50 text-brand' : 'bg-bg-base text-text-secondary'"
+                :class="item.isHead ? 'bg-primary-50 text-brand' : 'bg-bg-base text-text-secondary'"
               >
-                {{ item.isUtama ? 'Gambar Utama' : 'Carousel' }}
+                {{ item.isHead ? 'Gambar Utama' : 'Carousel' }}
               </span>
             </td>
             <td class="px-4 text-text-secondary">

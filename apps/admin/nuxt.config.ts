@@ -89,7 +89,7 @@ export default defineNuxtConfig({
     xssValidator: {},
     corsHandler: {
       origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
     }
   },
 

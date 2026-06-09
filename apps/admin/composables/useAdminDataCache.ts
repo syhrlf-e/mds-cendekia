@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { getAdminSessionGeneration } from './useAdminSession'
 import { createEmptyDashboardSummary, useAdminDashboardService } from '~/services/useAdminDashboardService'
-import { useAdminGalleryService } from '~/services/useAdminGalleryService'
+import { getAdminGalleryErrorMessage, useAdminGalleryService } from '~/services/useAdminGalleryService'
 import { useAdminNewsService } from '~/services/useAdminNewsService'
 import { useAdminPaketSekolahService } from '~/services/useAdminPaketSekolahService'
 import { useAdminPendaftaranService } from '~/services/useAdminPendaftaranService'
@@ -270,7 +270,7 @@ export const useAdminDataCache = () => {
 
         if (error) {
           if (options.background && hasGalleryCache.value) return
-          galleryError.value = readErrorMessage(error, 'Data galeri belum bisa diambil dari server.')
+          galleryError.value = getAdminGalleryErrorMessage(error, 'Data galeri belum bisa diambil dari server.')
           if (!galleryItems.value.length) galleryItems.value = []
           return
         }

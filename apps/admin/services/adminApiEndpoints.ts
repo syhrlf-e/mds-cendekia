@@ -26,7 +26,8 @@ export const adminApiEndpoints = {
   gallery: {
     list: '/api/gallery/all',
     create: '/api/gallery/create',
-    detail: (id: string) => `/api/gallery/${id}`
+    detail: (id: string) => `/api/gallery/${encodeURIComponent(id)}`,
+    detailBySlug: (slug: string) => `/api/gallery/slug/${encodeURIComponent(slug)}`
   },
   berita: {
     list: '/api/berita/all',

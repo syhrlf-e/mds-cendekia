@@ -72,6 +72,12 @@ export default defineNuxtConfig({
     '/ppdb/verifikasi': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },
+    '/ppdb/verify-email/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
+    '/ppdb/verify/**': {
+      headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
+    },
     '/ppdb/daftar/**': {
       headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' }
     },
@@ -114,7 +120,7 @@ export default defineNuxtConfig({
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
       ppdbEmailVerificationMock: '',
-      whatsappNumber: import.meta.env.NUXT_PUBLIC_WHATSAPP_NUMBER || '',
+      whatsappNumber: '6282313380653',
       siteUrl: '',
       siteName: 'MDS Cendekia',
       siteDescription: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.',

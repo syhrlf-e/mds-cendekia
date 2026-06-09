@@ -158,7 +158,7 @@ const loadPrograms = async () => {
 }
 
 onMounted(async () => {
-  if (!ensureVerifiedOrRedirect()) return
+  if (!await ensureVerifiedOrRedirect()) return
 
   await Promise.all([
     loadSelectedRegions(),

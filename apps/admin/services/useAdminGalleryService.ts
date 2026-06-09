@@ -1,30 +1,14 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
-import type { GalleryDto, GalleryFormState, GalleryItem } from '~/types/adminGallery'
+import type {
+  CreateGalleryResponse,
+  GalleryDto,
+  GalleryFormState,
+  GalleryItem,
+  GalleryMutationResponse
+} from '~/types/adminGallery'
 import { resolveAllowedAdminAssetUrl } from '~/utils/adminAssetUrl'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
-
-const normalizeBoolean = (value: unknown) => {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'number') return value === 1
-
-  const normalized = normalizeText(value).toLowerCase()
-  return ['1', 'true', 'ya', 'yes', 'utama'].includes(normalized)
-}
-
-const normalizeNumber = (value: unknown) => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-const readArrayPayload = (payload: any): GalleryDto[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.data?.data)) return payload.data.data
-  if (Array.isArray(payload?.gallery)) return payload.gallery
-  if (Array.isArray(payload?.data?.gallery)) return payload.data.gallery
-  return []
-}
 
 const normalizeUploadFileName = (name: string) => {
   const extension = name.includes('.') ? name.split('.').pop()?.toLowerCase() : ''
@@ -39,44 +23,25 @@ const normalizeUploadFileName = (name: string) => {
 }
 
 export const getAdminGalleryErrorMessage = (error: any, fallback: string) => {
-  return error?.data?.message || error?.response?._data?.message || error?.message || fallback
-}
+  const status = Number(error?.response?.status || error?.statusCode || error?.status || 0)
+  const responseData = error?.data || error?.response?._data
+  const responseMessage = responseData?.message || responseData?.error
 
-export const readGalleryId = (payload: any) => {
-  const id = payload?.id ?? payload?.data?.id ?? payload?.gallery?.id ?? payload?.data?.gallery?.id
-  return id ? String(id) : ''
-}
+  if (status === 400) {
+    const message = Array.isArray(responseMessage)
+      ? responseMessage.filter(Boolean).join(', ')
+      : normalizeText(responseMessage)
 
-export const sortGalleryItems = (rows: GalleryItem[]) => {
-  return [...rows].sort((firstItem, secondItem) => {
-    if (firstItem.isUtama !== secondItem.isUtama) return firstItem.isUtama ? -1 : 1
-    if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
-    if (firstItem.urutan) return -1
-    if (secondItem.urutan) return 1
-    return 0
-  })
-}
+    return message || 'Data galeri belum valid. Periksa kembali isian dan gambar.'
+  }
 
-export const applyGalleryDisplayOrder = (rows: GalleryItem[]) => {
-  return sortGalleryItems(
-    rows.map((item, index) => ({
-      ...item,
-      urutan: item.urutan || index + 1
-    }))
-  ).map((item, index) => ({
-    ...item,
-    urutan: index + 1
-  }))
-}
+  if (status === 401) return 'Sesi admin tidak valid atau sudah berakhir. Silakan login kembali.'
+  if (status === 403) return 'Akun ini tidak memiliki izin untuk mengelola galeri.'
+  if (status === 413) return 'Ukuran gambar melebihi batas yang diterima server.'
+  if (status === 415) return 'Format gambar tidak didukung server.'
+  if (status >= 500) return 'Layanan galeri sedang bermasalah di server. Silakan coba kembali setelah backend diperbaiki.'
 
-export const buildPrimaryFirstGalleryRows = (rows: GalleryItem[], primaryId: string) => {
-  return sortGalleryItems(rows.map(item => ({
-    ...item,
-    isUtama: item.id === primaryId
-  }))).map((item, index) => ({
-    ...item,
-    urutan: index + 1
-  }))
+  return normalizeText(responseMessage || error?.statusMessage || error?.message) || fallback
 }
 
 export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string, allowedOrigins = ''): GalleryItem | null => {
@@ -90,8 +55,9 @@ export const mapGalleryItem = (item: GalleryDto, apiBaseUrl: string, allowedOrig
     nama,
     deskripsi: normalizeText(item.deskripsi),
     gambar: resolveAllowedAdminAssetUrl(item.gambar, { apiBaseUrl, allowedOrigins }),
-    isUtama: normalizeBoolean(item.is_utama ?? item.isUtama ?? item.utama),
-    urutan: normalizeNumber(item.urutan ?? item.sort_order ?? item.order),
+    slug: normalizeText(item.slug),
+    isHead: item.is_head,
+    order: item.order,
     createdAt: normalizeText(item.created_at),
     updatedAt: normalizeText(item.updated_at)
   }
@@ -102,8 +68,6 @@ export const buildGalleryFormData = (form: GalleryFormState) => {
 
   formData.append('nama', form.nama.trim())
   formData.append('deskripsi', form.deskripsi.trim())
-  formData.append('is_utama', form.isUtama ? 'true' : 'false')
-  formData.append('urutan', String(form.urutan || 0))
 
   if (form.gambar) {
     formData.append('gambar', form.gambar, normalizeUploadFileName(form.gambar.name))
@@ -114,11 +78,17 @@ export const buildGalleryFormData = (form: GalleryFormState) => {
 
 export const useAdminGalleryService = () => {
   const config = useRuntimeConfig()
-  const { get, post, put, delete: deleteRequest } = useApi()
+  const { get, post, patch, delete: deleteRequest } = useApi()
+  const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+  const allowedOrigins = String(config.public.assetAllowedOrigins || '')
+
+  const mapDetailResponse = (payload: GalleryDto) =>
+    mapGalleryItem(payload, apiBaseUrl, allowedOrigins)
 
   const listGallery = async (limit = 100) => {
-    const { data, error } = await get<any>(adminApiEndpoints.gallery.list, {
+    const { data, error } = await get<GalleryDto[]>(adminApiEndpoints.gallery.list, {
       query: { limit: String(limit) },
+      retry: 0,
       showErrorToast: false
     })
 
@@ -129,18 +99,10 @@ export const useAdminGalleryService = () => {
       }
     }
 
-    const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
-    const allowedOrigins = String(config.public.assetAllowedOrigins || '')
-    const rows = readArrayPayload(data)
-    const mappedRows = rows
+    const mappedRows = (data || [])
       .map(item => mapGalleryItem(item, apiBaseUrl, allowedOrigins))
       .filter((item): item is GalleryItem => Boolean(item))
-      .sort((firstItem, secondItem) => {
-        if (firstItem.urutan && secondItem.urutan) return firstItem.urutan - secondItem.urutan
-        if (firstItem.urutan) return -1
-        if (secondItem.urutan) return 1
-        return 0
-      })
+      .sort((firstItem, secondItem) => firstItem.order - secondItem.order)
 
     return {
       data: mappedRows,
@@ -148,20 +110,44 @@ export const useAdminGalleryService = () => {
     }
   }
 
-  const createGallery = (formData: FormData) => post(adminApiEndpoints.gallery.create, formData, {
+  const createGallery = (formData: FormData) => post<CreateGalleryResponse>(adminApiEndpoints.gallery.create, formData, {
     showErrorToast: false
   })
 
-  const updateGallery = (id: string, formData: FormData) => put(adminApiEndpoints.gallery.detail(id), formData, {
+  const getGalleryById = async (id: string) => {
+    const { data, error } = await get<GalleryDto>(adminApiEndpoints.gallery.detail(id), {
+      showErrorToast: false
+    })
+
+    return {
+      data: data ? mapDetailResponse(data) : null,
+      error
+    }
+  }
+
+  const getGalleryBySlug = async (slug: string) => {
+    const { data, error } = await get<GalleryDto>(adminApiEndpoints.gallery.detailBySlug(slug), {
+      showErrorToast: false
+    })
+
+    return {
+      data: data ? mapDetailResponse(data) : null,
+      error
+    }
+  }
+
+  const updateGallery = (id: string, formData: FormData) => patch<GalleryMutationResponse>(adminApiEndpoints.gallery.detail(id), formData, {
     showErrorToast: false
   })
 
-  const deleteGallery = (id: string) => deleteRequest(adminApiEndpoints.gallery.detail(id), {
+  const deleteGallery = (id: string) => deleteRequest<GalleryMutationResponse>(adminApiEndpoints.gallery.detail(id), {
     showErrorToast: false
   })
 
   return {
     listGallery,
+    getGalleryById,
+    getGalleryBySlug,
     createGallery,
     updateGallery,
     deleteGallery

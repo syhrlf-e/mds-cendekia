@@ -15,6 +15,8 @@ const buildAbsoluteUrl = (siteUrl: string, path: string) => {
 const noindexRoutes = [
   '/admin',
   '/ppdb/verifikasi',
+  '/ppdb/verify-email',
+  '/ppdb/verify',
   '/ppdb/daftar',
   '/ppdb/cek-status',
   '/ppdb/kartu-peserta',
