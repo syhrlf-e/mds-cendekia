@@ -219,7 +219,9 @@ const simulateFailedVerification = () => {
 }
 
 onMounted(async () => {
-  if (!hasCompletedRegistration()) {
+  const reverify = Array.isArray(route.query.reverify) ? route.query.reverify[0] : route.query.reverify
+
+  if (!hasCompletedRegistration() && reverify !== '1') {
     const activeSession = await getEmailVerificationSession()
     if (activeSession.success && activeSession.status === 'verified' && !activeSession.isRegistered) {
       if (activeSession.email) biodata.value.email = sanitizeEmail(activeSession.email)

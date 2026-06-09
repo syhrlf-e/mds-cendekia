@@ -41,6 +41,10 @@ export const usePpdbVerificationGate = () => {
     verifiedAt.value = Date.now()
   }
 
+  const invalidateVerification = () => {
+    verifiedAt.value = 0
+  }
+
   const hasValidVerification = async () => {
     if (hasCompletedRegistration()) return false
 
@@ -64,6 +68,7 @@ export const usePpdbVerificationGate = () => {
     hasCompletedRegistration,
     markRegistrationCompleted,
     activateNewVerification,
+    invalidateVerification,
     hasValidVerification
   }
 }

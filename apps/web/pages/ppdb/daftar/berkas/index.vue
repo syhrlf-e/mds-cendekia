@@ -15,7 +15,11 @@ definePageMeta({
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
-const { clearPendingEmail, markRegistrationCompleted } = usePpdbVerificationGate()
+const {
+  clearPendingEmail,
+  markRegistrationCompleted,
+  invalidateVerification
+} = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -63,6 +67,8 @@ const pendingRegistrationStorageKey = 'ppdb-pending-registration'
 const pendingRegistration = ref<{ id: number, kode: string } | null>(null)
 type SubmitStage = 'idle' | 'registration' | 'files' | 'finishing'
 const submitStage = ref<SubmitStage>('idle')
+
+class RegistrationSessionError extends Error {}
 
 const isMobile = ref(true)
 
@@ -271,6 +277,7 @@ const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: num
     const data = await $fetch<T>(endpoint, {
       method: 'POST',
       body,
+      credentials: 'include',
       timeout
     })
 
@@ -469,6 +476,26 @@ const clearPendingRegistration = () => {
   }
 }
 
+const getErrorStatus = (error: any) => {
+  return Number(error?.statusCode || error?.response?.status || 0)
+}
+
+const redirectToEmailReverification = async () => {
+  invalidateVerification()
+  isSubmitting.value = false
+  submitStage.value = 'idle'
+  isConfirmModalOpen.value = false
+  addToast('Sesi pendaftaran berakhir. Verifikasi ulang email untuk melanjutkan.', 'warning')
+
+  await router.replace({
+    path: '/ppdb/verifikasi',
+    query: {
+      redirect: '/ppdb/daftar/berkas',
+      reverify: '1'
+    }
+  })
+}
+
 const submitRegistrationData = async () => {
   if (pendingRegistration.value) return pendingRegistration.value
 
@@ -491,6 +518,10 @@ const submitRegistrationData = async () => {
   }
 
   const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint.value, registrationPayload, 15000)
+
+  if (getErrorStatus(error) === 401) {
+    throw new RegistrationSessionError('Sesi registrasi tidak ditemukan.')
+  }
 
   const registrationCode = getRegistrationCode(data)
   const registrationId = getRegistrationId(data) || await lookupRegistrationId(registrationCode)
@@ -524,6 +555,11 @@ const submitForm = async () => {
   try {
     registration = await submitRegistrationData()
   } catch (error) {
+    if (error instanceof RegistrationSessionError) {
+      await redirectToEmailReverification()
+      return
+    }
+
     isSubmitting.value = false
     submitStage.value = 'idle'
     submitErrorMessage.value = error instanceof Error
@@ -542,6 +578,11 @@ const submitForm = async () => {
   }>(berkasUploadEndpoint.value, berkasFormData, 30000)
 
   const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
+
+  if (getErrorStatus(berkasError) === 401) {
+    await redirectToEmailReverification()
+    return
+  }
 
   if (berkasError || !isBerkasUploaded) {
     isSubmitting.value = false
