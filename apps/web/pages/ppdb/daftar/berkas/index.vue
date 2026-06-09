@@ -6,7 +6,7 @@ useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 definePageMeta({
   layout: 'ppdb-form',
-  middleware: ['ppdb-verified-client'],
+  middleware: ['ppdb-verified'],
   hideMobilePpdbFooter: true,
   ppdbHeaderTitle: 'Upload Berkas',
   ppdbBackPath: '/ppdb/daftar'
@@ -15,7 +15,7 @@ definePageMeta({
 const router = useRouter()
 const route = useRoute()
 const config = useRuntimeConfig()
-const { clearPendingEmail, ensureVerifiedOrRedirect } = usePpdbVerificationGate()
+const { clearPendingEmail, markRegistrationCompleted } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -149,8 +149,6 @@ const openSuccessPreview = () => {
 }
 
 onMounted(async () => {
-  if (!await ensureVerifiedOrRedirect()) return
-
   updateDeviceType()
   openSuccessPreview()
 
@@ -563,6 +561,7 @@ const submitForm = async () => {
   clearPendingRegistration()
   resetForm()
   clearPendingEmail()
+  markRegistrationCompleted()
   isSubmitting.value = false
   submitStage.value = 'idle'
   isSuccessSheetOpen.value = true
