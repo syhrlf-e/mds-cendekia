@@ -14,11 +14,11 @@ definePageMeta({
 
 const router = useRouter()
 const route = useRoute()
-const config = useRuntimeConfig()
 const {
   clearPendingEmail,
   markRegistrationCompleted,
-  invalidateVerification
+  invalidateVerification,
+  hasValidVerification
 } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
@@ -126,21 +126,9 @@ const submitProgressSteps = computed(() => [
   }
 ])
 
-const apiBaseUrl = computed(() => {
-  return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
-})
-
-const berkasUploadEndpoint = computed(() => {
-  return `${apiBaseUrl.value}/register/berkas`
-})
-
-const registrationSubmitEndpoint = computed(() => {
-  return `${apiBaseUrl.value}/register/siswa`
-})
-
-const registrationStatusEndpoint = computed(() => {
-  return `${apiBaseUrl.value}/register/cek-status`
-})
+const berkasUploadEndpoint = '/api/ppdb/register/berkas'
+const registrationSubmitEndpoint = '/api/ppdb/register/siswa'
+const registrationStatusEndpoint = '/api/ppdb/register/cek-status'
 
 const updateDeviceType = () => {
   isMobile.value = window.innerWidth < 768
@@ -238,9 +226,15 @@ onBeforeRouteLeave((to) => {
   return false
 })
 
-const proceedSubmit = () => {
+const proceedSubmit = async () => {
   submitErrorMessage.value = ''
   submitStage.value = 'idle'
+
+  if (!await hasValidVerification()) {
+    await redirectToEmailReverification()
+    return
+  }
+
   isConfirmModalOpen.value = true
 }
 
@@ -452,7 +446,7 @@ const getRegistrationCode = (response?: RegistrationSubmitResponse | null) => {
 const lookupRegistrationId = async (nomorPendaftaran: string) => {
   if (!nomorPendaftaran || !biodata.value.nisn) return 0
 
-  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>(registrationStatusEndpoint.value, {
+  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>(registrationStatusEndpoint, {
     kode_pendaftaran: nomorPendaftaran,
     nisn: biodata.value.nisn
   }, 15000)
@@ -517,7 +511,7 @@ const submitRegistrationData = async () => {
     throw new Error(`Data pendaftaran belum lengkap: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ', dan lainnya' : ''}. Silakan kembali ke form pendaftaran.`)
   }
 
-  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint.value, registrationPayload, 15000)
+  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint, registrationPayload, 15000)
 
   if (getErrorStatus(error) === 401) {
     throw new RegistrationSessionError('Sesi registrasi tidak ditemukan.')
@@ -575,7 +569,7 @@ const submitForm = async () => {
     success?: boolean
     status?: boolean
     message: string
-  }>(berkasUploadEndpoint.value, berkasFormData, 30000)
+  }>(berkasUploadEndpoint, berkasFormData, 30000)
 
   const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
 

@@ -41,8 +41,6 @@ type RawEmailVerificationResponse = {
   }
 }
 
-const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
-
 const readBoolean = (...values: unknown[]) => {
   for (const value of values) {
     if (typeof value === 'boolean') return value
@@ -186,7 +184,6 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.requestEmail, {
-        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { email }
@@ -206,7 +203,6 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.checkValidation, {
-        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { email }
@@ -226,7 +222,6 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.verifyToken, {
-        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { token }
@@ -250,7 +245,6 @@ export const usePpdbEmailVerificationService = () => {
         : undefined
 
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.session, {
-        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'GET',
         credentials: 'include',
         headers

@@ -2,7 +2,6 @@ import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerifica
 
 const PPDB_PENDING_EMAIL_KEY = 'ppdb-pending-verification-email'
 const PPDB_REGISTRATION_COMPLETED_COOKIE = 'ppdb-registration-completed'
-const PPDB_VERIFICATION_TTL_MS = 15 * 1000
 
 export const usePpdbVerificationGate = () => {
   const { getEmailVerificationSession } = usePpdbEmailVerificationService()
@@ -47,10 +46,6 @@ export const usePpdbVerificationGate = () => {
 
   const hasValidVerification = async () => {
     if (hasCompletedRegistration()) return false
-
-    if (verifiedAt.value > 0 && Date.now() - verifiedAt.value < PPDB_VERIFICATION_TTL_MS) {
-      return true
-    }
 
     const session = await getEmailVerificationSession()
     const isValid = session.success

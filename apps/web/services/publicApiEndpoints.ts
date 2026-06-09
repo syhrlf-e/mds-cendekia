@@ -10,9 +10,9 @@ export const publicApiEndpoints = {
     detailBySlug: (slug: string) => `/api/gallery/slug/${encodeURIComponent(slug)}`
   },
   ppdbVerification: {
-    requestEmail: '/auth/email/request-verification',
-    verifyToken: '/auth/email/verify',
-    session: '/auth/email/session',
-    checkValidation: '/auth/email/verify/polling'
+    requestEmail: '/api/ppdb/email/request-verification',
+    verifyToken: '/api/ppdb/email/verify',
+    session: '/api/ppdb/email/session',
+    checkValidation: '/api/ppdb/email/polling'
   }
 } as const
