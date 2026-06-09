@@ -114,7 +114,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   runtimeConfig: {
-    apiBaseUrl: 'https://api.oirul.com',
     public: {
       apiBaseUrl: 'https://api.oirul.com',
       apiTimeoutMs: '15000',

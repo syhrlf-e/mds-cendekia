@@ -17,7 +17,6 @@ type CallbackState = 'loading' | 'success' | 'expired' | 'failed'
 const route = useRoute()
 const router = useRouter()
 const { confirmEmailVerificationToken } = usePpdbEmailVerificationService()
-const { activateNewVerification } = usePpdbVerificationGate()
 const callbackState = ref<CallbackState>('loading')
 const responseMessage = ref('')
 
@@ -57,7 +56,6 @@ onMounted(async () => {
   responseMessage.value = response.message || ''
 
   if (response.status === 'verified' || response.isVerified) {
-    activateNewVerification()
     callbackState.value = 'success'
     return
   }

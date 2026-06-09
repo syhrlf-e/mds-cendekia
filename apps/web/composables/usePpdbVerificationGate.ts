@@ -1,17 +1,11 @@
 import { usePpdbEmailVerificationService } from '~/services/usePpdbEmailVerificationService'
 
 const PPDB_PENDING_EMAIL_KEY = 'ppdb-pending-verification-email'
-const PPDB_REGISTRATION_COMPLETED_COOKIE = 'ppdb-registration-completed'
 
 export const usePpdbVerificationGate = () => {
+  const router = useRouter()
+  const route = useRoute()
   const { getEmailVerificationSession } = usePpdbEmailVerificationService()
-  const verifiedAt = useState<number>('ppdb-verification:verified-at', () => 0)
-  const registrationCompleted = useCookie<string | null>(PPDB_REGISTRATION_COMPLETED_COOKIE, {
-    default: () => null,
-    path: '/',
-    sameSite: 'lax',
-    secure: !import.meta.dev
-  })
 
   const getPendingEmail = () => {
     if (!import.meta.client) return ''
@@ -28,42 +22,32 @@ export const usePpdbVerificationGate = () => {
     sessionStorage.removeItem(PPDB_PENDING_EMAIL_KEY)
   }
 
-  const hasCompletedRegistration = () => String(registrationCompleted.value || '') === '1'
-
-  const markRegistrationCompleted = () => {
-    verifiedAt.value = 0
-    registrationCompleted.value = '1'
-  }
-
-  const activateNewVerification = () => {
-    registrationCompleted.value = null
-    verifiedAt.value = Date.now()
-  }
-
-  const invalidateVerification = () => {
-    verifiedAt.value = 0
-  }
-
   const hasValidVerification = async () => {
-    if (hasCompletedRegistration()) return false
-
     const session = await getEmailVerificationSession()
-    const isValid = session.success
-      && session.status === 'verified'
-      && session.isRegistered !== true
+    return session.success && session.status === 'verified' && session.isRegistered !== true
+  }
 
-    verifiedAt.value = isValid ? Date.now() : 0
-    return isValid
+  const redirectToVerification = async () => {
+    const redirect = route.fullPath.startsWith('/ppdb/daftar') ? route.fullPath : '/ppdb/daftar'
+    await router.replace({
+      path: '/ppdb/verifikasi',
+      query: { redirect }
+    })
+  }
+
+  const ensureVerifiedOrRedirect = async () => {
+    if (!import.meta.client) return false
+    if (await hasValidVerification()) return true
+
+    await redirectToVerification()
+    return false
   }
 
   return {
     getPendingEmail,
     savePendingEmail,
     clearPendingEmail,
-    hasCompletedRegistration,
-    markRegistrationCompleted,
-    activateNewVerification,
-    invalidateVerification,
-    hasValidVerification
+    hasValidVerification,
+    ensureVerifiedOrRedirect
   }
 }

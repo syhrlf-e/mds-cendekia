@@ -24,7 +24,7 @@ useHead({ title: 'Formulir Pendaftaran | PPDB MDS Cendekia' })
 
 definePageMeta({
   layout: 'ppdb-form',
-  middleware: ['ppdb-verified'],
+  middleware: ['ppdb-verified-client'],
   hideMobilePpdbFooter: true,
   ppdbHeaderTitle: 'Formulir PPDB',
   ppdbBackPath: '/ppdb'
@@ -39,6 +39,7 @@ const {
   ensureOrangTuaShape,
   resetForm
 } = usePpdbRegistrationForm()
+const { ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 const { addToast } = useToast()
 
 const form = biodata.value
@@ -157,6 +158,8 @@ const loadPrograms = async () => {
 }
 
 onMounted(async () => {
+  if (!await ensureVerifiedOrRedirect()) return
+
   await Promise.all([
     loadSelectedRegions(),
     loadPrograms()

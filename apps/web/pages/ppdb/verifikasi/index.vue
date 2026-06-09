@@ -16,13 +16,7 @@ type VerificationViewState = 'idle' | 'sent' | 'success' | 'expired' | 'failed'
 
 const router = useRouter()
 const route = useRoute()
-const {
-  getPendingEmail,
-  savePendingEmail,
-  clearPendingEmail,
-  hasCompletedRegistration,
-  activateNewVerification
-} = usePpdbVerificationGate()
+const { getPendingEmail, savePendingEmail, clearPendingEmail } = usePpdbVerificationGate()
 const { biodata } = usePpdbRegistrationForm()
 const {
   isMockVerificationEnabled,
@@ -61,7 +55,6 @@ const activateVerifiedState = (response?: EmailVerificationResult | null) => {
 
   stopPolling()
   clearPendingEmail()
-  activateNewVerification()
   biodata.value.email = normalizedEmail.value
   viewState.value = 'success'
   formError.value = ''
@@ -219,15 +212,11 @@ const simulateFailedVerification = () => {
 }
 
 onMounted(async () => {
-  const reverify = Array.isArray(route.query.reverify) ? route.query.reverify[0] : route.query.reverify
-
-  if (!hasCompletedRegistration() && reverify !== '1') {
-    const activeSession = await getEmailVerificationSession()
-    if (activeSession.success && activeSession.status === 'verified' && !activeSession.isRegistered) {
-      if (activeSession.email) biodata.value.email = sanitizeEmail(activeSession.email)
-      await router.replace(redirectTarget.value)
-      return
-    }
+  const activeSession = await getEmailVerificationSession()
+  if (activeSession.success && activeSession.status === 'verified' && !activeSession.isRegistered) {
+    if (activeSession.email) biodata.value.email = sanitizeEmail(activeSession.email)
+    await router.replace(redirectTarget.value)
+    return
   }
 
   const queryEmail = Array.isArray(route.query.email) ? route.query.email[0] : route.query.email

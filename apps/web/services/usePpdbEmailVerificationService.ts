@@ -41,6 +41,8 @@ type RawEmailVerificationResponse = {
   }
 }
 
+const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
+
 const readBoolean = (...values: unknown[]) => {
   for (const value of values) {
     if (typeof value === 'boolean') return value
@@ -152,7 +154,7 @@ export const usePpdbEmailVerificationService = () => {
     return mockQuery === '1' || config.public.ppdbEmailVerificationMock === 'true'
   })
 
-  const waitForMockResponse = () => new Promise(resolve => setTimeout(resolve, 450))
+  const waitForMockResponse = () => new Promise(resolve => window.setTimeout(resolve, 450))
 
   const readMockStatusFromValue = (value: string): EmailVerificationStatus => {
     const normalizedValue = value.toLowerCase()
@@ -184,6 +186,7 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.requestEmail, {
+        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { email }
@@ -203,6 +206,7 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.checkValidation, {
+        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { email }
@@ -222,6 +226,7 @@ export const usePpdbEmailVerificationService = () => {
 
     try {
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.verifyToken, {
+        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'POST',
         credentials: 'include',
         body: { token }
@@ -240,14 +245,10 @@ export const usePpdbEmailVerificationService = () => {
     }
 
     try {
-      const headers = import.meta.server
-        ? useRequestHeaders(['cookie'])
-        : undefined
-
       const response = await $fetch<RawEmailVerificationResponse>(publicApiEndpoints.ppdbVerification.session, {
+        baseURL: normalizeBaseUrl(config.public.apiBaseUrl),
         method: 'GET',
-        credentials: 'include',
-        headers
+        credentials: 'include'
       })
 
       return mapVerificationResponse(response, 'verified')

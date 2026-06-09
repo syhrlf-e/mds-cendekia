@@ -6,7 +6,7 @@ useHead({ title: 'Upload Berkas | PPDB MDS Cendekia' })
 
 definePageMeta({
   layout: 'ppdb-form',
-  middleware: ['ppdb-verified'],
+  middleware: ['ppdb-verified-client'],
   hideMobilePpdbFooter: true,
   ppdbHeaderTitle: 'Upload Berkas',
   ppdbBackPath: '/ppdb/daftar'
@@ -14,12 +14,8 @@ definePageMeta({
 
 const router = useRouter()
 const route = useRoute()
-const {
-  clearPendingEmail,
-  markRegistrationCompleted,
-  invalidateVerification,
-  hasValidVerification
-} = usePpdbVerificationGate()
+const config = useRuntimeConfig()
+const { clearPendingEmail, ensureVerifiedOrRedirect } = usePpdbVerificationGate()
 const { biodata, buildPayload, resetForm } = usePpdbRegistrationForm()
 const { addToast } = useToast()
 const {
@@ -67,8 +63,6 @@ const pendingRegistrationStorageKey = 'ppdb-pending-registration'
 const pendingRegistration = ref<{ id: number, kode: string } | null>(null)
 type SubmitStage = 'idle' | 'registration' | 'files' | 'finishing'
 const submitStage = ref<SubmitStage>('idle')
-
-class RegistrationSessionError extends Error {}
 
 const isMobile = ref(true)
 
@@ -126,9 +120,21 @@ const submitProgressSteps = computed(() => [
   }
 ])
 
-const berkasUploadEndpoint = '/api/ppdb/register/berkas'
-const registrationSubmitEndpoint = '/api/ppdb/register/siswa'
-const registrationStatusEndpoint = '/api/ppdb/register/cek-status'
+const apiBaseUrl = computed(() => {
+  return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
+})
+
+const berkasUploadEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/berkas`
+})
+
+const registrationSubmitEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/siswa`
+})
+
+const registrationStatusEndpoint = computed(() => {
+  return `${apiBaseUrl.value}/register/cek-status`
+})
 
 const updateDeviceType = () => {
   isMobile.value = window.innerWidth < 768
@@ -143,6 +149,8 @@ const openSuccessPreview = () => {
 }
 
 onMounted(async () => {
+  if (!await ensureVerifiedOrRedirect()) return
+
   updateDeviceType()
   openSuccessPreview()
 
@@ -226,15 +234,9 @@ onBeforeRouteLeave((to) => {
   return false
 })
 
-const proceedSubmit = async () => {
+const proceedSubmit = () => {
   submitErrorMessage.value = ''
   submitStage.value = 'idle'
-
-  if (!await hasValidVerification()) {
-    await redirectToEmailReverification()
-    return
-  }
-
   isConfirmModalOpen.value = true
 }
 
@@ -271,7 +273,6 @@ const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: num
     const data = await $fetch<T>(endpoint, {
       method: 'POST',
       body,
-      credentials: 'include',
       timeout
     })
 
@@ -446,7 +447,7 @@ const getRegistrationCode = (response?: RegistrationSubmitResponse | null) => {
 const lookupRegistrationId = async (nomorPendaftaran: string) => {
   if (!nomorPendaftaran || !biodata.value.nisn) return 0
 
-  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>(registrationStatusEndpoint, {
+  const { data, error } = await postRegistrationApi<CheckStatusLookupResponse>(registrationStatusEndpoint.value, {
     kode_pendaftaran: nomorPendaftaran,
     nisn: biodata.value.nisn
   }, 15000)
@@ -470,26 +471,6 @@ const clearPendingRegistration = () => {
   }
 }
 
-const getErrorStatus = (error: any) => {
-  return Number(error?.statusCode || error?.response?.status || 0)
-}
-
-const redirectToEmailReverification = async () => {
-  invalidateVerification()
-  isSubmitting.value = false
-  submitStage.value = 'idle'
-  isConfirmModalOpen.value = false
-  addToast('Sesi pendaftaran berakhir. Verifikasi ulang email untuk melanjutkan.', 'warning')
-
-  await router.replace({
-    path: '/ppdb/verifikasi',
-    query: {
-      redirect: '/ppdb/daftar/berkas',
-      reverify: '1'
-    }
-  })
-}
-
 const submitRegistrationData = async () => {
   if (pendingRegistration.value) return pendingRegistration.value
 
@@ -511,11 +492,7 @@ const submitRegistrationData = async () => {
     throw new Error(`Data pendaftaran belum lengkap: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ', dan lainnya' : ''}. Silakan kembali ke form pendaftaran.`)
   }
 
-  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint, registrationPayload, 15000)
-
-  if (getErrorStatus(error) === 401) {
-    throw new RegistrationSessionError('Sesi registrasi tidak ditemukan.')
-  }
+  const { data, error } = await postRegistrationApi<RegistrationSubmitResponse>(registrationSubmitEndpoint.value, registrationPayload, 15000)
 
   const registrationCode = getRegistrationCode(data)
   const registrationId = getRegistrationId(data) || await lookupRegistrationId(registrationCode)
@@ -549,11 +526,6 @@ const submitForm = async () => {
   try {
     registration = await submitRegistrationData()
   } catch (error) {
-    if (error instanceof RegistrationSessionError) {
-      await redirectToEmailReverification()
-      return
-    }
-
     isSubmitting.value = false
     submitStage.value = 'idle'
     submitErrorMessage.value = error instanceof Error
@@ -569,14 +541,9 @@ const submitForm = async () => {
     success?: boolean
     status?: boolean
     message: string
-  }>(berkasUploadEndpoint, berkasFormData, 30000)
+  }>(berkasUploadEndpoint.value, berkasFormData, 30000)
 
   const isBerkasUploaded = berkasData?.success === true || berkasData?.status === true
-
-  if (getErrorStatus(berkasError) === 401) {
-    await redirectToEmailReverification()
-    return
-  }
 
   if (berkasError || !isBerkasUploaded) {
     isSubmitting.value = false
@@ -596,7 +563,6 @@ const submitForm = async () => {
   clearPendingRegistration()
   resetForm()
   clearPendingEmail()
-  markRegistrationCompleted()
   isSubmitting.value = false
   submitStage.value = 'idle'
   isSuccessSheetOpen.value = true
