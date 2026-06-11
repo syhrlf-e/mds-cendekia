@@ -13,7 +13,13 @@ export const useApi = () => {
     const rawUrl = String(url || '').trim()
     const markdownUrlMatch = rawUrl.match(/\((https?:\/\/[^)]+)\)/)
 
-    return markdownUrlMatch?.[1] || rawUrl || 'https://api.oirul.com'
+    const normalizedUrl = markdownUrlMatch?.[1] || rawUrl
+
+    if (!normalizedUrl) {
+      throw new Error('NUXT_PUBLIC_API_BASE_URL belum dikonfigurasi.')
+    }
+
+    return normalizedUrl.replace(/\/+$/, '')
   }
 
   const baseURL = normalizeBaseUrl(config.public.apiBaseUrl)

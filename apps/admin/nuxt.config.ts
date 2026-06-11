@@ -39,12 +39,12 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'https://api.oirul.com',
+      apiBaseUrl: '',
       assetAllowedOrigins: '',
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
-      siteUrl: 'https://mdspanel.mdscendekia.oirul.com',
+      siteUrl: 'https://admin.mdscendekia.my.id',
       siteName: 'MDS Panel',
       siteDescription: 'Panel admin MDS Cendekia.',
       siteImage: '/images/logo-mds-main.png'

@@ -79,7 +79,7 @@ export const buildGalleryFormData = (form: GalleryFormState) => {
 export const useAdminGalleryService = () => {
   const config = useRuntimeConfig()
   const { get, post, patch, delete: deleteRequest } = useApi()
-  const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+  const apiBaseUrl = String(config.public.apiBaseUrl || '')
   const allowedOrigins = String(config.public.assetAllowedOrigins || '')
 
   const mapDetailResponse = (payload: GalleryDto) =>

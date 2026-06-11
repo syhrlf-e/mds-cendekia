@@ -115,13 +115,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'https://api.oirul.com',
+      apiBaseUrl: '',
       apiTimeoutMs: '15000',
       ppdbProgramId: '1',
       ppdbGelombangId: '3',
       ppdbEmailVerificationMock: '',
       whatsappNumber: '6282313380653',
-      siteUrl: '',
+      siteUrl: 'https://mdscendekia.my.id',
       siteName: 'MDS Cendekia',
       siteDescription: 'MDS Cendekia menyediakan pendidikan kesetaraan inklusif, adaptif, dan berkelanjutan untuk membantu peserta didik meraih ijazah resmi melalui program Kejar Paket C.',
       siteImage: '/images/logo-mds-main.png'

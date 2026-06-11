@@ -72,11 +72,15 @@ const buildUrlEntry = (siteUrl: string, path: string, changefreq: string, priori
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const siteUrl = normalizeSiteUrl(config.public.siteUrl) || normalizeSiteUrl(getRequestURL(event).origin)
-  const apiBaseUrl = normalizeSiteUrl(config.public.apiBaseUrl || 'https://api.oirul.com')
+  const apiBaseUrl = normalizeSiteUrl(config.public.apiBaseUrl)
   const urls = staticRoutes.map(route => buildUrlEntry(siteUrl, route.loc, route.changefreq, route.priority))
   const newsPaths = new Set<string>()
 
   try {
+    if (!apiBaseUrl) {
+      throw new Error('NUXT_PUBLIC_API_BASE_URL belum dikonfigurasi.')
+    }
+
     const payload = await $fetch<any>(`${apiBaseUrl}/api/berita/all`, {
       query: { limit: '100' },
       retry: 0,

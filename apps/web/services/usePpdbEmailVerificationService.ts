@@ -41,7 +41,15 @@ type RawEmailVerificationResponse = {
   }
 }
 
-const normalizeBaseUrl = (value: unknown) => String(value || 'https://api.oirul.com').trim().replace(/\/+$/, '')
+const normalizeBaseUrl = (value: unknown) => {
+  const baseUrl = String(value || '').trim().replace(/\/+$/, '')
+
+  if (!baseUrl) {
+    throw new Error('NUXT_PUBLIC_API_BASE_URL belum dikonfigurasi.')
+  }
+
+  return baseUrl
+}
 
 const readBoolean = (...values: unknown[]) => {
   for (const value of values) {

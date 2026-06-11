@@ -76,7 +76,7 @@ export const useAdminNewsService = () => {
       }
     }
 
-    const apiBaseUrl = String(config.public.apiBaseUrl || 'https://api.oirul.com')
+    const apiBaseUrl = String(config.public.apiBaseUrl || '')
     const allowedOrigins = String(config.public.assetAllowedOrigins || '')
     const rows = readRows(data)
 

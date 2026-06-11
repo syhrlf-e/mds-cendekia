@@ -51,7 +51,7 @@ const fieldErrors = ref({
 })
 
 const apiBaseUrl = computed(() => {
-  return String(config.public.apiBaseUrl || 'https://api.oirul.com').replace(/\/$/, '')
+  return String(config.public.apiBaseUrl || '').replace(/\/$/, '')
 })
 
 const berkasUploadEndpoint = computed(() => {
