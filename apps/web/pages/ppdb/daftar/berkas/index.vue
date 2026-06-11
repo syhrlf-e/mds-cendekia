@@ -273,7 +273,8 @@ const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: num
     const data = await $fetch<T>(endpoint, {
       method: 'POST',
       body,
-      timeout
+      timeout,
+      credentials: 'include'
     })
 
     return { data, error: null }
