@@ -289,8 +289,7 @@ const postRegistrationApi = async <T,>(endpoint: string, body: any, timeout: num
           alamatKeys: Object.keys(body?.alamat || {}),
           riwayatPendidikanKeys: Object.keys(body?.riwayat_pendidikan || {}),
           orangTuaCount: Array.isArray(body?.orang_tua) ? body.orang_tua.length : 0,
-          id_program: body?.id_program,
-          id_gelombang: body?.id_gelombang
+          id_program: body?.id_program
         }
       })
     }
@@ -341,8 +340,7 @@ const getMissingRegistrationFields = (payload: any) => {
     ['Alamat sekolah asal', payload.riwayat_pendidikan?.alamat_sekolah_asal],
     ['Tahun lulus', payload.riwayat_pendidikan?.tahun_lulus],
     ['No. ijazah', payload.riwayat_pendidikan?.no_ijazah],
-    ['Program paket', payload.id_program],
-    ['Gelombang', payload.id_gelombang]
+    ['Program paket', payload.id_program]
   ]
 
   const missing = requiredChecks

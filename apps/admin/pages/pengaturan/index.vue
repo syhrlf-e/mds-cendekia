@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, Monitor, Sun } from 'lucide-vue-next'
+import { Monitor, PackageOpen, Sun } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useToast } from '~/composables/useToast'
 
@@ -66,20 +66,20 @@ const handleSave = async () => {
     <section class="rounded-2xl border border-border bg-bg-surface p-6">
       <div class="flex items-start gap-4">
         <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-brand">
-          <CalendarDays class="h-5 w-5" />
+          <PackageOpen class="h-5 w-5" />
         </div>
         <div>
           <h2 class="text-[17px] font-semibold leading-[1.24] tracking-[-0.2px] text-text-primary">
-            Jadwal PPDB
+            Program Paket
           </h2>
           <p class="mt-1 max-w-2xl text-sm leading-[1.5] tracking-[-0.15px] text-text-secondary">
-            Periode pendaftaran dikelola melalui menu Timeline PPDB agar jadwal buka, tutup, pengumuman, dan daftar ulang berada dalam satu alur tahapan.
+            Pendaftaran, gelombang, dan timeline dikelola dari Program Paket agar alur PPDB berada dalam satu tempat.
           </p>
           <NuxtLink
-            to="/timeline-ppdb"
+            to="/paket-sekolah"
             class="mt-4 inline-flex h-10 items-center rounded-xl border border-border-soft bg-bg-base px-4 text-sm font-normal text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary"
           >
-            Buka Timeline PPDB
+            Buka Program Paket
           </NuxtLink>
         </div>
       </div>

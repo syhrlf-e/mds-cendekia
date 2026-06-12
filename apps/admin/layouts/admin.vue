@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { preloadRouteComponents } from '#app'
-import { CalendarDays, ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, Menu, Newspaper, PackageOpen, School, Settings, Users, X } from 'lucide-vue-next'
+import { ChevronDown, GraduationCap, Images, LayoutDashboard, LogOut, Menu, Newspaper, PackageOpen, School, Settings, Users, X } from 'lucide-vue-next'
+import type { Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAccessibleDialog } from '~/composables/useAccessibleDialog'
 import { useAdminAuthService } from '~/services/useAdminAuthService'
+
+type AdminMenuItem = {
+  name: string
+  path: string
+  icon: Component
+  pageTitle?: string
+}
+
+type AdminMenuGroup = {
+  name: string
+  icon: Component
+  key: string
+  children: AdminMenuItem[]
+}
+
+type AdminNavigationItem = AdminMenuItem | AdminMenuGroup
 
 const route = useRoute()
 const router = useRouter()
@@ -14,7 +31,6 @@ const {
   loadDashboardSummary,
   loadPendaftar,
   loadStudents,
-  loadTimeline,
   loadPackages,
   loadNews,
   loadGallery
@@ -25,22 +41,49 @@ const isMobileNavigationOpen = ref(false)
 const isAdminMenuOpen = ref(false)
 const isLogoutModalOpen = ref(false)
 const isLoggingOut = ref(false)
+const expandedMenuGroups = ref<Record<string, boolean>>({
+  profile: true,
+  students: true
+})
 const mobileNavigationRef = ref<HTMLElement | null>(null)
 let desktopMediaQuery: MediaQueryList | null = null
 
-const menu = [
+const menu: AdminNavigationItem[] = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Data Calon Siswa', path: '/pendaftaran', icon: Users, pageTitle: 'Kelola Data Calon Siswa' },
-  { name: 'Data Siswa', path: '/siswa', icon: GraduationCap, pageTitle: 'Data Siswa' },
-  { name: 'Pelaksanaan PPDB', path: '/timeline-ppdb', icon: CalendarDays, pageTitle: 'Pelaksanaan PPDB' },
-  { name: 'Paket Sekolah', path: '/paket-sekolah', icon: PackageOpen, pageTitle: 'Paket Sekolah' },
+  {
+    name: 'Profil Sekolah',
+    icon: School,
+    key: 'profile',
+    children: [
+      { name: 'Kelola Pengurus Yayasan', path: '/profil-sekolah?tab=pengurus-yayasan', icon: School, pageTitle: 'Kelola Pengurus Yayasan' },
+      { name: 'Kelola Sambutan', path: '/profil-sekolah?tab=sambutan', icon: School, pageTitle: 'Kelola Sambutan' }
+    ]
+  },
   { name: 'Berita', path: '/berita', icon: Newspaper, pageTitle: 'Kelola Berita' },
-  { name: 'Galeri', path: '/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
-  { name: 'Profil Sekolah', path: '/profil-sekolah', icon: School, pageTitle: 'Profil Sekolah' },
+  { name: 'Gallery', path: '/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
+  {
+    name: 'Manajemen Siswa',
+    icon: Users,
+    key: 'students',
+    children: [
+      { name: 'Data Calon Siswa', path: '/pendaftaran', icon: School, pageTitle: 'Kelola Data Calon Siswa' },
+      { name: 'Data Siswa', path: '/siswa', icon: GraduationCap, pageTitle: 'Data Siswa' }
+    ]
+  },
+  { name: 'Program Paket', path: '/paket-sekolah', icon: PackageOpen, pageTitle: 'Program Paket' }
 ]
 const settingsMenu = { name: 'Pengaturan', path: '/pengaturan', icon: Settings, pageTitle: 'Pengaturan' }
 
-const isActive = (path: string) => route.path.startsWith(path)
+const isMenuGroup = (item: AdminNavigationItem): item is AdminMenuGroup => 'children' in item
+const isActive = (path: string) => path.includes('?')
+  ? route.fullPath.startsWith(path)
+  : route.path.startsWith(path)
+const normalizeMenuPath = (path: string) => path.split('?')[0] || path
+const isGroupActive = (group: AdminMenuGroup) => group.children.some(item => route.path.startsWith(normalizeMenuPath(item.path)))
+const toggleMenuGroup = (key: string) => {
+  expandedMenuGroups.value[key] = !expandedMenuGroups.value[key]
+}
+const flatMenuItems = computed(() => menu.flatMap(item => isMenuGroup(item) ? item.children : [item]))
 
 const prefetchAdminMenu = (path: string) => {
   if (isActive(path)) return
@@ -56,9 +99,6 @@ const prefetchAdminMenu = (path: string) => {
       break
     case '/siswa':
       void loadStudents({ background: true })
-      break
-    case '/timeline-ppdb':
-      void loadTimeline({ background: true })
       break
     case '/paket-sekolah':
       void loadPackages({ background: true })
@@ -90,7 +130,9 @@ const activePageTitle = computed(() => {
     return `Hai, Selamat datang kembali ${visibleAdminDisplayName.value}`
   }
 
-  const activeMenu = [...menu, settingsMenu].find(item => isActive(item.path))
+  const activeMenu = [...flatMenuItems.value, settingsMenu].find(item => isActive(item.path))
+  if (!activeMenu && route.path.startsWith('/profil-sekolah')) return 'Profil Sekolah'
+
   return activeMenu?.pageTitle || activeMenu?.name || 'Admin'
 })
 
@@ -192,18 +234,57 @@ onBeforeUnmount(() => {
             </div>
 
             <nav class="flex min-h-0 grow flex-col gap-1.5 overflow-y-auto px-4 py-5">
-              <NuxtLink
+              <template
                 v-for="item in menu"
                 :key="item.name"
-                :to="item.path"
-                class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-                :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
-                @pointerenter="prefetchAdminMenu(item.path)"
-                @focus="prefetchAdminMenu(item.path)"
               >
-                <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
-                {{ item.name }}
-              </NuxtLink>
+                <div v-if="isMenuGroup(item)" class="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                    :class="isGroupActive(item) ? 'font-semibold text-text-primary [&>svg]:text-text-primary' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                    :aria-expanded="expandedMenuGroups[item.key]"
+                    @click="toggleMenuGroup(item.key)"
+                  >
+                    <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
+                    <span class="min-w-0 grow truncate">{{ item.name }}</span>
+                    <ChevronDown
+                      class="h-4 w-4 shrink-0 transition-transform duration-200"
+                      :class="expandedMenuGroups[item.key] ? 'rotate-180' : ''"
+                    />
+                  </button>
+
+                  <div
+                    v-if="expandedMenuGroups[item.key]"
+                    class="ml-[22px] flex flex-col gap-1 border-l border-border-soft pl-4"
+                  >
+                    <NuxtLink
+                      v-for="child in item.children"
+                      :key="child.name"
+                      :to="child.path"
+                      class="group relative flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                      :class="isActive(child.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                      @pointerenter="prefetchAdminMenu(child.path)"
+                      @focus="prefetchAdminMenu(child.path)"
+                    >
+                      <component :is="child.icon" class="h-4 w-4 shrink-0 transition-colors" />
+                      {{ child.name }}
+                    </NuxtLink>
+                  </div>
+                </div>
+
+                <NuxtLink
+                  v-else
+                  :to="item.path"
+                  class="group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                  :class="isActive(item.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                  @pointerenter="prefetchAdminMenu(item.path)"
+                  @focus="prefetchAdminMenu(item.path)"
+                >
+                  <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
+                  {{ item.name }}
+                </NuxtLink>
+              </template>
             </nav>
 
             <div class="shrink-0 border-t border-border-soft p-4">
@@ -238,18 +319,57 @@ onBeforeUnmount(() => {
       </div>
 
       <nav class="flex min-h-0 grow flex-col gap-1.5 overflow-y-auto px-4 py-6">
-        <NuxtLink
+        <template
           v-for="item in menu"
           :key="item.name"
-          :to="item.path"
-          class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-          :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
-          @pointerenter="prefetchAdminMenu(item.path)"
-          @focus="prefetchAdminMenu(item.path)"
         >
-          <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
-          {{ item.name }}
-        </NuxtLink>
+          <div v-if="isMenuGroup(item)" class="flex flex-col gap-1">
+            <button
+              type="button"
+              class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+              :class="isGroupActive(item) ? 'font-semibold text-text-primary [&>svg]:text-text-primary' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+              :aria-expanded="expandedMenuGroups[item.key]"
+              @click="toggleMenuGroup(item.key)"
+            >
+              <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
+              <span class="min-w-0 grow truncate">{{ item.name }}</span>
+              <ChevronDown
+                class="h-4 w-4 shrink-0 transition-transform duration-200"
+                :class="expandedMenuGroups[item.key] ? 'rotate-180' : ''"
+              />
+            </button>
+
+            <div
+              v-if="expandedMenuGroups[item.key]"
+              class="ml-[22px] flex flex-col gap-1 border-l border-border-soft pl-4"
+            >
+              <NuxtLink
+                v-for="child in item.children"
+                :key="child.name"
+                :to="child.path"
+                class="group relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+                :class="isActive(child.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+                @pointerenter="prefetchAdminMenu(child.path)"
+                @focus="prefetchAdminMenu(child.path)"
+              >
+                <component :is="child.icon" class="h-4 w-4 shrink-0 transition-colors" />
+                {{ child.name }}
+              </NuxtLink>
+            </div>
+          </div>
+
+          <NuxtLink
+            v-else
+            :to="item.path"
+            class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
+            :class="isActive(item.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+            @pointerenter="prefetchAdminMenu(item.path)"
+            @focus="prefetchAdminMenu(item.path)"
+          >
+            <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
+            {{ item.name }}
+          </NuxtLink>
+        </template>
       </nav>
 
       <div class="mt-auto shrink-0 border-t border-border-soft bg-bg-surface/80 p-4">

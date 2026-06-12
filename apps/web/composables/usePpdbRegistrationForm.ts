@@ -211,8 +211,7 @@ export const usePpdbRegistrationForm = () => {
     },
     riwayat_pendidikan: sekolah.value,
     orang_tua: payloadOrangTua.value,
-    id_program: toRequiredNumber(biodata.value.id_program, useRuntimeConfig().public.ppdbProgramId),
-    id_gelombang: toRequiredNumber(biodata.value.id_gelombang, useRuntimeConfig().public.ppdbGelombangId || 3)
+    id_program: toRequiredNumber(biodata.value.id_program, useRuntimeConfig().public.ppdbProgramId)
   })
 
   const buildMultipartPayload = (files: PpdbRegistrationFiles, wilayahLabels: PpdbWilayahLabels = {}) => {
@@ -232,7 +231,6 @@ export const usePpdbRegistrationForm = () => {
     formData.append('riwayat_pendidikan', JSON.stringify(payload.riwayat_pendidikan))
     formData.append('orang_tua', JSON.stringify(payload.orang_tua))
     formData.append('id_program', String(payload.id_program))
-    formData.append('id_gelombang', String(payload.id_gelombang))
     formData.append('pass_photo', files.foto)
 
     berkasPersyaratan.forEach((item) => {
