@@ -4,6 +4,7 @@ import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
   modelValue?: string
   label?: string
+  placeholder?: string
   error?: string
   required?: boolean
   disabled?: boolean
@@ -175,7 +176,7 @@ onBeforeUnmount(() => {
       ]"
       @click="openPicker"
     >
-      <span>{{ selectedLabel || 'Pilih tanggal lahir' }}</span>
+      <span>{{ selectedLabel || placeholder || 'Pilih tanggal' }}</span>
       <span class="text-text-secondary">⌄</span>
     </button>
 

@@ -396,6 +396,7 @@ watch(() => props.item, (item) => {
                   <AppDateInput
                     v-model="startedAt"
                     label="Tanggal Mulai"
+                    placeholder="Pilih tanggal mulai"
                     required
                     :disabled="isSaving"
                     :max-year="new Date().getFullYear() + 10"
@@ -403,6 +404,7 @@ watch(() => props.item, (item) => {
                   <AppDateInput
                     v-model="endedAt"
                     label="Tanggal Selesai"
+                    placeholder="Pilih tanggal selesai"
                     required
                     :disabled="isSaving"
                     :max-year="new Date().getFullYear() + 10"
