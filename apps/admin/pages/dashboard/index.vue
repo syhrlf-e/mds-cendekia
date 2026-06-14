@@ -47,7 +47,7 @@ watch(dashboardSummaryError, (message) => {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col gap-4">
+  <div class="flex h-full min-h-0 flex-col gap-2.5 overflow-hidden">
     <div
       v-if="errorMessage"
       class="rounded-[20px] border border-status-pending-text/20 bg-status-pending-bg px-5 py-4 text-sm font-medium text-status-pending-text"
@@ -74,7 +74,7 @@ watch(dashboardSummaryError, (message) => {
       />
     </section>
 
-    <section class="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_301px] gap-2.5">
+    <section class="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_301px] gap-2.5 overflow-hidden">
       <DashboardLatestApplicantsCard
         :applicants="latestApplicants"
         :applicant-status-label="applicantStatusLabel"

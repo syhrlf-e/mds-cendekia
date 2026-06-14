@@ -14,15 +14,15 @@ defineProps<{
     class="min-h-0 overflow-hidden"
     title-class="px-4 pt-2"
   >
-    <div class="min-h-0 overflow-auto px-4 pt-5">
+    <div class="min-h-0 overflow-hidden px-4 pt-4">
       <div
         v-if="applicants.length"
-        class="space-y-3"
+        class="space-y-2.5"
       >
         <div
-          v-for="(item, index) in applicants"
+          v-for="(item, index) in applicants.slice(0, 3)"
           :key="`${item.nama}-${index}`"
-          class="grid h-[70px] grid-cols-[32px_180px_1fr_160px_1.2fr_112px] items-center gap-4 rounded-[14px] bg-[#f9f9f9] px-5 text-[13px] font-medium text-[#6e6e6e]"
+          class="grid h-14 grid-cols-[32px_180px_1fr_160px_1.2fr_112px] items-center gap-4 rounded-[14px] bg-[#f9f9f9] px-5 text-[13px] font-medium text-[#6e6e6e]"
         >
           <span>{{ index + 1 }}</span>
           <span class="truncate">{{ item.kode_pendaftaran || '-' }}</span>
@@ -30,7 +30,7 @@ defineProps<{
           <span class="truncate">{{ item.nisn || '-' }}</span>
           <span class="truncate">{{ item.nama_sekolah_asal || '-' }}</span>
           <span
-            class="justify-self-end rounded-full px-4 py-2 text-[12px] font-medium"
+            class="justify-self-end rounded-full px-4 py-1.5 text-[12px] font-medium"
             :class="applicantStatusClass(item.status)"
           >
             {{ applicantStatusLabel(item.status) }}

@@ -583,6 +583,18 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                     <p class="hidden w-full font-sans text-sm leading-relaxed text-gray-500 sm:line-clamp-2 sm:block">
                       {{ truncateWords(item.excerpt, 18) }}
                     </p>
+                    <div
+                      v-if="item.tags.length"
+                      class="mt-3 hidden flex-wrap gap-2 sm:flex"
+                    >
+                      <span
+                        v-for="tag in item.tags.slice(0, 2)"
+                        :key="`${item.id}-${tag}`"
+                        class="rounded-full bg-gray-100 px-2.5 py-1 font-sans text-[11px] font-medium text-neutral-600"
+                      >
+                        #{{ tag }}
+                      </span>
+                    </div>
                     <div class="mt-5 hidden border-t border-border-public-soft pt-4 sm:block">
                       <p class="font-sans text-[11px] leading-relaxed text-gray-400 sm:text-xs md:text-sm">
                         Terbit pada tanggal {{ formatNewsDate(item.publishDate) }}

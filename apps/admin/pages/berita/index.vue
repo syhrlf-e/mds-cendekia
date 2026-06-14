@@ -11,6 +11,7 @@ import {
   Trash2,
   Upload,
   X,
+  MoreHorizontal,
 } from 'lucide-vue-next'
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import { generateAdminNewsSlug, getAdminNewsErrorMessage } from '~/services/useAdminNewsService'
@@ -49,14 +50,32 @@ const perPage = ref(10)
 const isPreviewExpanded = ref(false)
 const imagePreview = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
+const activeDropdown = ref<number | string | null>(null)
 
 let previousBodyOverflow = ''
 let previousHtmlOverflow = ''
 
+const categoryOptions = [
+  { label: 'Akademik', value: 'akademik' },
+  { label: 'Olahraga', value: 'olahraga' },
+  { label: 'Politik', value: 'politik' },
+  { label: 'Pengumuman', value: 'pengumuman' },
+  { label: 'Teknologi', value: 'teknologi' },
+]
+
+const closeDropdown = (e: MouseEvent) => {
+  if (activeDropdown.value !== null) {
+    const target = e.target as HTMLElement
+    if (!target.closest('.dropdown-container')) {
+      activeDropdown.value = null
+    }
+  }
+}
+
 const form = ref<AdminNewsForm>({
   title: '',
   content: '',
-  category: 'other',
+  category: 'akademik',
   tags: '',
   image: null,
 })
@@ -94,6 +113,15 @@ const pagedItems = computed(() => filteredItems.value.slice(from.value - 1, to.v
 
 const generateSlug = generateAdminNewsSlug
 
+const parseTags = (tags: string) => tags
+  .split(',')
+  .map(tag => tag.trim())
+  .filter(Boolean)
+
+const normalizeTags = (tags: string) => parseTags(tags).join(', ')
+
+const formTagItems = computed(() => parseTags(form.value.tags))
+
 const normalizeUploadFileName = (name: string) => {
   const extension = name.includes('.') ? name.split('.').pop()?.toLowerCase() : ''
   const baseName = name
@@ -109,22 +137,25 @@ const normalizeUploadFileName = (name: string) => {
 const getCategoryClass = (category: string) => {
   const normalized = category.toLowerCase()
 
-  if (normalized === 'event') return 'bg-primary-50 text-brand'
-  if (normalized === 'achievement') return 'bg-status-approved-bg text-status-approved-text'
-  if (normalized === 'announcement') return 'bg-status-pending-bg text-status-pending-text'
+  if (normalized === 'akademik') return 'bg-primary-50 text-brand'
+  if (normalized === 'olahraga') return 'bg-status-approved-bg text-status-approved-text'
+  if (normalized === 'politik') return 'bg-status-rejected-bg text-status-rejected-text'
+  if (normalized === 'pengumuman') return 'bg-status-pending-bg text-status-pending-text'
+  if (normalized === 'teknologi') return 'bg-blue-50 text-blue-600'
 
   return 'bg-bg-base text-text-secondary'
 }
 
 const getCategoryLabel = (category: string) => {
   const labels: Record<string, string> = {
-    event: 'Event',
-    achievement: 'Prestasi',
-    announcement: 'Pengumuman',
-    other: 'Lainnya',
+    akademik: 'Akademik',
+    olahraga: 'Olahraga',
+    politik: 'Politik',
+    pengumuman: 'Pengumuman',
+    teknologi: 'Teknologi',
   }
 
-  return labels[category] || category || 'Lainnya'
+  return labels[category] || category || 'Akademik'
 }
 
 const formatDate = (dateString: string) => {
@@ -159,7 +190,7 @@ const resetForm = () => {
   form.value = {
     title: '',
     content: '',
-    category: 'other',
+    category: 'akademik',
     tags: '',
     image: null,
   }
@@ -237,7 +268,7 @@ const buildNewsFormData = (authorId?: number) => {
   formData.append('judul', form.value.title.trim())
   formData.append('isi', form.value.content.trim())
   formData.append('kategori', form.value.category.trim())
-  formData.append('tags', form.value.tags.trim())
+  formData.append('tags', normalizeTags(form.value.tags))
 
   if (form.value.image) {
     formData.append('gambar', form.value.image, normalizeUploadFileName(form.value.image.name))
@@ -332,10 +363,14 @@ watch(pageMode, value => {
   setPageScrollLock(value === 'form')
 })
 
-onMounted(fetchNews)
+onMounted(() => {
+  fetchNews()
+  document.addEventListener('click', closeDropdown)
+})
 
 onBeforeUnmount(() => {
   setPageScrollLock(false)
+  document.removeEventListener('click', closeDropdown)
 
   if (imagePreview.value.startsWith('blob:')) URL.revokeObjectURL(imagePreview.value)
 })
@@ -384,15 +419,16 @@ onBeforeUnmount(() => {
                 <th class="w-14 px-4">No</th>
                 <th class="min-w-80 px-4">Judul</th>
                 <th class="w-44 px-4">Kategori</th>
+                <th class="min-w-56 px-4">Tags</th>
                 <th class="w-40 px-4">Tanggal</th>
                 <th class="w-36 px-4">Status</th>
                 <th class="w-28 px-4 text-center">Views</th>
-                <th class="w-44 px-4 text-center">Aksi</th>
+                <th class="w-24 px-4 text-left"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-soft">
               <tr v-if="loading">
-                <td colspan="7">
+                <td colspan="8">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Memuat data berita"
@@ -407,7 +443,7 @@ onBeforeUnmount(() => {
               </tr>
 
               <tr v-else-if="error">
-                <td colspan="7">
+                <td colspan="8">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Data berita belum bisa dimuat"
@@ -463,6 +499,29 @@ onBeforeUnmount(() => {
                     {{ getCategoryLabel(berita.category) }}
                   </span>
                 </td>
+                <td class="px-4">
+                  <div class="flex max-w-56 flex-wrap gap-1.5">
+                    <span
+                      v-for="tag in parseTags(berita.tags).slice(0, 3)"
+                      :key="`${berita.id}-${tag}`"
+                      class="inline-flex max-w-full items-center truncate rounded-full bg-bg-base px-2.5 py-0.5 text-xs font-medium text-text-secondary"
+                    >
+                      {{ tag }}
+                    </span>
+                    <span
+                      v-if="parseTags(berita.tags).length > 3"
+                      class="inline-flex items-center rounded-full bg-bg-base px-2.5 py-0.5 text-xs font-medium text-text-muted"
+                    >
+                      +{{ parseTags(berita.tags).length - 3 }}
+                    </span>
+                    <span
+                      v-if="!parseTags(berita.tags).length"
+                      class="text-xs text-text-muted"
+                    >
+                      -
+                    </span>
+                  </div>
+                </td>
                 <td class="px-4 text-text-secondary">
                   {{ formatDate(berita.created_at) }}
                 </td>
@@ -483,38 +542,58 @@ onBeforeUnmount(() => {
                 <td class="px-4 text-center text-text-secondary">
                   {{ berita.views }}
                 </td>
-                <td class="px-4 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
+                <td class="px-4 text-left">
+                  <div class="relative inline-block text-left dropdown-container">
                     <button
                       type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-bg-surface hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-                      title="Edit"
-                      @click="openEdit(berita)"
+                      class="flex h-8 w-8 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-base focus:outline-none"
+                      @click="activeDropdown = activeDropdown === berita.id ? null : berita.id"
                     >
-                      <Edit2 class="h-4 w-4" />
+                      <MoreHorizontal class="h-4 w-4" />
                     </button>
-                    <button
-                      type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
-                      title="Preview"
-                      @click="previewNews(berita)"
+                    
+                    <Transition
+                      enter-active-class="transition duration-100 ease-out"
+                      enter-from-class="transform scale-95 opacity-0"
+                      enter-to-class="transform scale-100 opacity-100"
+                      leave-active-class="transition duration-75 ease-in"
+                      leave-from-class="transform scale-100 opacity-100"
+                      leave-to-class="transform scale-95 opacity-0"
                     >
-                      <Eye class="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-status-rejected-bg hover:text-error focus:outline-none focus:ring-2 focus:ring-error/20"
-                      title="Hapus"
-                      @click="deleteNews(berita)"
-                    >
-                      <Trash2 class="h-4 w-4" />
-                    </button>
+                      <div
+                        v-if="activeDropdown === berita.id"
+                        class="absolute right-0 z-50 mt-1 w-32 rounded-md border border-border-soft bg-white p-1 shadow-md font-sans"
+                      >
+                        <button
+                          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-[#3b3b3b] transition-colors hover:bg-gray-100"
+                          @click="activeDropdown = null; openEdit(berita)"
+                        >
+                          <Edit2 class="h-4 w-4" />
+                          Edit
+                        </button>
+                        <button
+                          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-[#3b3b3b] transition-colors hover:bg-gray-100"
+                          @click="activeDropdown = null; previewNews(berita)"
+                        >
+                          <Eye class="h-4 w-4" />
+                          Lihat Berita
+                        </button>
+                        <div class="my-1 h-px bg-border-soft" />
+                        <button
+                          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-error transition-colors hover:bg-status-rejected-bg"
+                          @click="activeDropdown = null; deleteNews(berita)"
+                        >
+                          <Trash2 class="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
+                    </Transition>
                   </div>
                 </td>
               </tr>
 
               <tr v-if="!loading && !error && filteredItems.length === 0">
-                <td colspan="7">
+                <td colspan="8">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Belum ada berita"
@@ -602,8 +681,12 @@ onBeforeUnmount(() => {
                     </p>
                     <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4 text-xs text-text-muted">
                       <span>{{ formatDate(new Date().toISOString()) }}</span>
-                      <span v-if="form.tags" class="rounded-full bg-primary-50 px-2.5 py-1 text-brand">
-                        {{ form.tags.split(',')[0]?.trim() }}
+                      <span
+                        v-for="tag in formTagItems"
+                        :key="tag"
+                        class="rounded-full bg-primary-50 px-2.5 py-1 text-brand"
+                      >
+                        {{ tag }}
                       </span>
                     </div>
                   </div>
@@ -681,34 +764,6 @@ onBeforeUnmount(() => {
 
                         <div>
                           <label class="mb-2 block text-sm font-semibold text-text-primary">
-                            Kategori <span class="text-error">*</span>
-                          </label>
-                          <select
-                            v-model="form.category"
-                            required
-                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
-                          >
-                            <option value="event">Event</option>
-                            <option value="achievement">Prestasi</option>
-                            <option value="announcement">Pengumuman</option>
-                            <option value="other">Lainnya</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label class="mb-2 block text-sm font-semibold text-text-primary">
-                            Tags <span class="text-error">*</span>
-                          </label>
-                          <input
-                            v-model="form.tags"
-                            type="text"
-                            placeholder="pengumuman,ppdb,sekolah"
-                            class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
-                          >
-                        </div>
-
-                        <div>
-                          <label class="mb-2 block text-sm font-semibold text-text-primary">
                             Gambar Featured <span v-if="!isEdit" class="text-error">*</span>
                           </label>
                           <div
@@ -763,6 +818,51 @@ onBeforeUnmount(() => {
                             class="hidden"
                             @change="handleFileSelect"
                           >
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label class="mb-2 block text-sm font-semibold text-text-primary">
+                              Kategori <span class="text-error">*</span>
+                            </label>
+                            <select
+                              v-model="form.category"
+                              required
+                              class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                            >
+                              <option
+                                v-for="option in categoryOptions"
+                                :key="option.value"
+                                :value="option.value"
+                              >
+                                {{ option.label }}
+                              </option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label class="mb-2 block text-sm font-semibold text-text-primary">
+                              Tags <span class="text-error">*</span>
+                            </label>
+                            <input
+                              v-model="form.tags"
+                              type="text"
+                              placeholder="pendidikan, saya, sekolah"
+                              class="w-full rounded-xl border border-border bg-bg-base px-4 py-3 text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+                            >
+                            <div
+                              v-if="formTagItems.length"
+                              class="mt-3 flex flex-wrap gap-2"
+                            >
+                              <span
+                                v-for="tag in formTagItems"
+                                :key="tag"
+                                class="rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-brand"
+                              >
+                                {{ tag }}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         <div>

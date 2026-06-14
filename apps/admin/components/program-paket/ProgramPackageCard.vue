@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Edit2, MoreVertical, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
 import type { PaketSekolah } from '~/types/adminPaketSekolah'
 
 defineProps<{
@@ -6,38 +8,88 @@ defineProps<{
 }>()
 
 defineEmits<{
-  (event: 'detail', item: PaketSekolah): void
+  (event: 'detail' | 'manage-registration' | 'edit' | 'delete', item: PaketSekolah): void
 }>()
+
+const isMenuOpen = ref(false)
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const closeMenu = () => {
+  setTimeout(() => {
+    isMenuOpen.value = false
+  }, 150)
+}
 </script>
 
 <template>
-  <article class="flex h-[314px] w-full max-w-[510px] flex-col rounded-[27px] bg-bg-surface p-8">
-    <div>
-      <h2 class="font-heading text-2xl font-medium leading-none text-[#3b3b3b]">
-        {{ item.nama || 'Program Paket C' }}
-      </h2>
-      <p class="mt-4 max-w-[452px] font-heading text-sm font-normal leading-relaxed text-[#3b3b3b]/80">
+  <article class="group flex h-[260px] w-full flex-col rounded-[27px] border border-border-soft bg-bg-surface p-7 shadow-sm transition-all duration-300 hover:border-brand/20 hover:shadow-md">
+    <div class="min-h-0">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex min-w-0 flex-1 items-center gap-2">
+          <h2 class="truncate font-heading text-[22px] font-semibold leading-tight text-text-primary">
+            {{ item.nama || 'Program Paket C' }}
+          </h2>
+          <div v-if="item.status === 'aktif'" class="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-success"></div>
+        </div>
+        
+        <div class="relative shrink-0">
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @click.stop="toggleMenu"
+            @blur="closeMenu"
+          >
+            <MoreVertical class="h-5 w-5" />
+          </button>
+          
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-in"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="isMenuOpen"
+              class="absolute right-0 top-full z-10 mt-1 w-36 rounded-xl border border-border-soft bg-white p-1 shadow-lg"
+            >
+              <button
+                type="button"
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-text-secondary transition-colors hover:bg-bg-base hover:text-text-primary"
+                @click.stop="isMenuOpen = false; $emit('edit', item)"
+              >
+                <Edit2 class="h-4 w-4 shrink-0" />
+                Edit
+              </button>
+              <button
+                type="button"
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-error transition-colors hover:bg-status-rejected-bg hover:text-error focus:outline-none focus:ring-2 focus:ring-error/20"
+                @click.stop="isMenuOpen = false; $emit('delete', item)"
+              >
+                <Trash2 class="h-4 w-4 shrink-0" />
+                Hapus
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </div>
+      <p class="mt-4 line-clamp-5 max-w-[452px] font-body text-sm font-normal leading-relaxed text-text-secondary">
         {{ item.deskripsi || 'Program pendidikan kesetaraan jenjang SMA/SLTA sederajat' }}
       </p>
     </div>
 
-    <div class="mt-auto flex items-center justify-between gap-4">
+    <div class="mt-auto flex items-center justify-end">
       <button
         type="button"
-        class="rounded-[19px] px-2.5 py-2.5 font-heading text-sm font-medium leading-none text-[#3b3b3b] transition-colors hover:bg-bg-base focus:outline-none focus:ring-2 focus:ring-brand/20"
-        @click="$emit('detail', item)"
+        class="inline-flex h-[38px] items-center justify-center rounded-full border border-brand px-5 font-heading text-[13px] font-semibold leading-none text-brand transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-brand/20"
+        @click="$emit('manage-registration', item)"
       >
-        Lihat Detail
+        Kelola Pendaftaran
       </button>
-
-      <span
-        class="inline-flex h-11 min-w-[141px] items-center justify-center rounded-full border px-4 font-heading text-sm font-medium leading-none"
-        :class="item.status === 'aktif'
-          ? 'border-brand text-brand'
-          : 'border-[#001a9d] text-[#001a9d]'"
-      >
-        aktifkan pendaftaran
-      </span>
     </div>
   </article>
 </template>

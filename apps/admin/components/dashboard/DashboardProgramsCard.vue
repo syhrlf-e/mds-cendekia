@@ -9,13 +9,13 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Program Tersedia"
-    class="h-[309px]"
+    class="h-[236px]"
   >
-    <div class="space-y-4 px-1 pt-4">
+    <div class="space-y-3 px-1 pt-3">
       <div
         v-for="(program, index) in programs.slice(0, 3)"
         :key="program.nama"
-        class="flex h-[58px] items-center justify-between rounded-[18px] px-3 text-[13px] font-medium"
+        class="flex h-12 items-center justify-between rounded-[16px] px-3 text-[13px] font-medium"
         :class="index === 0 ? 'bg-brand text-white' : 'bg-transparent text-brand'"
       >
         <span>{{ program.nama }}</span>

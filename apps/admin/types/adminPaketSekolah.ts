@@ -11,6 +11,7 @@ export type PaketSekolah = {
   deskripsi: string
   totalPendaftar: number
   totalDiterima: number
+  gelombangIds: number[]
 }
 
 export type PaketSekolahDto = Record<string, any>
@@ -24,4 +25,10 @@ export type PaketSekolahPayload = {
   kuota: number
   biaya_pendaftaran: number
   deskripsi: string
+}
+
+export type ProgramPaketCreatePayload = {
+  nama: string
+  deskripsi: string
+  status: boolean
 }

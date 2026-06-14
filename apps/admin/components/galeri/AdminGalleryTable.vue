@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Edit2, Image as ImageIcon, Images, Trash2 } from 'lucide-vue-next'
+import { Edit2, Image as ImageIcon, Images, MoreHorizontal, Trash2 } from 'lucide-vue-next'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { GalleryItem } from '~/types/adminGallery'
 
 defineProps<{
@@ -9,12 +10,36 @@ defineProps<{
   pagedItems: GalleryItem[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   refresh: []
   create: []
   edit: [item: GalleryItem]
   delete: [item: GalleryItem]
 }>()
+
+const activeDropdown = ref<number | string | null>(null)
+
+const closeDropdown = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('.gallery-dropdown-container')) {
+    activeDropdown.value = null
+  }
+}
+
+const toggleDropdown = (id: number | string) => {
+  activeDropdown.value = activeDropdown.value === id ? null : id
+}
+
+const selectAction = (action: 'edit' | 'delete', item: GalleryItem) => {
+  activeDropdown.value = null
+
+  if (action === 'edit') {
+    emit('edit', item)
+    return
+  }
+
+  emit('delete', item)
+}
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
@@ -28,6 +53,14 @@ const formatDate = (dateString: string) => {
     year: 'numeric'
   })
 }
+
+onMounted(() => {
+  document.addEventListener('click', closeDropdown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeDropdown)
+})
 </script>
 
 <template>
@@ -92,7 +125,7 @@ const formatDate = (dateString: string) => {
 
     <div
       v-else
-      class="overflow-hidden rounded-xl border border-border-soft"
+      class="overflow-visible rounded-xl border border-border-soft"
     >
       <table class="w-full border-collapse text-left">
         <thead class="bg-bg-base">
@@ -101,7 +134,7 @@ const formatDate = (dateString: string) => {
             <th class="min-w-80 px-4">Galeri</th>
             <th class="w-40 px-4">Tipe</th>
             <th class="w-40 px-4">Tanggal</th>
-            <th class="w-36 px-4 text-center">Aksi</th>
+            <th class="w-24 px-4 text-left"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border-soft">
@@ -148,24 +181,48 @@ const formatDate = (dateString: string) => {
             <td class="px-4 text-text-secondary">
               {{ formatDate(item.createdAt) }}
             </td>
-            <td class="px-4 text-center">
-              <div class="flex items-center justify-center gap-1.5">
+            <td class="px-4 text-left">
+              <div class="gallery-dropdown-container relative inline-block text-left">
                 <button
                   type="button"
-                  class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-bg-surface hover:text-brand"
-                  title="Edit galeri"
-                  @click="$emit('edit', item)"
+                  class="flex h-8 w-8 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-base focus:outline-none"
+                  aria-label="Buka aksi galeri"
+                  @click.stop="toggleDropdown(item.id)"
                 >
-                  <Edit2 class="h-4 w-4" />
+                  <MoreHorizontal class="h-4 w-4" />
                 </button>
-                <button
-                  type="button"
-                  class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-soft bg-bg-base text-text-secondary transition-colors hover:bg-status-rejected-bg hover:text-error"
-                  title="Hapus galeri"
-                  @click="$emit('delete', item)"
+
+                <Transition
+                  enter-active-class="transition duration-100 ease-out"
+                  enter-from-class="scale-95 opacity-0"
+                  enter-to-class="scale-100 opacity-100"
+                  leave-active-class="transition duration-75 ease-in"
+                  leave-from-class="scale-100 opacity-100"
+                  leave-to-class="scale-95 opacity-0"
                 >
-                  <Trash2 class="h-4 w-4" />
-                </button>
+                  <div
+                    v-if="activeDropdown === item.id"
+                    class="absolute right-0 z-50 mt-1 w-36 rounded-md border border-border-soft bg-white p-1 font-sans shadow-md"
+                  >
+                    <button
+                      type="button"
+                      class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-[#3b3b3b] transition-colors hover:bg-gray-100"
+                      @click="selectAction('edit', item)"
+                    >
+                      <Edit2 class="h-4 w-4" />
+                      Edit
+                    </button>
+                    <div class="my-1 h-px bg-border-soft" />
+                    <button
+                      type="button"
+                      class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-error transition-colors hover:bg-status-rejected-bg"
+                      @click="selectAction('delete', item)"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                      Hapus
+                    </button>
+                  </div>
+                </Transition>
               </div>
             </td>
           </tr>

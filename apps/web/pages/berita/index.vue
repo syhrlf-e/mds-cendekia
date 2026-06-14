@@ -116,6 +116,18 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                 <p class="font-sans text-sm leading-relaxed text-gray-500">
                   {{ item.excerpt }}
                 </p>
+                <div
+                  v-if="item.tags.length"
+                  class="mt-5 flex flex-wrap gap-2"
+                >
+                  <span
+                    v-for="tag in item.tags.slice(0, 3)"
+                    :key="`${item.id}-${tag}`"
+                    class="rounded-full bg-gray-100 px-3 py-1 font-sans text-xs font-medium text-neutral-600"
+                  >
+                    #{{ tag }}
+                  </span>
+                </div>
               </div>
             </NuxtLink>
           </template>

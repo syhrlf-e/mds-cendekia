@@ -9,13 +9,13 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Kuota Pendaftaran"
-    class="h-[309px]"
+    class="h-[236px]"
   >
-    <div v-if="items.length" class="space-y-5 px-2 pt-5">
+    <div v-if="items.length" class="space-y-4 px-2 pt-4">
       <div
         v-for="item in items"
         :key="item.label"
-        class="flex items-center justify-between gap-4 font-heading text-base font-semibold text-[#323232]"
+        class="flex items-center justify-between gap-4 font-heading text-sm font-semibold text-[#323232]"
       >
         <span>{{ item.label }}</span>
         <span>

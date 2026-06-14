@@ -11,15 +11,15 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Berita Terbaru"
-    class="h-[309px]"
+    class="h-[236px] overflow-hidden"
   >
-    <div class="space-y-4 px-2 pt-3">
+    <div class="space-y-3 px-2 pt-3">
       <div
-        v-for="item in items"
+        v-for="item in items.slice(0, 3)"
         :key="`${item.gambar}-${item.created_at}`"
-        class="grid grid-cols-[50px_1fr] gap-3"
+        class="grid grid-cols-[44px_1fr] gap-3"
       >
-        <div class="h-[50px] w-[50px] overflow-hidden rounded-lg bg-[#d9d9d9]">
+        <div class="h-11 w-11 overflow-hidden rounded-lg bg-[#d9d9d9]">
           <img
             v-if="resolveAssetUrl(item.gambar)"
             :src="resolveAssetUrl(item.gambar)"

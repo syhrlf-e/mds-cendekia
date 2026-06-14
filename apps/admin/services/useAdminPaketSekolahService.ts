@@ -1,6 +1,6 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { ApiMutationResponse } from '~/types/adminPendaftaran'
-import type { PaketSekolah, PaketSekolahDto, PaketSekolahPayload, PaketStatus } from '~/types/adminPaketSekolah'
+import type { PaketSekolah, PaketSekolahDto, PaketSekolahPayload, PaketStatus, ProgramPaketCreatePayload } from '~/types/adminPaketSekolah'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -20,6 +20,16 @@ const readArrayPayload = (payload: any): PaketSekolahDto[] => {
   if (Array.isArray(payload?.data?.data)) return payload.data.data
   if (Array.isArray(payload?.paket)) return payload.paket
   if (Array.isArray(payload?.data?.paket)) return payload.data.paket
+  if (Array.isArray(payload?.programPaket)) return payload.programPaket
+  if (Array.isArray(payload?.program_paket)) return payload.program_paket
+  if (Array.isArray(payload?.data?.programPaket)) return payload.data.programPaket
+  if (Array.isArray(payload?.data?.program_paket)) return payload.data.program_paket
+  return []
+}
+
+const readGelombangItems = (item: PaketSekolahDto): PaketSekolahDto[] => {
+  if (Array.isArray(item.gelombang)) return item.gelombang
+  if (item.gelombang && typeof item.gelombang === 'object') return [item.gelombang]
   return []
 }
 
@@ -28,12 +38,15 @@ const mapPackage = (item: PaketSekolahDto): PaketSekolah => ({
   kode: normalizeText(item.kode || item.slug || createPaketKode(item.nama)),
   nama: normalizeText(item.nama || item.nama_paket),
   jenjang: normalizeText(item.jenjang),
-  status: normalizeText(item.status).toLowerCase() === 'aktif' ? 'aktif' : 'nonaktif',
-  kuota: normalizeNumber(item.kuota),
+  status: item.status === true || normalizeText(item.status).toLowerCase() === 'aktif' ? 'aktif' : 'nonaktif',
+  kuota: normalizeNumber(item.kuota || readGelombangItems(item)[0]?.kuota),
   biayaPendaftaran: normalizeNumber(item.biaya_pendaftaran || item.biayaPendaftaran),
   deskripsi: normalizeText(item.deskripsi),
   totalPendaftar: normalizeNumber(item.total_pendaftar || item.pendaftar),
-  totalDiterima: normalizeNumber(item.total_diterima || item.diterima)
+  totalDiterima: normalizeNumber(item.total_diterima || item.diterima),
+  gelombangIds: readGelombangItems(item)
+    .map(gelombang => normalizeNumber(gelombang.id))
+    .filter(id => id > 0)
 })
 
 export const buildPaketPayload = (form: {
@@ -66,11 +79,41 @@ export const buildPaketStatusPayload = (item: PaketSekolah, nextStatus: PaketSta
   deskripsi: item.deskripsi
 })
 
+export const buildProgramPaketCreatePayload = (form: {
+  nama: string
+  deskripsi: string
+}): ProgramPaketCreatePayload => ({
+  nama: form.nama.trim(),
+  deskripsi: form.deskripsi.trim(),
+  status: true
+})
+
 export const useAdminPaketSekolahService = () => {
-  const { get, post, put } = useApi()
+  const { get, post, put, delete: deleteRequest } = useApi()
 
   const listPackages = async () => {
     const { data, error } = await get<any>(adminApiEndpoints.paketSekolah.list, {
+      showErrorToast: false
+    })
+    const rows = readArrayPayload(data)
+
+    if (error) {
+      return {
+        data: [],
+        error,
+        usingFallback: false
+      }
+    }
+
+    return {
+      data: rows.map(mapPackage),
+      error: null,
+      usingFallback: false
+    }
+  }
+
+  const listProgramPaket = async () => {
+    const { data, error } = await get<any>(adminApiEndpoints.programPaket.list, {
       showErrorToast: false
     })
     const rows = readArrayPayload(data)
@@ -102,9 +145,29 @@ export const useAdminPaketSekolahService = () => {
     })
   }
 
+  const createProgramPaket = (payload: ProgramPaketCreatePayload) => {
+    return post<ApiMutationResponse & {
+      data?: PaketSekolahDto
+      result?: PaketSekolahDto
+      programPaket?: PaketSekolahDto
+    }>(adminApiEndpoints.programPaket.create, payload, { showErrorToast: false })
+  }
+
+  const deleteProgramPaket = (id: string | number) => {
+    return deleteRequest<ApiMutationResponse>(adminApiEndpoints.programPaket.delete(id), { showErrorToast: false })
+  }
+
+  const deleteProgramPaketGelombang = (id: string | number) => {
+    return deleteRequest<ApiMutationResponse>(adminApiEndpoints.timelinePpdb.deleteGelombang(id), { showErrorToast: false })
+  }
+
   return {
     listPackages,
+    listProgramPaket,
     savePackage,
-    updatePackageStatus
+    updatePackageStatus,
+    createProgramPaket,
+    deleteProgramPaket,
+    deleteProgramPaketGelombang
   }
 }

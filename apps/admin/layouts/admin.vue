@@ -127,7 +127,7 @@ const visibleAdminDisplayName = computed(() => isHydrated.value ? adminDisplayNa
 const adminInitial = computed(() => adminDisplayName.value.charAt(0).toUpperCase() || 'A')
 const activePageTitle = computed(() => {
   if (route.path.startsWith('/dashboard')) {
-    return `Hai, Selamat datang kembali ${visibleAdminDisplayName.value}`
+    return 'Dashboard'
   }
 
   const activeMenu = [...flatMenuItems.value, settingsMenu].find(item => isActive(item.path))
@@ -304,70 +304,81 @@ onBeforeUnmount(() => {
       </Transition>
     </Teleport>
 
-    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface xl:flex">
+    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-[0_18px_45px_rgba(15,23,42,0.06)] xl:flex">
       <div class="flex h-20 shrink-0 items-center gap-3 border-b border-border-soft px-6">
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
           class="h-10 w-10 object-contain"
         >
-        <div>
-          <div class="text-[18px] font-extrabold leading-tight tracking-[-0.15px] text-text-primary">
+        <div class="min-w-0">
+          <div class="truncate font-heading text-[18px] font-extrabold leading-tight tracking-[-0.15px] text-text-primary">
             MDS Panel
           </div>
         </div>
       </div>
 
-      <nav class="flex min-h-0 grow flex-col gap-1.5 overflow-y-auto px-4 py-6">
+      <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-6">
         <template
           v-for="item in menu"
           :key="item.name"
         >
-          <div v-if="isMenuGroup(item)" class="flex flex-col gap-1">
+          <div v-if="isMenuGroup(item)">
             <button
               type="button"
-              class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-              :class="isGroupActive(item) ? 'font-semibold text-text-primary [&>svg]:text-text-primary' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+              class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+              :class="isGroupActive(item) ? 'font-semibold text-text-primary hover:bg-bg-base' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
               :aria-expanded="expandedMenuGroups[item.key]"
               @click="toggleMenuGroup(item.key)"
             >
-              <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
-              <span class="min-w-0 grow truncate">{{ item.name }}</span>
+              <div class="flex min-w-0 items-center gap-3">
+                <component :is="item.icon" class="h-5 w-5 shrink-0" />
+                <span class="truncate font-heading font-medium">{{ item.name }}</span>
+              </div>
               <ChevronDown
                 class="h-4 w-4 shrink-0 transition-transform duration-200"
                 :class="expandedMenuGroups[item.key] ? 'rotate-180' : ''"
               />
             </button>
 
-            <div
-              v-if="expandedMenuGroups[item.key]"
-              class="ml-[22px] flex flex-col gap-1 border-l border-border-soft pl-4"
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="max-h-0 opacity-0"
+              enter-to-class="max-h-96 opacity-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="max-h-96 opacity-100"
+              leave-to-class="max-h-0 opacity-0"
             >
-              <NuxtLink
-                v-for="child in item.children"
-                :key="child.name"
-                :to="child.path"
-                class="group relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-                :class="isActive(child.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
-                @pointerenter="prefetchAdminMenu(child.path)"
-                @focus="prefetchAdminMenu(child.path)"
+              <div
+                v-show="expandedMenuGroups[item.key]"
+                class="ml-4 mt-2 space-y-1 overflow-hidden"
               >
-                <component :is="child.icon" class="h-4 w-4 shrink-0 transition-colors" />
-                {{ child.name }}
-              </NuxtLink>
-            </div>
+                <NuxtLink
+                  v-for="child in item.children"
+                  :key="child.name"
+                  :to="child.path"
+                  class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-colors duration-200"
+                  :class="isActive(child.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
+                  @pointerenter="prefetchAdminMenu(child.path)"
+                  @focus="prefetchAdminMenu(child.path)"
+                >
+                  <component :is="child.icon" class="h-4 w-4 shrink-0" />
+                  <span class="truncate font-heading">{{ child.name }}</span>
+                </NuxtLink>
+              </div>
+            </Transition>
           </div>
 
           <NuxtLink
             v-else
             :to="item.path"
-            class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-            :class="isActive(item.path) ? 'font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+            class="relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+            :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
             @pointerenter="prefetchAdminMenu(item.path)"
             @focus="prefetchAdminMenu(item.path)"
           >
-            <component :is="item.icon" class="h-5 w-5 shrink-0 transition-colors" />
-            {{ item.name }}
+            <component :is="item.icon" class="h-5 w-5 shrink-0" />
+            <span class="truncate font-heading font-medium">{{ item.name }}</span>
           </NuxtLink>
         </template>
       </nav>
@@ -375,20 +386,21 @@ onBeforeUnmount(() => {
       <div class="mt-auto shrink-0 border-t border-border-soft bg-bg-surface/80 p-4">
         <NuxtLink
           :to="settingsMenu.path"
-          class="group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-bg-base hover:text-text-primary"
-          :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand [&>svg]:text-brand' : '[&>svg]:text-text-muted hover:[&>svg]:text-text-secondary'"
+          class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+          :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
           @pointerenter="prefetchAdminMenu(settingsMenu.path)"
           @focus="prefetchAdminMenu(settingsMenu.path)"
         >
-          <component :is="settingsMenu.icon" class="h-5 w-5 shrink-0 transition-colors" />
-          {{ settingsMenu.name }}
+          <component :is="settingsMenu.icon" class="h-5 w-5 shrink-0" />
+          <span class="truncate font-heading font-medium">{{ settingsMenu.name }}</span>
         </NuxtLink>
       </div>
     </aside>
 
     <main class="relative flex h-full min-w-0 grow flex-col overflow-hidden bg-gray-100">
-      <header class="relative z-30 flex h-20 shrink-0 items-center justify-between gap-3 px-4 xl:mt-4 xl:px-0">
-        <div class="flex h-14 min-w-0 grow items-center gap-2 rounded-2xl bg-bg-surface px-2 sm:h-16 sm:gap-3 sm:px-4 xl:max-w-[764px] xl:rounded-full xl:px-8">
+      <header class="relative z-30 flex h-20 shrink-0 items-center px-4 xl:mt-4 xl:px-0 xl:pr-2">
+        <div class="flex h-14 min-w-0 grow items-center justify-between gap-3 rounded-2xl bg-bg-surface px-2 sm:h-16 sm:gap-4 sm:px-4 xl:h-20 xl:px-8">
+          <div class="flex min-w-0 grow items-center gap-2 sm:gap-3">
           <button
             type="button"
             class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-dashboard-text transition-colors hover:bg-bg-base focus:outline-none focus:ring-2 focus:ring-brand/30 xl:hidden"
@@ -401,62 +413,70 @@ onBeforeUnmount(() => {
           <p class="truncate font-heading text-lg font-normal leading-normal text-dashboard-text sm:text-xl xl:text-[26px]">
             {{ activePageTitle }}
           </p>
-        </div>
+          </div>
 
-        <div class="relative h-14 w-14 shrink-0 sm:h-16 sm:w-16 xl:h-20 xl:w-[253px]">
+        <div class="relative shrink-0">
           <div
             v-if="isAdminMenuOpen"
             class="fixed inset-0 z-10"
             @click="isAdminMenuOpen = false"
           />
 
-          <div
-            class="absolute right-0 top-0 z-20 flex flex-col overflow-hidden bg-bg-surface transition-[height,width] duration-300 ease-out"
-            :class="[
-              isAdminMenuOpen ? 'h-34 w-[min(253px,calc(100vw-32px))] rounded-3xl xl:h-36 xl:w-[253px] xl:rounded-[40px]' : 'h-14 w-14 rounded-2xl sm:h-16 sm:w-16 xl:h-20 xl:w-[253px] xl:rounded-[40px]'
-            ]"
-          >
+          <div class="relative z-20">
             <button
               type="button"
-              class="flex h-14 w-full shrink-0 items-center gap-3 border-0 bg-bg-surface px-2 text-dashboard-text outline-none focus:outline-none sm:h-16 xl:h-20 xl:px-4"
+              class="flex h-11 items-center gap-2 rounded-xl border-0 bg-bg-surface px-2 pr-3 text-dashboard-text outline-none transition-colors hover:bg-bg-base focus:outline-none sm:h-11 xl:h-11"
               :aria-expanded="isAdminMenuOpen"
               aria-label="Buka menu akun admin"
               @click="isAdminMenuOpen = !isAdminMenuOpen"
             >
-              <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-lg font-medium text-white sm:size-12 xl:size-[46px] xl:text-xl">
+              <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-sm font-medium text-white">
                 {{ isHydrated ? adminInitial : 'A' }}
               </div>
               <p
-                class="min-w-0 grow truncate text-left font-heading text-base font-medium leading-normal text-dashboard-text"
+                class="hidden max-w-[104px] truncate text-left font-heading text-sm font-medium leading-normal text-dashboard-text xl:block"
                 :class="isAdminMenuOpen ? 'block' : 'hidden xl:block'"
               >
                 {{ visibleAdminDisplayName }}
               </p>
               <ChevronDown
-                class="size-5 shrink-0 text-dashboard-text transition-transform duration-300"
+                class="size-4 shrink-0 text-dashboard-text transition-transform duration-200"
                 :class="[isAdminMenuOpen ? 'rotate-180' : '', isAdminMenuOpen ? 'block' : 'hidden xl:block']"
               />
             </button>
 
-            <div
-              class="flex h-18 shrink-0 items-center justify-center border-t border-border-soft transition-opacity duration-200 xl:h-16"
-              :class="isAdminMenuOpen ? 'opacity-100 delay-100' : 'pointer-events-none opacity-0'"
+            <Transition
+              enter-active-class="transition duration-150 ease-out"
+              enter-from-class="-translate-y-1 opacity-0"
+              enter-to-class="translate-y-0 opacity-100"
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="translate-y-0 opacity-100"
+              leave-to-class="-translate-y-1 opacity-0"
             >
-              <button
-                type="button"
-                class="flex h-11 w-[calc(100%-1rem)] items-center justify-center gap-2 rounded-full font-heading text-sm font-semibold text-error transition-colors hover:bg-status-rejected-bg disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="isLoggingOut"
-                @click="openLogoutModal"
+              <div
+                v-if="isAdminMenuOpen"
+                class="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-border-soft bg-bg-surface p-2 shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
               >
-                <LogOut class="h-4 w-4 shrink-0" />
-                Keluar Sistem
-              </button>
-            </div>
+                <button
+                  type="button"
+                  class="flex h-11 w-full items-center justify-center gap-2 rounded-xl font-heading text-sm font-semibold text-error transition-colors hover:bg-status-rejected-bg disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="isLoggingOut"
+                  @click="openLogoutModal"
+                >
+                  <LogOut class="h-4 w-4 shrink-0" />
+                  Keluar Sistem
+                </button>
+              </div>
+            </Transition>
           </div>
+        </div>
         </div>
       </header>
 
-      <div class="min-h-0 grow overflow-auto px-4 pb-4 xl:px-0 xl:py-4">
+      <div
+        class="min-h-0 grow px-4 pb-4 xl:py-3 xl:pl-0 xl:pr-2"
+        :class="route.path.startsWith('/dashboard') ? 'overflow-hidden' : 'overflow-auto'"
+      >
         <slot />
       </div>
     </main>

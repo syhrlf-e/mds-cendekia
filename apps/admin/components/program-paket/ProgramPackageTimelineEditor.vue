@@ -38,81 +38,88 @@ const removeItem = (id: string) => {
 </script>
 
 <template>
-  <section class="mt-6">
-    <h3 class="font-heading text-xl font-normal leading-none text-[#3b3b3b]">
-      Timeline Pendaftaran
-    </h3>
+  <section class="mt-4 rounded-2xl bg-bg-surface p-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h3 class="font-heading text-lg font-semibold leading-none text-text-primary">
+          Timeline Pendaftaran
+        </h3>
+        <p class="mt-2 font-body text-sm leading-relaxed text-text-secondary">
+          Atur tahapan pendaftaran yang akan ditampilkan untuk program ini.
+        </p>
+      </div>
 
-    <div class="mt-4 flex flex-col gap-4">
+      <button
+        type="button"
+        class="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-brand px-4 font-heading text-sm font-semibold text-white transition-colors hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/20"
+        @click="addItem"
+      >
+        <Plus class="h-4 w-4" />
+        Tambah
+      </button>
+    </div>
+
+    <div class="mt-5 flex flex-col gap-3">
       <article
         v-for="item in items"
         :key="item.id"
-        class="rounded-[18px] bg-[#fbfbfb] px-6 py-5"
+        class="rounded-2xl border border-border-soft bg-bg-base px-5 py-4"
       >
         <div class="flex items-start gap-4">
-          <div class="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
+          <div class="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
             <label class="flex min-w-0 flex-col gap-2">
-              <span class="font-heading text-sm font-normal text-[#3b3b3b]/70">Tanggal Mulai</span>
+              <span class="font-heading text-sm font-medium text-text-secondary">Tanggal Mulai</span>
               <input
                 :value="item.tanggalMulai"
                 type="date"
-                class="h-10 rounded-xl border-0 bg-[#f1f1f1] px-3 font-heading text-sm text-[#3b3b3b] outline-none focus:ring-2 focus:ring-sky-500/20"
+                class="h-10 rounded-xl border border-border bg-bg-surface px-3 font-heading text-sm text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                 @input="updateItem(item.id, { tanggalMulai: ($event.target as HTMLInputElement).value })"
               >
             </label>
 
             <label class="flex min-w-0 flex-col gap-2">
-              <span class="font-heading text-sm font-normal text-[#3b3b3b]/70">Tanggal Selesai</span>
+              <span class="font-heading text-sm font-medium text-text-secondary">Tanggal Selesai</span>
               <input
                 :value="item.tanggalSelesai"
                 type="date"
-                class="h-10 rounded-xl border-0 bg-[#f1f1f1] px-3 font-heading text-sm text-[#3b3b3b] outline-none focus:ring-2 focus:ring-sky-500/20"
+                class="h-10 rounded-xl border border-border bg-bg-surface px-3 font-heading text-sm text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                 @input="updateItem(item.id, { tanggalSelesai: ($event.target as HTMLInputElement).value })"
               >
             </label>
 
             <label class="col-span-2 flex min-w-0 flex-col gap-2">
-              <span class="font-heading text-sm font-normal text-[#3b3b3b]/70">Deskripsi Timeline</span>
+              <span class="font-heading text-sm font-medium text-text-secondary">Deskripsi Timeline</span>
               <input
                 :value="item.deskripsi"
                 type="text"
                 placeholder="Pendaftaran Online"
-                class="h-11 rounded-xl border-0 bg-transparent px-0 font-heading text-lg font-normal text-[#1d1d1f] outline-none placeholder:text-[#1d1d1f]"
+                class="h-11 rounded-xl border border-border bg-bg-surface px-3 font-heading text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-brand focus:ring-2 focus:ring-brand/20"
                 @input="updateItem(item.id, { deskripsi: ($event.target as HTMLInputElement).value })"
               >
             </label>
           </div>
 
           <div class="flex shrink-0 items-center gap-2 pt-1">
-            <MoreHorizontal class="h-5 w-5 text-[#3b3b3b]/70" />
+            <MoreHorizontal class="h-5 w-5 text-text-muted" />
             <button
               type="button"
-              class="flex h-8 w-8 items-center justify-center rounded-lg text-[#d5b700] transition-colors hover:bg-[#fff8c7]"
+              class="flex h-9 w-9 items-center justify-center rounded-xl text-warning transition-colors hover:bg-status-pending-bg"
               aria-label="Edit timeline"
             >
-              <PencilLine class="h-5 w-5" />
+              <PencilLine class="h-4.5 w-4.5" />
             </button>
             <button
               type="button"
-              class="flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-status-rejected-bg disabled:cursor-not-allowed disabled:opacity-30"
+              class="flex h-9 w-9 items-center justify-center rounded-xl text-error transition-colors hover:bg-status-rejected-bg disabled:cursor-not-allowed disabled:opacity-30"
               :disabled="items.length <= 1"
               aria-label="Hapus timeline"
               @click="removeItem(item.id)"
             >
-              <Trash2 class="h-5 w-5" />
+              <Trash2 class="h-4.5 w-4.5" />
             </button>
           </div>
         </div>
       </article>
     </div>
-
-    <button
-      type="button"
-      class="mt-6 inline-flex items-center gap-2 font-heading text-base font-normal text-[#3b3b3b]/70 transition-colors hover:text-[#3b3b3b] focus:outline-none focus:ring-2 focus:ring-brand/20"
-      @click="addItem"
-    >
-      <Plus class="h-5 w-5" />
-      Tambahkan timeline lainnya
-    </button>
   </section>
 </template>
