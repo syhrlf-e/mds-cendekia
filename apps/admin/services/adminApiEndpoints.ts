@@ -20,15 +20,24 @@ export const adminApiEndpoints = {
     list: '/api/program-paket/all',
     create: '/api/program-paket/create',
     detail: (id: string | number) => `/api/program-paket/${encodeURIComponent(String(id))}`,
+    update: (id: string | number) => `/api/program-paket/${encodeURIComponent(String(id))}`,
     delete: (id: string | number) => `/api/program-paket/${encodeURIComponent(String(id))}`
   },
   timelinePpdb: {
     list: '/api/timeline/all',
     detail: '/api/timeline',
     create: '/api/timeline/create',
+    update: (id: string | number) => `/api/timeline/${encodeURIComponent(String(id))}`,
     delete: (id: string | number) => `/api/timeline/${id}`,
     deleteGelombang: (id: string | number) => `/api/timeline/gelombang/${encodeURIComponent(String(id))}`,
     publicList: '/api/timeline/all'
+  },
+  gelombang: {
+    list: '/api/gelombang/all',
+    create: '/api/gelombang/create',
+    detail: (id: string | number) => `/api/gelombang/${encodeURIComponent(String(id))}`,
+    update: (id: string | number) => `/api/gelombang/${encodeURIComponent(String(id))}`,
+    delete: (id: string | number) => `/api/gelombang/${encodeURIComponent(String(id))}`
   },
   gallery: {
     list: '/api/gallery/all',

@@ -42,7 +42,7 @@ const isAdminMenuOpen = ref(false)
 const isLogoutModalOpen = ref(false)
 const isLoggingOut = ref(false)
 const expandedMenuGroups = ref<Record<string, boolean>>({
-  profile: true,
+  // profile: true, // Profil Sekolah disembunyikan sampai modulnya siap.
   students: true
 })
 const mobileNavigationRef = ref<HTMLElement | null>(null)
@@ -50,15 +50,16 @@ let desktopMediaQuery: MediaQueryList | null = null
 
 const menu: AdminNavigationItem[] = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  {
-    name: 'Profil Sekolah',
-    icon: School,
-    key: 'profile',
-    children: [
-      { name: 'Kelola Pengurus Yayasan', path: '/profil-sekolah?tab=pengurus-yayasan', icon: School, pageTitle: 'Kelola Pengurus Yayasan' },
-      { name: 'Kelola Sambutan', path: '/profil-sekolah?tab=sambutan', icon: School, pageTitle: 'Kelola Sambutan' }
-    ]
-  },
+  // Profil Sekolah belum ditampilkan di sidebar karena modulnya belum selesai.
+  // {
+  //   name: 'Profil Sekolah',
+  //   icon: School,
+  //   key: 'profile',
+  //   children: [
+  //     { name: 'Kelola Pengurus Yayasan', path: '/profil-sekolah?tab=pengurus-yayasan', icon: School, pageTitle: 'Kelola Pengurus Yayasan' },
+  //     { name: 'Kelola Sambutan', path: '/profil-sekolah?tab=sambutan', icon: School, pageTitle: 'Kelola Sambutan' }
+  //   ]
+  // },
   { name: 'Berita', path: '/berita', icon: Newspaper, pageTitle: 'Kelola Berita' },
   { name: 'Gallery', path: '/galeri', icon: Images, pageTitle: 'Galeri Sekolah' },
   {

@@ -10,7 +10,7 @@ import {
   Info
 } from 'lucide-vue-next'
 import { useAdminTimelineService } from '~/services/useAdminTimelineService'
-import type { GelombangTimelineDto, TimelineCreatePayload } from '~/types/adminTimeline'
+import type { GelombangCreatePayload, GelombangTimelineDto } from '~/types/adminTimeline'
 
 type GelombangForm = {
   order: number | ''
@@ -30,7 +30,7 @@ definePageMeta({
 useHead({ title: 'Timeline PPDB | MDS Cendekia' })
 
 const {
-  createTimeline,
+  createGelombang,
   deleteTimeline
 } = useAdminTimelineService()
 const { addToast } = useToast()
@@ -184,7 +184,8 @@ const submitForm = async () => {
 
   saving.value = true
 
-  const payload: TimelineCreatePayload = {
+  const payload: GelombangCreatePayload = {
+    id_program: 0,
     order: Number(form.value.order),
     mulai: formatIsoString(form.value.mulai),
     selesai: formatIsoString(form.value.selesai),
@@ -198,7 +199,7 @@ const submitForm = async () => {
     }))
   }
 
-  const { data, error: submitError } = await createTimeline(payload)
+  const { data, error: submitError } = await createGelombang(payload)
 
   saving.value = false
 

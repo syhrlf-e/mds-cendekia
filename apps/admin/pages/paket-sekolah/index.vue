@@ -5,7 +5,7 @@ import ProgramPackageCard from '~/components/program-paket/ProgramPackageCard.vu
 import ProgramPackageRecent from '~/components/program-paket/ProgramPackageRecent.vue'
 import ProgramPackageCreateDrawer from '~/components/program-paket/ProgramPackageCreateDrawer.vue'
 import ProgramPackageDrawer from '~/components/program-paket/ProgramPackageDrawer.vue'
-import { buildProgramPaketCreatePayload, createPaketKode, useAdminPaketSekolahService } from '~/services/useAdminPaketSekolahService'
+import { buildProgramPaketCreatePayload, buildProgramPaketUpdatePayload, createPaketKode, useAdminPaketSekolahService } from '~/services/useAdminPaketSekolahService'
 import type { PaketSekolah } from '~/types/adminPaketSekolah'
 import type { ProgramPackageCreatePayload } from '~/components/program-paket/ProgramPackageCreateDrawer.vue'
 
@@ -18,14 +18,18 @@ useHead({ title: 'Program Paket | MDS Cendekia' })
 
 const isDetailDrawerOpen = ref(false)
 const isCreateDrawerOpen = ref(false)
+const programFormMode = ref<'create' | 'edit'>('create')
 const drawerMode = ref<'detail' | 'registration'>('detail')
 const selectedPackage = ref<PaketSekolah | null>(null)
+const editingPackage = ref<PaketSekolah | null>(null)
 const packages = ref<PaketSekolah[]>([])
+const recentRefreshKey = ref(0)
 const isLoadingPackages = ref(true)
 const isCreatingPackage = ref(false)
 const { addToast } = useToast()
 const {
   createProgramPaket,
+  updateProgramPaket,
   deleteProgramPaket,
   deleteProgramPaketGelombang,
   listProgramPaket
@@ -37,11 +41,36 @@ const isDeletingPackage = ref(false)
 
 const visiblePackages = computed(() => packages.value.filter(item => item.nama))
 
+const getPackageIdentity = (item: PaketSekolah) => String(item.id || item.kode)
+
+const preservePackageOrder = (nextPackages: PaketSekolah[]) => {
+  const nextPackageMap = new Map(nextPackages.map(item => [getPackageIdentity(item), item]))
+  const usedIdentities = new Set<string>()
+
+  const orderedPackages = packages.value
+    .map((item) => {
+      const identity = getPackageIdentity(item)
+      const nextPackage = nextPackageMap.get(identity)
+      if (nextPackage) {
+        usedIdentities.add(identity)
+      }
+      return nextPackage
+    })
+    .filter((item): item is PaketSekolah => Boolean(item))
+
+  const newPackages = nextPackages.filter((item) => {
+    const identity = getPackageIdentity(item)
+    return !usedIdentities.has(identity)
+  })
+
+  return [...orderedPackages, ...newPackages]
+}
+
 const getApiErrorMessage = (err: any, fallback: string) => {
   return err?.data?.message || err?.response?._data?.message || err?.message || fallback
 }
 
-const fetchProgramPackages = async (showErrorToast = true, showLoading = true) => {
+const fetchProgramPackages = async (showErrorToast = true, showLoading = true, keepCurrentOrder = false) => {
   if (showLoading) {
     isLoadingPackages.value = true
   }
@@ -59,7 +88,9 @@ const fetchProgramPackages = async (showErrorToast = true, showLoading = true) =
     return
   }
 
-  packages.value = data
+  packages.value = keepCurrentOrder && packages.value.length > 0
+    ? preservePackageOrder(data)
+    : data
 }
 
 const openPackageDetail = (item: PaketSekolah) => {
@@ -76,12 +107,19 @@ const openRegistrationManager = (item: PaketSekolah) => {
 
 const readCreatedPackage = (response: any) => response?.data || response?.result || response?.programPaket || response
 
+const resolvePackageStatus = (payload: ProgramPackageCreatePayload, source?: any) => {
+  if (typeof source?.status === 'boolean') return source.status ? 'aktif' : 'nonaktif'
+  const statusText = String(source?.status || '').toLowerCase()
+  if (statusText) return statusText === 'aktif' ? 'aktif' : 'nonaktif'
+  return payload.status ? 'aktif' : 'nonaktif'
+}
+
 const createPackageFromPayload = (payload: ProgramPackageCreatePayload, source?: any): PaketSekolah => ({
   id: Number(source?.id) || Date.now(),
   kode: String(source?.kode || source?.slug || createPaketKode(source?.nama || payload.nama)),
   nama: String(source?.nama || payload.nama),
   jenjang: '',
-  status: source?.status === true || String(source?.status || '').toLowerCase() === 'aktif' ? 'aktif' : 'nonaktif',
+  status: resolvePackageStatus(payload, source),
   kuota: 0,
   biayaPendaftaran: 0,
   deskripsi: String(source?.deskripsi || payload.deskripsi),
@@ -91,10 +129,13 @@ const createPackageFromPayload = (payload: ProgramPackageCreatePayload, source?:
     ? source.gelombang.map((gelombang: any) => Number(gelombang.id)).filter((id: number) => id > 0)
     : source?.gelombang?.id
       ? [Number(source.gelombang.id)]
-      : []
+      : [],
+  gelombang: []
 })
 
 const openCreateDrawer = () => {
+  programFormMode.value = 'create'
+  editingPackage.value = null
   isCreateDrawerOpen.value = true
 }
 
@@ -102,6 +143,35 @@ const saveCreatedPackage = async (payload: ProgramPackageCreatePayload) => {
   if (isCreatingPackage.value) return
 
   isCreatingPackage.value = true
+
+  if (programFormMode.value === 'edit' && editingPackage.value) {
+    const targetPackage = editingPackage.value
+    const updatePayload = buildProgramPaketUpdatePayload(payload)
+    const { data, error } = await updateProgramPaket(targetPackage.id, updatePayload)
+
+    if (error) {
+      addToast(getApiErrorMessage(error, 'Program paket belum berhasil diperbarui.'), 'error')
+      isCreatingPackage.value = false
+      return
+    }
+
+    packages.value = packages.value.map(item => item.id === targetPackage.id
+      ? {
+          ...item,
+          kode: createPaketKode(payload.nama),
+          nama: payload.nama,
+          deskripsi: payload.deskripsi,
+          status: payload.status ? 'aktif' : 'nonaktif'
+        }
+      : item)
+    isCreateDrawerOpen.value = false
+    editingPackage.value = null
+    programFormMode.value = 'create'
+    isCreatingPackage.value = false
+    addToast(data?.message || 'Program paket berhasil diperbarui.', 'success')
+    await fetchProgramPackages(false, false, true)
+    return
+  }
 
   const createPayload = buildProgramPaketCreatePayload(payload)
   const { data, error } = await createProgramPaket(createPayload)
@@ -118,16 +188,23 @@ const saveCreatedPackage = async (payload: ProgramPackageCreatePayload) => {
   isCreateDrawerOpen.value = false
   isCreatingPackage.value = false
   addToast(data?.message || 'Program paket berhasil ditambahkan.', 'success')
-  await fetchProgramPackages(false, false)
+  await fetchProgramPackages(false, false, true)
 }
 
 const handleEditPackage = (item: PaketSekolah) => {
-  addToast('Fitur edit program paket sedang dikembangkan.', 'warning')
+  programFormMode.value = 'edit'
+  editingPackage.value = item
+  isCreateDrawerOpen.value = true
 }
 
 const handleDeletePackage = (item: PaketSekolah) => {
   packageToDelete.value = item
   isDeleteModalOpen.value = true
+}
+
+const refreshRecentRegistrations = () => {
+  recentRefreshKey.value += 1
+  fetchProgramPackages(false, false, true)
 }
 
 const confirmDeletePackage = async () => {
@@ -229,12 +306,14 @@ onMounted(() => {
 
       <!-- Right Side: Recent Timeline -->
       <section class="w-full shrink-0 xl:w-auto">
-        <ProgramPackageRecent />
+        <ProgramPackageRecent :refresh-key="recentRefreshKey" />
       </section>
     </div>
 
     <ProgramPackageCreateDrawer
       v-model="isCreateDrawerOpen"
+      :mode="programFormMode"
+      :item="editingPackage"
       :saving="isCreatingPackage"
       @submit="saveCreatedPackage"
     />
@@ -243,6 +322,7 @@ onMounted(() => {
       v-model="isDetailDrawerOpen"
       :item="selectedPackage"
       :mode="drawerMode"
+      @saved="refreshRecentRegistrations"
     />
 
     <AppModal

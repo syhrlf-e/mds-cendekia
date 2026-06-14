@@ -1,6 +1,6 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type { ApiMutationResponse } from '~/types/adminPendaftaran'
-import type { PaketSekolah, PaketSekolahDto, PaketSekolahPayload, PaketStatus, ProgramPaketCreatePayload } from '~/types/adminPaketSekolah'
+import type { PaketSekolah, PaketSekolahDto, PaketSekolahPayload, PaketStatus, ProgramPaketCreatePayload, ProgramPaketUpdatePayload } from '~/types/adminPaketSekolah'
 
 const normalizeText = (value: unknown) => String(value || '').trim()
 
@@ -33,6 +33,27 @@ const readGelombangItems = (item: PaketSekolahDto): PaketSekolahDto[] => {
   return []
 }
 
+const readTimelineItems = (item: PaketSekolahDto): PaketSekolahDto[] => {
+  if (Array.isArray(item.timeline)) return item.timeline
+  return []
+}
+
+const mapGelombang = (item: PaketSekolahDto) => ({
+  id: normalizeNumber(item.id),
+  idProgram: normalizeNumber(item.id_program || item.idProgram),
+  order: normalizeNumber(item.order || item.id),
+  mulai: normalizeText(item.mulai),
+  selesai: normalizeText(item.selesai),
+  kuota: normalizeNumber(item.kuota),
+  status: Boolean(item.status ?? true),
+  tahunAjaran: normalizeText(item.tahun_ajaran || item.tahunAjaran),
+  timeline: readTimelineItems(item).map(timeline => ({
+    id: normalizeNumber(timeline.id),
+    tanggal: normalizeText(timeline.tanggal),
+    deskripsi: normalizeText(timeline.deskripsi)
+  })).filter(timeline => timeline.id || timeline.tanggal || timeline.deskripsi)
+})
+
 const mapPackage = (item: PaketSekolahDto): PaketSekolah => ({
   id: normalizeNumber(item.id),
   kode: normalizeText(item.kode || item.slug || createPaketKode(item.nama)),
@@ -46,8 +67,23 @@ const mapPackage = (item: PaketSekolahDto): PaketSekolah => ({
   totalDiterima: normalizeNumber(item.total_diterima || item.diterima),
   gelombangIds: readGelombangItems(item)
     .map(gelombang => normalizeNumber(gelombang.id))
-    .filter(id => id > 0)
+    .filter(id => id > 0),
+  gelombang: readGelombangItems(item)
+    .map(mapGelombang)
+    .filter(gelombang => gelombang.id > 0)
 })
+
+const groupGelombangByProgramId = (items: PaketSekolahDto[]) => {
+  const grouped = new Map<number, PaketSekolahDto[]>()
+
+  for (const item of items) {
+    const programId = normalizeNumber(item.id_program || item.idProgram)
+    if (!programId) continue
+    grouped.set(programId, [...(grouped.get(programId) || []), item])
+  }
+
+  return grouped
+}
 
 export const buildPaketPayload = (form: {
   id: number
@@ -82,14 +118,25 @@ export const buildPaketStatusPayload = (item: PaketSekolah, nextStatus: PaketSta
 export const buildProgramPaketCreatePayload = (form: {
   nama: string
   deskripsi: string
+  status?: boolean
 }): ProgramPaketCreatePayload => ({
   nama: form.nama.trim(),
   deskripsi: form.deskripsi.trim(),
-  status: true
+  status: form.status ?? true
+})
+
+export const buildProgramPaketUpdatePayload = (form: {
+  nama: string
+  deskripsi: string
+  status: boolean
+}): ProgramPaketUpdatePayload => ({
+  nama: form.nama.trim(),
+  deskripsi: form.deskripsi.trim(),
+  status: form.status
 })
 
 export const useAdminPaketSekolahService = () => {
-  const { get, post, put, delete: deleteRequest } = useApi()
+  const { get, post, put, patch, delete: deleteRequest } = useApi()
 
   const listPackages = async () => {
     const { data, error } = await get<any>(adminApiEndpoints.paketSekolah.list, {
@@ -113,9 +160,14 @@ export const useAdminPaketSekolahService = () => {
   }
 
   const listProgramPaket = async () => {
-    const { data, error } = await get<any>(adminApiEndpoints.programPaket.list, {
-      showErrorToast: false
-    })
+    const [
+      programResponse,
+      gelombangResponse
+    ] = await Promise.all([
+      get<any>(adminApiEndpoints.programPaket.list, { showErrorToast: false }),
+      get<any>(adminApiEndpoints.gelombang.list, { showErrorToast: false })
+    ])
+    const { data, error } = programResponse
     const rows = readArrayPayload(data)
 
     if (error) {
@@ -126,8 +178,15 @@ export const useAdminPaketSekolahService = () => {
       }
     }
 
+    const gelombangByProgramId = groupGelombangByProgramId(readArrayPayload(gelombangResponse.data))
+    const rowsWithGelombang = rows.map((item) => {
+      const programId = normalizeNumber(item.id)
+      const gelombang = gelombangByProgramId.get(programId)
+      return gelombang ? { ...item, gelombang } : item
+    })
+
     return {
-      data: rows.map(mapPackage),
+      data: rowsWithGelombang.map(mapPackage),
       error: null,
       usingFallback: false
     }
@@ -153,6 +212,14 @@ export const useAdminPaketSekolahService = () => {
     }>(adminApiEndpoints.programPaket.create, payload, { showErrorToast: false })
   }
 
+  const updateProgramPaket = (id: string | number, payload: ProgramPaketUpdatePayload) => {
+    return patch<ApiMutationResponse & {
+      data?: { id?: number } | PaketSekolahDto
+      result?: PaketSekolahDto
+      programPaket?: PaketSekolahDto
+    }>(adminApiEndpoints.programPaket.update(id), payload, { showErrorToast: false })
+  }
+
   const deleteProgramPaket = (id: string | number) => {
     return deleteRequest<ApiMutationResponse>(adminApiEndpoints.programPaket.delete(id), { showErrorToast: false })
   }
@@ -167,6 +234,7 @@ export const useAdminPaketSekolahService = () => {
     savePackage,
     updatePackageStatus,
     createProgramPaket,
+    updateProgramPaket,
     deleteProgramPaket,
     deleteProgramPaketGelombang
   }

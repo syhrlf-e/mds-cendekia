@@ -1,14 +1,17 @@
 import { adminApiEndpoints } from '~/services/adminApiEndpoints'
 import type {
+  GelombangCreatePayload,
+  GelombangUpdatePayload,
   TimelineCreatePayload,
   TimelineCreateResponse,
   TimelineDeleteResponse,
   TimelineDetailResponse,
-  TimelineListResponse
+  TimelineListResponse,
+  TimelineUpdatePayload
 } from '~/types/adminTimeline'
 
 export const useAdminTimelineService = () => {
-  const { get, post, delete: deleteRequest } = useApi()
+  const { get, post, patch, delete: deleteRequest } = useApi()
 
   const listTimelines = () => {
     return get<TimelineListResponse>(adminApiEndpoints.timelinePpdb.list, {
@@ -31,6 +34,24 @@ export const useAdminTimelineService = () => {
     })
   }
 
+  const updateTimeline = (id: string | number, payload: TimelineUpdatePayload) => {
+    return patch<TimelineCreateResponse>(adminApiEndpoints.timelinePpdb.update(id), payload, {
+      showErrorToast: false
+    })
+  }
+
+  const createGelombang = (payload: GelombangCreatePayload) => {
+    return post<TimelineCreateResponse>(adminApiEndpoints.gelombang.create, payload, {
+      showErrorToast: false
+    })
+  }
+
+  const updateGelombang = (id: string | number, payload: GelombangUpdatePayload) => {
+    return patch<TimelineCreateResponse>(adminApiEndpoints.gelombang.update(id), payload, {
+      showErrorToast: false
+    })
+  }
+
   const deleteTimeline = (id: string | number) => {
     return deleteRequest<TimelineDeleteResponse>(adminApiEndpoints.timelinePpdb.delete(id), {
       showErrorToast: false
@@ -41,6 +62,9 @@ export const useAdminTimelineService = () => {
     listTimelines,
     getTimelineById,
     createTimeline,
+    updateTimeline,
+    createGelombang,
+    updateGelombang,
     deleteTimeline
   }
 }

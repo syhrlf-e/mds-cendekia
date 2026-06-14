@@ -17,6 +17,19 @@ export type GelombangTimelineDto = {
 }
 
 export type TimelineCreatePayload = {
+  id_gelombang: number
+  tanggal: string
+  deskripsi: string
+}
+
+export type TimelineUpdatePayload = {
+  id_gelombang: number
+  tanggal: string
+  deskripsi: string
+}
+
+export type GelombangCreatePayload = {
+  id_program: number
   order: number
   mulai: string
   selesai: string
@@ -28,6 +41,14 @@ export type TimelineCreatePayload = {
     tanggal: string
     deskripsi: string
   }>
+}
+
+export type GelombangUpdatePayload = {
+  mulai: string
+  selesai: string
+  kuota: number
+  status: boolean
+  tahun_ajaran: string
 }
 
 export type TimelineListResponse = {
@@ -42,6 +63,7 @@ export type TimelineDetailResponse = {
 
 export type TimelineCreateResponse = {
   success?: boolean
+  message?: string
   data?: {
     id?: number
   }
