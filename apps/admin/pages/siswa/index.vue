@@ -4,7 +4,6 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronsUpDown,
-  Eye,
   GraduationCap,
   Search,
   XCircle
@@ -144,6 +143,12 @@ const formatDate = (date: string) => {
   }).format(parsedDate)
 }
 
+const truncateWords = (value: string, maxWords = 4) => {
+  const words = value.trim().split(/\s+/).filter(Boolean)
+  if (words.length <= maxWords) return value
+  return `${words.slice(0, maxWords).join(' ')}...`
+}
+
 const formatAddress = (item: Student) => {
   return [
     item.alamat,
@@ -170,15 +175,15 @@ watch(totalPages, value => {
 <template>
   <div class="flex h-full min-h-0 flex-col">
     <div class="flex min-h-0 flex-1 flex-col gap-2">
-      <section class="shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
-        <div class="grid grid-cols-[minmax(360px,1fr)_220px_140px] gap-4">
+      <section class="admin-students-toolbar shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
+        <div class="admin-students-toolbar-grid grid grid-cols-[minmax(0,1fr)_minmax(170px,220px)_120px] gap-3 2xl:gap-4">
           <div class="relative">
             <Search class="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-text-muted" />
             <input
               v-model="searchQuery"
               type="search"
               placeholder="Cari nama, NIS, NISN, atau asal sekolah..."
-              class="h-11 w-full rounded-xl border border-border-soft bg-bg-base py-2.5 pl-10 pr-4 text-sm leading-none text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
+              class="admin-students-search h-11 w-full rounded-xl border border-border-soft bg-bg-base py-2.5 pl-10 pr-4 text-sm leading-none text-text-primary outline-none transition-colors placeholder:text-text-muted hover:bg-bg-surface focus:border-brand focus:bg-bg-surface focus:ring-[3px] focus:ring-brand/12"
               @input="handleSearch"
             >
           </div>
@@ -200,35 +205,35 @@ watch(totalPages, value => {
         </div>
       </section>
 
-      <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface">
-        <div class="min-h-0 flex-1 overflow-auto">
-          <table class="w-full border-collapse text-left">
+      <section class="admin-students-table-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface">
+        <div class="min-h-0 flex-1 overflow-hidden">
+          <table class="admin-students-table w-full table-fixed border-collapse text-left">
             <thead class="sticky top-0 z-10 bg-bg-base">
               <tr class="h-12 text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                <th class="w-14 px-4">No</th>
-                <th class="w-40 px-4">
+                <th class="admin-students-col-no px-4">No</th>
+                <th class="admin-students-col-nis px-4">
                   <button class="flex items-center gap-2 uppercase" @click="handleSort('nis')">
                     NIS
                     <component :is="getSortIcon('nis')" class="h-3.5 w-3.5" :class="sortKey === 'nis' ? 'text-brand' : 'text-text-muted'" />
                   </button>
                 </th>
-                <th class="min-w-52 px-4">
+                <th class="admin-students-col-name px-4">
                   <button class="flex items-center gap-2 uppercase" @click="handleSort('nama')">
                     Nama Siswa
                     <component :is="getSortIcon('nama')" class="h-3.5 w-3.5" :class="sortKey === 'nama' ? 'text-brand' : 'text-text-muted'" />
                   </button>
                 </th>
-                <th class="w-[136px] px-4">NISN</th>
-                <th class="min-w-48 px-4">Asal Sekolah</th>
-                <th class="w-32 px-4">Program</th>
-                <th class="w-44 px-4">
+                <th class="admin-students-col-nisn px-4">NISN</th>
+                <th class="admin-students-col-school px-4">Asal Sekolah</th>
+                <th class="admin-students-col-program px-4">Program</th>
+                <th class="admin-students-col-date px-4">
                   <button class="flex items-center gap-2 uppercase" @click="handleSort('tanggal')">
                     Tanggal Diterima
                     <component :is="getSortIcon('tanggal')" class="h-3.5 w-3.5" :class="sortKey === 'tanggal' ? 'text-brand' : 'text-text-muted'" />
                   </button>
                 </th>
-                <th class="w-32 px-4">Status</th>
-                <th class="w-36 px-4 text-center">Aksi</th>
+                <th class="admin-students-col-status px-4">Status</th>
+                <th class="admin-students-col-action px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-soft">
@@ -270,16 +275,20 @@ watch(totalPages, value => {
               <tr
                 v-for="(item, index) in isLoading || loadError ? [] : paginatedData"
                 :key="item.id"
-                class="h-[60px] text-sm text-text-primary transition-colors hover:bg-bg-base"
+                class="admin-students-row h-[60px] text-sm text-text-primary transition-colors hover:bg-bg-base"
               >
                 <td class="px-4 text-text-secondary">{{ paginationStart + index }}</td>
                 <td class="px-4 text-text-primary">{{ item.nis }}</td>
                 <td class="px-4">
-                  <p class="text-text-primary">{{ item.nama }}</p>
+                  <p class="truncate text-text-primary" :title="item.nama">{{ truncateWords(item.nama, 4) }}</p>
                 </td>
                 <td class="px-4 text-text-primary">{{ item.nisn || '-' }}</td>
-                <td class="px-4 text-text-secondary">{{ item.sekolah || '-' }}</td>
-                <td class="px-4 text-text-primary">{{ item.program }}</td>
+                <td class="px-4 text-text-secondary">
+                  <p class="truncate" :title="item.sekolah || '-'">{{ item.sekolah ? truncateWords(item.sekolah, 4) : '-' }}</p>
+                </td>
+                <td class="px-4 text-text-primary">
+                  <p class="truncate" :title="item.program">{{ item.program }}</p>
+                </td>
                 <td class="px-4 text-text-secondary">{{ formatDate(item.tanggalDiterima) }}</td>
                 <td class="px-4">
                   <AppBadge variant="success">
@@ -290,10 +299,9 @@ watch(totalPages, value => {
                 <td class="px-4 text-center">
                   <button
                     type="button"
-                    class="inline-flex h-9 items-center gap-2 rounded-xl border border-border-soft bg-bg-base px-3 text-sm font-normal text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
+                    class="admin-students-action-button inline-flex h-9 items-center gap-2 rounded-xl border border-border-soft bg-bg-base px-3 text-sm font-normal text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
                     @click="openDetail(item)"
                   >
-                    <Eye class="h-4 w-4" />
                     Detail
                   </button>
                 </td>
@@ -550,3 +558,134 @@ watch(totalPages, value => {
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+.admin-students-col-no {
+  width: 5%;
+}
+
+.admin-students-col-nis {
+  width: 10%;
+}
+
+.admin-students-col-name {
+  width: 17%;
+}
+
+.admin-students-col-nisn {
+  width: 10%;
+}
+
+.admin-students-col-school {
+  width: 15%;
+}
+
+.admin-students-col-program {
+  width: 9%;
+}
+
+.admin-students-col-date {
+  width: 13%;
+}
+
+.admin-students-col-status {
+  width: 12%;
+}
+
+.admin-students-col-action {
+  width: 9%;
+}
+
+.admin-students-table th,
+.admin-students-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1439px) {
+  .admin-students-toolbar {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .admin-students-toolbar-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 190px) 112px;
+    gap: 10px;
+  }
+
+  .admin-students-search {
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .admin-students-table-card {
+    border-radius: 14px;
+  }
+
+  .admin-students-table th,
+  .admin-students-table td {
+    padding-inline: 12px;
+  }
+
+  .admin-students-table thead tr {
+    height: 44px;
+    font-size: 11px;
+  }
+
+  .admin-students-row {
+    height: 54px;
+    font-size: 13px;
+  }
+
+  .admin-students-action-button {
+    min-height: 32px;
+    height: 32px;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-students-toolbar {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .admin-students-toolbar-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(145px, 180px) 108px;
+    gap: 8px;
+  }
+
+  .admin-students-search {
+    height: 38px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .admin-students-table-card {
+    border-radius: 12px;
+  }
+
+  .admin-students-table th,
+  .admin-students-table td {
+    padding-inline: 10px;
+  }
+
+  .admin-students-table thead tr {
+    height: 40px;
+  }
+
+  .admin-students-row {
+    height: 48px;
+    font-size: 12px;
+  }
+
+  .admin-students-action-button {
+    min-height: 30px;
+    height: 30px;
+    padding-inline: 9px;
+    border-radius: 10px;
+  }
+}
+</style>

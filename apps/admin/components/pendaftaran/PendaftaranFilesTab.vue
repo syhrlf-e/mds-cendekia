@@ -22,9 +22,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="overflow-hidden rounded-2xl border border-border bg-bg-surface">
-      <div class="flex items-center justify-between gap-4 border-b border-border bg-bg-base px-6 py-3">
+  <div class="admin-registration-files space-y-4">
+    <div class="admin-registration-files-card overflow-hidden rounded-2xl border border-border bg-bg-surface">
+      <div class="admin-registration-files-header flex items-center justify-between gap-4 border-b border-border bg-bg-base px-6 py-3">
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">
           Status saat ini
         </h3>
@@ -36,7 +36,7 @@ const emit = defineEmits<{
         </AppBadge>
       </div>
 
-      <div class="flex items-center justify-between gap-6 border-b border-border-soft px-6 py-4">
+      <div class="admin-registration-files-actions flex items-center justify-between gap-6 border-b border-border-soft px-6 py-4">
         <div>
           <p class="text-sm font-medium text-text-primary">Validasi paket berkas</p>
         </div>
@@ -89,10 +89,10 @@ const emit = defineEmits<{
         <div
           v-for="file in files"
           :key="file.id"
-          class="group flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-bg-base"
+          class="admin-registration-file-row group flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-bg-base"
         >
           <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+            class="admin-registration-file-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
             :class="file.url ? 'bg-primary-50' : 'bg-bg-base'"
           >
             <FileText class="h-5 w-5" :class="file.url ? 'text-brand' : 'text-text-muted'" />
@@ -127,3 +127,51 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-registration-files-card {
+    border-radius: 14px;
+  }
+
+  .admin-registration-files-actions {
+    gap: 18px;
+    padding: 14px 20px;
+  }
+
+  .admin-registration-file-row {
+    gap: 14px;
+    padding: 12px 20px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-registration-files {
+    row-gap: 12px;
+  }
+
+  .admin-registration-files-card {
+    border-radius: 12px;
+  }
+
+  .admin-registration-files-header {
+    padding: 10px 18px;
+  }
+
+  .admin-registration-files-actions {
+    gap: 14px;
+    padding: 12px 18px;
+  }
+
+  .admin-registration-file-row {
+    gap: 12px;
+    padding: 10px 18px;
+  }
+
+  .admin-registration-file-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+}
+</style>

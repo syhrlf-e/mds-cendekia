@@ -20,7 +20,7 @@ const emit = defineEmits<{
 
 <template>
   <section class="shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
-    <div class="grid grid-cols-[minmax(360px,1fr)_220px_140px] gap-4">
+    <div class="grid grid-cols-[minmax(0,1fr)_minmax(170px,220px)_120px] gap-3 2xl:gap-4">
       <div class="relative">
         <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-text-muted" />
         <input

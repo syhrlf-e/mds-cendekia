@@ -9,7 +9,7 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Program Tersedia"
-    class="h-[236px]"
+    class="admin-dashboard-compact-panel h-[236px]"
   >
     <div class="space-y-3 px-1 pt-3">
       <div
@@ -30,3 +30,11 @@ defineProps<{
     </div>
   </DashboardPanel>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-dashboard-compact-panel {
+    height: 204px;
+  }
+}
+</style>

@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Berita Terbaru"
-    class="h-[236px] overflow-hidden"
+    class="admin-dashboard-compact-panel h-[236px] overflow-hidden"
   >
     <div class="space-y-3 px-2 pt-3">
       <div
@@ -40,3 +40,11 @@ defineProps<{
     </div>
   </DashboardPanel>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-dashboard-compact-panel {
+    height: 204px;
+  }
+}
+</style>

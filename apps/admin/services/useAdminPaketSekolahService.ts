@@ -139,24 +139,7 @@ export const useAdminPaketSekolahService = () => {
   const { get, post, put, patch, delete: deleteRequest } = useApi()
 
   const listPackages = async () => {
-    const { data, error } = await get<any>(adminApiEndpoints.paketSekolah.list, {
-      showErrorToast: false
-    })
-    const rows = readArrayPayload(data)
-
-    if (error) {
-      return {
-        data: [],
-        error,
-        usingFallback: false
-      }
-    }
-
-    return {
-      data: rows.map(mapPackage),
-      error: null,
-      usingFallback: false
-    }
+    return listProgramPaket()
   }
 
   const listProgramPaket = async () => {

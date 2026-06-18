@@ -18,7 +18,7 @@ const emit = defineEmits<{
 
 <template>
   <footer
-    class="shrink-0 border-t-2 px-8 py-4 transition-colors"
+    class="admin-registration-detail-footer shrink-0 border-t-2 px-8 py-4 transition-colors"
     :class="{
       'border-border bg-bg-surface': status === 'pending' && !isBerkasFinal && !isBerkasRejected,
       'border-error/25 bg-status-rejected-bg': status === 'pending' && isBerkasRejected,
@@ -26,8 +26,8 @@ const emit = defineEmits<{
       'border-border bg-bg-base': status !== 'pending'
     }"
   >
-    <div class="mx-auto flex max-w-4xl items-center justify-between gap-6">
-      <div>
+    <div class="admin-registration-detail-footer-inner mx-auto flex max-w-4xl items-center justify-between gap-6">
+      <div class="admin-registration-detail-footer-copy">
         <template v-if="status !== 'pending'">
           <p class="text-sm font-semibold text-text-primary">
             Pendaftaran sudah {{ status === 'approved' ? 'diterima ✓' : 'ditolak ✕' }}
@@ -65,7 +65,7 @@ const emit = defineEmits<{
         </template>
       </div>
 
-      <div class="flex shrink-0 items-center gap-3">
+      <div class="admin-registration-detail-footer-actions flex shrink-0 items-center gap-3">
         <template v-if="status === 'pending' && isBerkasVerified">
           <AppButton variant="ghost" @click="emit('close')">Tutup</AppButton>
           <AppButton variant="danger" @click="emit('reject')">Tolak Pendaftar</AppButton>
@@ -82,3 +82,37 @@ const emit = defineEmits<{
     </div>
   </footer>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-registration-detail-footer {
+    padding: 14px 24px;
+  }
+
+  .admin-registration-detail-footer-inner {
+    gap: 20px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-registration-detail-footer {
+    padding: 12px 24px;
+  }
+
+  .admin-registration-detail-footer-inner {
+    gap: 16px;
+  }
+
+  .admin-registration-detail-footer-copy p:first-child {
+    font-size: 13px;
+  }
+
+  .admin-registration-detail-footer-copy p + p {
+    font-size: 11px;
+  }
+
+  .admin-registration-detail-footer-actions {
+    gap: 8px;
+  }
+}
+</style>

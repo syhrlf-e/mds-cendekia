@@ -25,11 +25,11 @@ const closeMenu = () => {
 </script>
 
 <template>
-  <article class="group flex h-[260px] w-full flex-col rounded-[27px] border border-border-soft bg-bg-surface p-7 shadow-sm transition-all duration-300 hover:border-brand/20 hover:shadow-md">
+  <article class="admin-program-card group flex h-[260px] w-full flex-col rounded-[27px] border border-border-soft bg-bg-surface p-7 shadow-sm transition-all duration-300 hover:border-brand/20 hover:shadow-md">
     <div class="min-h-0">
       <div class="flex items-start justify-between gap-4">
         <div class="flex min-w-0 flex-1 items-center gap-2">
-          <h2 class="truncate font-heading text-[22px] font-semibold leading-tight text-text-primary">
+          <h2 class="admin-program-card-title truncate font-heading text-[22px] font-semibold leading-tight text-text-primary">
             {{ item.nama || 'Program Paket C' }}
           </h2>
           <div v-if="item.status === 'aktif'" class="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-success"></div>
@@ -77,7 +77,7 @@ const closeMenu = () => {
           </Transition>
         </div>
       </div>
-      <p class="mt-4 line-clamp-5 max-w-[452px] font-body text-sm font-normal leading-relaxed text-text-secondary">
+      <p class="admin-program-card-description mt-4 line-clamp-3 max-w-[452px] font-body text-sm font-normal leading-relaxed text-text-secondary">
         {{ item.deskripsi || 'Program pendidikan kesetaraan jenjang SMA/SLTA sederajat' }}
       </p>
     </div>
@@ -85,7 +85,7 @@ const closeMenu = () => {
     <div class="mt-auto flex items-center justify-end">
       <button
         type="button"
-        class="inline-flex h-[38px] items-center justify-center rounded-full border border-brand px-5 font-heading text-[13px] font-semibold leading-none text-brand transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-brand/20"
+        class="admin-program-card-button inline-flex h-[38px] items-center justify-center rounded-full border border-brand px-5 font-heading text-[13px] font-semibold leading-none text-brand transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-brand/20"
         @click="$emit('manage-registration', item)"
       >
         Kelola Pendaftaran
@@ -93,3 +93,48 @@ const closeMenu = () => {
     </div>
   </article>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-program-card {
+    height: 232px;
+    border-radius: 22px;
+    padding: 22px;
+  }
+
+  .admin-program-card-title {
+    font-size: 19px;
+  }
+
+  .admin-program-card-description {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-program-card {
+    height: 212px;
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .admin-program-card-title {
+    font-size: 18px;
+  }
+
+  .admin-program-card-description {
+    -webkit-line-clamp: 3;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .admin-program-card-button {
+    height: 34px;
+    padding-inline: 16px;
+    font-size: 12px;
+  }
+}
+</style>

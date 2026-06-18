@@ -40,8 +40,8 @@ const triggerFileInput = () => {
         class="fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-sm"
         @click.self="!saving && $emit('close')"
       >
-        <aside class="relative z-[40] ml-auto flex h-full w-[min(680px,calc(100%-320px))] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl">
-          <header class="shrink-0 border-b border-border-soft px-8 py-6">
+        <aside class="admin-gallery-drawer relative z-[40] ml-auto flex h-full w-[min(680px,calc(100%-280px))] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl 2xl:w-[680px]">
+          <header class="admin-gallery-drawer-header shrink-0 border-b border-border-soft px-8 py-6">
             <div class="flex items-start justify-between gap-5">
               <div class="min-w-0">
                 <h2 class="truncate font-heading text-xl font-bold leading-tight text-text-primary">
@@ -65,7 +65,7 @@ const triggerFileInput = () => {
           </header>
 
           <form
-            class="min-h-0 grow overflow-y-auto px-8 py-7"
+            class="admin-gallery-drawer-body min-h-0 grow overflow-y-auto px-8 py-7"
             @submit.prevent="$emit('submit')"
           >
             <div class="space-y-6">
@@ -81,7 +81,7 @@ const triggerFileInput = () => {
                   <img
                     :src="imagePreview"
                     alt="Preview galeri"
-                    class="h-80 w-full object-cover"
+                    class="admin-gallery-preview h-80 w-full object-cover"
                   >
                   <div class="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
@@ -108,7 +108,7 @@ const triggerFileInput = () => {
                 <button
                   v-else
                   type="button"
-                  class="flex min-h-72 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-soft bg-bg-surface p-8 text-center transition-colors hover:border-brand hover:bg-primary-50/40 disabled:cursor-not-allowed disabled:opacity-60"
+                  class="admin-gallery-upload flex min-h-72 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-soft bg-bg-surface p-8 text-center transition-colors hover:border-brand hover:bg-primary-50/40 disabled:cursor-not-allowed disabled:opacity-60"
                   :disabled="saving"
                   @click="triggerFileInput"
                 >
@@ -148,7 +148,7 @@ const triggerFileInput = () => {
             </div>
           </form>
 
-          <footer class="shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
+          <footer class="admin-gallery-drawer-footer shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
             <div class="flex justify-end gap-3">
               <AppButton
                 variant="secondary"
@@ -172,3 +172,38 @@ const triggerFileInput = () => {
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-gallery-drawer-header,
+  .admin-gallery-drawer-body,
+  .admin-gallery-drawer-footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .admin-gallery-drawer-header {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .admin-gallery-drawer-body {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .admin-gallery-drawer-footer {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .admin-gallery-preview {
+    height: 240px;
+  }
+
+  .admin-gallery-upload {
+    min-height: 220px;
+    padding: 24px;
+  }
+}
+</style>

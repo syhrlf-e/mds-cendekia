@@ -149,8 +149,8 @@ watch(() => props.refreshKey, () => {
 </script>
 
 <template>
-  <aside class="mb-[4px] flex h-fit w-full flex-col rounded-[27px] bg-white p-[27px] shadow-sm xl:w-[561px]">
-    <h3 class="mb-[16px] font-heading text-[20px] font-semibold text-[#3b3b3b]">Pendaftaran Terkini</h3>
+  <aside class="admin-program-recent-panel mb-[4px] flex h-fit w-full flex-col rounded-[27px] bg-white p-[27px] shadow-sm">
+    <h3 class="admin-program-recent-title mb-[16px] font-heading text-[20px] font-semibold text-[#3b3b3b]">Pendaftaran Terkini</h3>
 
     <div v-if="isLoading" class="flex min-h-[220px] items-center justify-center rounded-[24px] border border-border-soft bg-white">
       <div class="flex items-center gap-3 font-heading text-sm font-medium text-text-secondary">
@@ -169,27 +169,109 @@ watch(() => props.refreshKey, () => {
       </p>
     </div>
 
-    <div v-else class="flex flex-col gap-[16px]">
+    <div v-else class="admin-program-recent-list flex flex-col gap-[16px]">
       <div
         v-for="program in programs"
         :key="program.id"
-        class="flex h-fit w-full max-w-[514px] flex-col rounded-[24px] border border-border-soft bg-white p-[16px] shadow-sm"
+        class="admin-program-recent-card flex h-fit w-full flex-col rounded-[24px] border border-border-soft bg-white p-[16px] shadow-sm"
       >
-        <div class="mb-5 flex items-center justify-between gap-4">
-          <h4 class="truncate font-heading text-[16px] font-semibold text-[#3b3b3b]">{{ program.nama }}</h4>
-          <span class="shrink-0 font-heading text-[14px] font-medium text-[#3b3b3b]">{{ program.gelombang }}</span>
+        <div class="admin-program-recent-head mb-5 flex items-center justify-between gap-4">
+          <h4 class="admin-program-recent-name truncate font-heading text-[16px] font-semibold text-[#3b3b3b]">{{ program.nama }}</h4>
+          <span class="admin-program-recent-wave shrink-0 font-heading text-[14px] font-medium text-[#3b3b3b]">{{ program.gelombang }}</span>
         </div>
 
         <div class="flex flex-col gap-[4px]">
-          <div v-for="step in program.timeline" :key="step.id" class="flex items-center gap-4">
-            <div class="flex h-[42px] w-[42px] shrink-0 flex-col items-center justify-center rounded-[10px] bg-[#fdf2f2] text-brand">
-              <span class="text-[16px] font-medium leading-none">{{ step.day }}</span>
-              <span class="mt-0.5 text-[12px] font-normal leading-none">{{ step.month }}</span>
+          <div v-for="step in program.timeline" :key="step.id" class="admin-program-recent-step flex items-center gap-4">
+            <div class="admin-program-recent-date flex h-[42px] w-[42px] shrink-0 flex-col items-center justify-center rounded-[10px] bg-[#fdf2f2] text-brand">
+              <span class="admin-program-recent-day text-[16px] font-medium leading-none">{{ step.day }}</span>
+              <span class="admin-program-recent-month mt-0.5 text-[12px] font-normal leading-none">{{ step.month }}</span>
             </div>
-            <span class="line-clamp-2 text-[16px] font-normal leading-snug text-[#3b3b3b]">{{ step.text }}</span>
+            <span class="admin-program-recent-text line-clamp-2 text-[16px] font-normal leading-snug text-[#3b3b3b]">{{ step.text }}</span>
           </div>
         </div>
       </div>
     </div>
   </aside>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-program-recent-panel {
+    border-radius: 22px;
+    padding: 22px;
+  }
+
+  .admin-program-recent-title {
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+
+  .admin-program-recent-list {
+    gap: 14px;
+  }
+
+  .admin-program-recent-card {
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .admin-program-recent-head {
+    margin-bottom: 14px;
+  }
+
+  .admin-program-recent-name,
+  .admin-program-recent-text {
+    font-size: 14px;
+  }
+
+  .admin-program-recent-wave {
+    font-size: 12px;
+  }
+
+  .admin-program-recent-step {
+    gap: 12px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-program-recent-panel {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .admin-program-recent-title {
+    margin-bottom: 12px;
+    font-size: 17px;
+  }
+
+  .admin-program-recent-list {
+    gap: 12px;
+  }
+
+  .admin-program-recent-card {
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .admin-program-recent-head {
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+
+  .admin-program-recent-date {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+  }
+
+  .admin-program-recent-day,
+  .admin-program-recent-text {
+    font-size: 13px;
+  }
+
+  .admin-program-recent-month,
+  .admin-program-recent-wave {
+    font-size: 11px;
+  }
+}
+</style>

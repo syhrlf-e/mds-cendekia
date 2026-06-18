@@ -87,8 +87,8 @@ watch(
         class="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
         @click.self="closeDrawer"
       >
-        <aside class="relative z-[40] ml-auto flex h-full w-[680px] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl">
-          <header class="shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
+        <aside class="admin-drawer relative z-[40] ml-auto flex h-full w-[min(680px,calc(100%-280px))] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl 2xl:w-[680px]">
+          <header class="admin-drawer-header shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
             <div class="flex items-center justify-between gap-6">
               <div class="flex items-center gap-4">
                 <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-brand">
@@ -117,11 +117,11 @@ watch(
           </header>
 
           <form class="flex min-h-0 grow flex-col bg-bg-surface" @submit.prevent="submitForm">
-            <main class="min-h-0 grow overflow-y-auto px-8 py-8">
-              <div class="mx-auto w-full space-y-8">
+            <main class="admin-drawer-body min-h-0 grow overflow-y-auto px-8 py-8">
+              <div class="admin-drawer-stack mx-auto w-full space-y-8">
                 <!-- Card Informasi Utama -->
-                <section class="rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm">
-                  <div class="mb-6">
+                <section class="admin-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm">
+                  <div class="admin-drawer-section-heading mb-6">
                     <h3 class="font-heading text-lg font-semibold leading-none text-text-primary">
                       Informasi Utama
                     </h3>
@@ -130,7 +130,7 @@ watch(
                     </p>
                   </div>
 
-                  <div class="flex flex-col gap-6">
+                  <div class="admin-drawer-field-stack flex flex-col gap-6">
                     <AppInput
                       v-model="form.nama"
                       label="Nama Program"
@@ -155,7 +155,7 @@ watch(
                 <!-- Card Pengaturan -->
                 <section
                   v-if="isEditMode"
-                  class="rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm"
+                  class="admin-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm"
                 >
                   <div class="flex items-center justify-between gap-4">
                     <div class="min-w-0 pr-4">
@@ -186,7 +186,7 @@ watch(
               </div>
             </main>
 
-            <footer class="shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
+            <footer class="admin-drawer-footer shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
               <div class="flex justify-end gap-3">
                 <AppButton
                   variant="ghost"
@@ -210,3 +210,47 @@ watch(
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-drawer-header,
+  .admin-drawer-body,
+  .admin-drawer-footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .admin-drawer-header {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .admin-drawer-body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .admin-drawer-footer {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .admin-drawer-stack > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(24px * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(24px * var(--tw-space-y-reverse));
+  }
+
+  .admin-drawer-card {
+    padding: 20px;
+  }
+
+  .admin-drawer-section-heading {
+    margin-bottom: 18px;
+  }
+
+  .admin-drawer-field-stack {
+    gap: 18px;
+  }
+}
+</style>

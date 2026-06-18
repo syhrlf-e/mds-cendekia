@@ -270,8 +270,8 @@ watch(() => props.item, (item) => {
         class="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
         @click.self="closeDrawer"
       >
-        <aside class="relative z-[40] ml-auto flex h-full w-[680px] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl">
-          <header class="shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
+        <aside class="admin-drawer relative z-[40] ml-auto flex h-full w-[min(680px,calc(100%-280px))] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl 2xl:w-[680px]">
+          <header class="admin-drawer-header shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
             <div class="flex items-start justify-between gap-6">
               <div class="min-w-0 grow">
                 <p
@@ -303,10 +303,10 @@ watch(() => props.item, (item) => {
             </div>
           </header>
 
-          <main class="min-h-0 grow overflow-y-auto px-8 py-8">
-            <div class="mx-auto w-full space-y-8">
+          <main class="admin-drawer-body min-h-0 grow overflow-y-auto px-8 py-8">
+            <div class="admin-drawer-stack mx-auto w-full space-y-8">
               <!-- Card Informasi Program -->
-              <section class="rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm">
+              <section class="admin-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm">
                 <div class="flex items-start justify-between gap-6">
                   <div class="min-w-0">
                     <h3 class="font-heading text-lg font-semibold leading-none text-text-primary">
@@ -331,7 +331,7 @@ watch(() => props.item, (item) => {
               <!-- Card Pendaftaran Program -->
               <section
                 v-if="mode !== 'detail'"
-                class="rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm"
+                class="admin-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6 shadow-sm"
               >
                 <div class="flex items-center justify-between gap-5">
                   <div class="min-w-0 grow">
@@ -426,7 +426,7 @@ watch(() => props.item, (item) => {
             </div>
           </main>
 
-          <footer class="shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
+          <footer class="admin-drawer-footer shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
             <div class="flex justify-end gap-3">
               <AppButton
                 variant="ghost"
@@ -483,3 +483,39 @@ watch(() => props.item, (item) => {
     </template>
   </AppModal>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-drawer-header,
+  .admin-drawer-body,
+  .admin-drawer-footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .admin-drawer-header {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .admin-drawer-body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .admin-drawer-footer {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .admin-drawer-stack > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(24px * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(24px * var(--tw-space-y-reverse));
+  }
+
+  .admin-drawer-card {
+    padding: 20px;
+  }
+}
+</style>

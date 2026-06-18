@@ -29,7 +29,7 @@ const emit = defineEmits<{
     >
       <div
         v-if="item && modelValue"
-        class="fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-[14px]"
+        class="admin-registration-detail-overlay fixed inset-0 z-50 bg-text-primary/20 backdrop-blur-[14px]"
         style="--detail-drawer-width: min(1080px, calc(100% - 320px));"
         @click.self="emit('close')"
       >
@@ -44,7 +44,7 @@ const emit = defineEmits<{
           />
 
           <main class="min-h-0 grow overflow-y-auto">
-            <div class="mx-auto w-full max-w-5xl px-8 py-6">
+            <div class="admin-registration-detail-content mx-auto w-full max-w-5xl px-8 py-6">
               <slot />
             </div>
           </main>
@@ -57,3 +57,23 @@ const emit = defineEmits<{
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-registration-detail-overlay {
+    --detail-drawer-width: min(960px, calc(100% - 280px)) !important;
+  }
+}
+
+@media (max-width: 1279px) {
+  .admin-registration-detail-overlay {
+    --detail-drawer-width: min(900px, calc(100% - 264px)) !important;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-registration-detail-content {
+    padding: 20px 24px;
+  }
+}
+</style>

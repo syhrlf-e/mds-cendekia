@@ -137,9 +137,9 @@ onBeforeUnmount(() => {
   >
     <aside
       v-if="modelValue && file"
-      class="absolute inset-y-0 right-[var(--detail-drawer-width)] z-[30] flex w-[min(760px,calc(100%-var(--detail-drawer-width)))] flex-col border-r border-border bg-bg-surface"
+      class="admin-registration-file-preview absolute inset-y-0 right-[var(--detail-drawer-width)] z-[30] flex w-[min(760px,calc(100%-var(--detail-drawer-width)))] flex-col border-r border-border bg-bg-surface"
     >
-      <header class="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-bg-surface px-5">
+      <header class="admin-registration-file-preview-header flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-bg-surface px-5">
         <div class="min-w-0">
           <p class="truncate text-sm font-semibold text-text-primary">{{ file.name }}</p>
           <p class="text-xs text-text-secondary">
@@ -166,7 +166,7 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <div class="min-h-0 flex-1 overflow-auto bg-bg-parchment p-5">
+      <div class="admin-registration-file-preview-body min-h-0 flex-1 overflow-auto bg-bg-parchment p-5">
         <div class="flex min-h-full items-start justify-center">
           <img
             v-if="previewFileType === 'image'"
@@ -193,7 +193,7 @@ onBeforeUnmount(() => {
             <div
               v-show="!isPdfRendering && !pdfRenderError"
               ref="pdfPagesRef"
-              class="flex w-full flex-col items-center gap-5"
+              class="admin-registration-file-preview-pages flex w-full flex-col items-center gap-5"
             />
           </div>
         </div>
@@ -201,3 +201,34 @@ onBeforeUnmount(() => {
     </aside>
   </Transition>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-registration-file-preview {
+    width: min(620px, calc(100% - var(--detail-drawer-width)));
+  }
+
+  .admin-registration-file-preview-header {
+    height: 58px;
+    padding-inline: 16px;
+  }
+
+  .admin-registration-file-preview-body {
+    padding: 16px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-registration-file-preview-header {
+    height: 54px;
+  }
+
+  .admin-registration-file-preview-body {
+    padding: 14px;
+  }
+
+  .admin-registration-file-preview-pages {
+    gap: 14px;
+  }
+}
+</style>

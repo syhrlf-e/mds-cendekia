@@ -9,7 +9,7 @@ defineProps<{
 <template>
   <DashboardPanel
     title="Gelombang Berjalan"
-    class="h-[236px]"
+    class="admin-dashboard-compact-panel h-[236px]"
   >
     <div v-if="waves.length" class="space-y-4 px-2 pt-4">
       <div
@@ -29,3 +29,11 @@ defineProps<{
     <p v-else class="px-2 pt-5 text-[13px] text-text-muted">Belum ada gelombang berjalan.</p>
   </DashboardPanel>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-dashboard-compact-panel {
+    height: 204px;
+  }
+}
+</style>

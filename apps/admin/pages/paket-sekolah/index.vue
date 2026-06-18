@@ -244,19 +244,19 @@ onMounted(() => {
 <template>
   <div class="flex h-full min-h-0 flex-col">
     <!-- Header / Action Section -->
-    <div class="mb-6 flex justify-end">
+    <div class="admin-program-action mb-4 flex justify-end 2xl:mb-6">
       <AppButton variant="primary" @click="openCreateDrawer">
         Tambah Program
       </AppButton>
     </div>
 
     <!-- Main Content Split Layout -->
-    <div class="flex min-h-0 flex-col gap-4 xl:flex-row">
+    <div class="admin-program-layout flex min-h-0 flex-1 gap-4">
       <!-- Left Side: Cards -->
       <section class="flex min-w-0 flex-1 flex-col">
         <div
           v-if="isLoadingPackages"
-          class="flex min-h-[420px] items-center justify-center rounded-[27px] border border-border-soft bg-bg-surface shadow-sm"
+          class="admin-program-empty flex min-h-[420px] items-center justify-center rounded-[27px] border border-border-soft bg-bg-surface shadow-sm"
         >
           <div class="flex items-center gap-3 font-heading text-sm font-medium text-text-secondary">
             <span class="dot-wave" aria-hidden="true">
@@ -270,7 +270,7 @@ onMounted(() => {
 
         <div
           v-else-if="visiblePackages.length === 0"
-          class="flex min-h-[420px] items-center justify-center rounded-[27px] border border-border-soft bg-bg-surface shadow-sm"
+          class="admin-program-empty flex min-h-[420px] items-center justify-center rounded-[27px] border border-border-soft bg-bg-surface shadow-sm"
         >
           <AppEmptyState
             title="Belum ada program paket"
@@ -290,7 +290,7 @@ onMounted(() => {
 
         <div
           v-else
-          class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4"
+          class="admin-program-card-grid grid grid-cols-3 gap-4"
         >
           <ProgramPackageCard
             v-for="item in visiblePackages"
@@ -305,7 +305,7 @@ onMounted(() => {
       </section>
 
       <!-- Right Side: Recent Timeline -->
-      <section class="w-full shrink-0 xl:w-auto">
+      <section class="admin-program-recent w-[500px] shrink-0">
         <ProgramPackageRecent :refresh-key="recentRefreshKey" />
       </section>
     </div>
@@ -341,3 +341,47 @@ onMounted(() => {
     </AppModal>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-program-layout {
+    gap: 14px;
+  }
+
+  .admin-program-recent {
+    width: 380px;
+  }
+
+  .admin-program-card-grid {
+    gap: 14px;
+  }
+
+  .admin-program-empty {
+    min-height: 360px;
+    border-radius: 22px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-program-action {
+    margin-bottom: 12px;
+  }
+
+  .admin-program-layout {
+    gap: 12px;
+  }
+
+  .admin-program-recent {
+    width: 340px;
+  }
+
+  .admin-program-card-grid {
+    gap: 12px;
+  }
+
+  .admin-program-empty {
+    min-height: 300px;
+    border-radius: 20px;
+  }
+}
+</style>

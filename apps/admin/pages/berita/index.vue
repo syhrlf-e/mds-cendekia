@@ -121,6 +121,12 @@ const parseTags = (tags: string) => tags
   .map(tag => tag.trim())
   .filter(Boolean)
 
+const truncateWords = (value: string, maxWords = 4) => {
+  const words = value.trim().split(/\s+/).filter(Boolean)
+  if (words.length <= maxWords) return value
+  return `${words.slice(0, maxWords).join(' ')}...`
+}
+
 const normalizeTags = (tags: string) => parseTags(tags).join(', ')
 
 const formTagItems = computed(() => parseTags(form.value.tags))
@@ -388,7 +394,7 @@ onBeforeUnmount(() => {
   <div class="relative flex h-full min-h-0 flex-col overflow-hidden">
     <div class="flex min-h-0 flex-1 flex-col gap-2">
       <section class="shrink-0 rounded-2xl border border-border bg-bg-surface p-4">
-        <div class="grid grid-cols-[minmax(360px,1fr)_170px_auto_auto] items-center gap-4">
+        <div class="grid grid-cols-[minmax(0,1fr)_160px_auto_auto] items-center gap-3 2xl:grid-cols-[minmax(360px,1fr)_170px_auto_auto] 2xl:gap-4">
           <div class="relative">
             <Search class="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-text-muted" />
             <input
@@ -421,17 +427,17 @@ onBeforeUnmount(() => {
 
       <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface">
         <div class="min-h-0 flex-1 overflow-auto">
-          <UiTable>
+          <UiTable class="admin-news-table table-fixed">
             <UiTableHeader>
               <UiTableRow class="hover:bg-transparent">
-                <UiTableHead class="w-14">No</UiTableHead>
-                <UiTableHead class="min-w-80">Judul</UiTableHead>
-                <UiTableHead class="w-44">Kategori</UiTableHead>
-                <UiTableHead class="min-w-56">Tags</UiTableHead>
-                <UiTableHead class="w-40">Tanggal</UiTableHead>
-                <UiTableHead class="w-36">Status</UiTableHead>
-                <UiTableHead class="w-28 text-center">Views</UiTableHead>
-                <UiTableHead class="w-24 text-left"></UiTableHead>
+                <UiTableHead class="admin-news-col-no">No</UiTableHead>
+                <UiTableHead class="admin-news-col-title">Judul</UiTableHead>
+                <UiTableHead class="admin-news-col-category">Kategori</UiTableHead>
+                <UiTableHead class="admin-news-col-tags">Tags</UiTableHead>
+                <UiTableHead class="admin-news-col-date">Tanggal</UiTableHead>
+                <UiTableHead class="admin-news-col-status">Status</UiTableHead>
+                <UiTableHead class="admin-news-col-views text-center">Views</UiTableHead>
+                <UiTableHead class="admin-news-col-action text-left"></UiTableHead>
               </UiTableRow>
             </UiTableHeader>
             <UiTableBody>
@@ -476,12 +482,12 @@ onBeforeUnmount(() => {
               <UiTableRow
                 v-for="(berita, index) in loading || error ? [] : pagedItems"
                 :key="berita.id"
-                class="h-[60px] text-text-primary"
+                class="admin-news-row h-[60px] text-text-primary"
               >
-                <UiTableCell class="text-text-secondary">
+                <UiTableCell class="admin-news-col-no text-text-secondary">
                   {{ from + index }}
                 </UiTableCell>
-                <UiTableCell>
+                <UiTableCell class="admin-news-col-title">
                   <div class="flex items-center gap-3">
                     <img
                       :src="berita.image || '/images/placeholder-news.jpg'"
@@ -491,7 +497,7 @@ onBeforeUnmount(() => {
                     >
                     <div class="min-w-0">
                       <p class="truncate text-text-primary">
-                        {{ berita.title }}
+                        {{ truncateWords(berita.title, 4) }}
                       </p>
                       <p class="mt-1 truncate text-xs text-text-secondary">
                         {{ berita.slug }}
@@ -499,13 +505,13 @@ onBeforeUnmount(() => {
                     </div>
                   </div>
                 </UiTableCell>
-                <UiTableCell>
+                <UiTableCell class="admin-news-col-category">
                   <AppBadge :variant="getCategoryVariant(berita.category)">
                     {{ getCategoryLabel(berita.category) }}
                   </AppBadge>
                 </UiTableCell>
-                <UiTableCell>
-                  <div class="flex max-w-56 flex-wrap gap-1.5">
+                <UiTableCell class="admin-news-col-tags">
+                  <div class="admin-news-tags flex max-w-56 flex-wrap gap-1.5">
                     <AppBadge
                       v-for="tag in parseTags(berita.tags).slice(0, 3)"
                       :key="`${berita.id}-${tag}`"
@@ -528,18 +534,18 @@ onBeforeUnmount(() => {
                     </span>
                   </div>
                 </UiTableCell>
-                <UiTableCell class="text-text-secondary">
+                <UiTableCell class="admin-news-col-date text-text-secondary">
                   {{ formatDate(berita.created_at) }}
                 </UiTableCell>
-                <UiTableCell>
+                <UiTableCell class="admin-news-col-status">
                   <AppBadge :variant="berita.published ? 'success' : 'warning'">
                     {{ berita.published ? 'Published' : 'Draft' }}
                   </AppBadge>
                 </UiTableCell>
-                <UiTableCell class="text-center text-text-secondary">
+                <UiTableCell class="admin-news-col-views text-center text-text-secondary">
                   {{ berita.views }}
                 </UiTableCell>
-                <UiTableCell class="text-left">
+                <UiTableCell class="admin-news-col-action text-left">
                   <div class="relative inline-block text-left dropdown-container">
                     <button
                       type="button"
@@ -948,5 +954,81 @@ onBeforeUnmount(() => {
 :global(.admin-berita-drawer-open *::-webkit-scrollbar) {
   width: 0;
   height: 0;
+}
+
+.admin-news-col-no {
+  width: 5%;
+}
+
+.admin-news-col-title {
+  width: 28%;
+}
+
+.admin-news-col-category {
+  width: 12%;
+}
+
+.admin-news-col-tags {
+  width: 18%;
+}
+
+.admin-news-col-date {
+  width: 12%;
+}
+
+.admin-news-col-status {
+  width: 10%;
+}
+
+.admin-news-col-views {
+  width: 7%;
+}
+
+.admin-news-col-action {
+  width: 8%;
+}
+
+.admin-news-tags {
+  max-width: 100%;
+}
+
+@media (max-width: 1439px) {
+  .admin-news-col-no {
+    width: 5%;
+  }
+
+  .admin-news-col-title {
+    width: 26%;
+  }
+
+  .admin-news-col-category {
+    width: 12%;
+  }
+
+  .admin-news-col-tags {
+    width: 18%;
+  }
+
+  .admin-news-col-date {
+    width: 12%;
+  }
+
+  .admin-news-col-status {
+    width: 10%;
+  }
+
+  .admin-news-col-views {
+    width: 7%;
+  }
+
+  .admin-news-col-action {
+    width: 10%;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-news-row {
+    height: 54px;
+  }
 }
 </style>

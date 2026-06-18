@@ -179,7 +179,7 @@ watch(() => route.path, () => {
 
 onMounted(() => {
   isHydrated.value = true
-  desktopMediaQuery = window.matchMedia('(min-width: 1280px)')
+  desktopMediaQuery = window.matchMedia('(min-width: 1024px)')
   desktopMediaQuery.addEventListener('change', handleDesktopViewport)
   handleDesktopViewport(desktopMediaQuery)
 })
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
         leave-active-class="transition duration-150 ease-in"
         leave-to-class="opacity-0"
       >
-        <div v-if="isMobileNavigationOpen" class="fixed inset-0 z-[90] xl:hidden">
+        <div v-if="isMobileNavigationOpen" class="fixed inset-0 z-[90] lg:hidden">
           <button
             type="button"
             class="absolute inset-0 bg-black/45"
@@ -304,8 +304,8 @@ onBeforeUnmount(() => {
       </Transition>
     </Teleport>
 
-    <aside class="z-10 m-4 hidden h-[calc(100%-2rem)] w-75 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-[0_18px_45px_rgba(15,23,42,0.06)] xl:flex">
-      <div class="flex h-20 shrink-0 items-center gap-3 border-b border-border-soft px-6">
+    <aside class="admin-sidebar z-10 m-3 hidden h-[calc(100%-1.5rem)] w-[264px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-bg-surface shadow-[0_18px_45px_rgba(15,23,42,0.06)] lg:flex 2xl:m-4 2xl:h-[calc(100%-2rem)] 2xl:w-75">
+      <div class="admin-sidebar-brand flex h-16 shrink-0 items-center gap-3 border-b border-border-soft px-5 2xl:h-20 2xl:px-6">
         <img
           src="/images/logo-mds-main.png"
           alt="Logo MDS Cendekia"
@@ -318,7 +318,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-6">
+      <nav class="admin-sidebar-nav flex-1 space-y-1.5 overflow-y-auto px-3 py-4 2xl:space-y-2 2xl:px-4 2xl:py-6">
         <template
           v-for="item in menu"
           :key="item.name"
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
           <div v-if="isMenuGroup(item)">
             <button
               type="button"
-              class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+              class="admin-sidebar-item flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm transition-colors duration-200 2xl:px-4 2xl:py-3"
               :class="isGroupActive(item) ? 'font-semibold text-text-primary hover:bg-bg-base' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
               :aria-expanded="expandedMenuGroups[item.key]"
               @click="toggleMenuGroup(item.key)"
@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
                   v-for="child in item.children"
                   :key="child.name"
                   :to="child.path"
-                  class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-colors duration-200"
+                  class="admin-sidebar-subitem flex items-center gap-3 rounded-lg px-3.5 py-2 text-sm transition-colors duration-200 2xl:px-4"
                   :class="isActive(child.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
                   @pointerenter="prefetchAdminMenu(child.path)"
                   @focus="prefetchAdminMenu(child.path)"
@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
           <NuxtLink
             v-else
             :to="item.path"
-            class="relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+            class="admin-sidebar-item relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors duration-200 2xl:px-4 2xl:py-3"
             :class="isActive(item.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
             @pointerenter="prefetchAdminMenu(item.path)"
             @focus="prefetchAdminMenu(item.path)"
@@ -383,10 +383,10 @@ onBeforeUnmount(() => {
         </template>
       </nav>
 
-      <div class="mt-auto shrink-0 border-t border-border-soft bg-bg-surface/80 p-4">
+      <div class="admin-sidebar-footer mt-auto shrink-0 border-t border-border-soft bg-bg-surface/80 p-3 2xl:p-4">
         <NuxtLink
           :to="settingsMenu.path"
-          class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors duration-200"
+          class="admin-sidebar-item flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors duration-200 2xl:px-4 2xl:py-3"
           :class="isActive(settingsMenu.path) ? 'bg-primary-50 font-semibold text-brand' : 'text-text-secondary hover:bg-bg-base hover:text-text-primary'"
           @pointerenter="prefetchAdminMenu(settingsMenu.path)"
           @focus="prefetchAdminMenu(settingsMenu.path)"
@@ -398,19 +398,19 @@ onBeforeUnmount(() => {
     </aside>
 
     <main class="relative flex h-full min-w-0 grow flex-col overflow-hidden bg-gray-100">
-      <header class="relative z-30 flex h-20 shrink-0 items-center px-4 xl:mt-4 xl:px-0 xl:pr-2">
-        <div class="flex h-14 min-w-0 grow items-center justify-between gap-3 rounded-2xl bg-bg-surface px-2 sm:h-16 sm:gap-4 sm:px-4 xl:h-20 xl:px-8">
+      <header class="admin-header relative z-30 flex h-16 shrink-0 items-center px-4 lg:mt-3 lg:px-0 lg:pr-2 2xl:h-20 2xl:mt-4">
+        <div class="admin-header-surface flex h-14 min-w-0 grow items-center justify-between gap-3 rounded-2xl bg-bg-surface px-2 sm:h-16 sm:gap-4 sm:px-4 lg:px-6 2xl:h-20 2xl:px-8">
           <div class="flex min-w-0 grow items-center gap-2 sm:gap-3">
           <button
             type="button"
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-dashboard-text transition-colors hover:bg-bg-base focus:outline-none focus:ring-2 focus:ring-brand/30 xl:hidden"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-dashboard-text transition-colors hover:bg-bg-base focus:outline-none focus:ring-2 focus:ring-brand/30 lg:hidden"
             aria-label="Buka navigasi"
             :aria-expanded="isMobileNavigationOpen"
             @click="isMobileNavigationOpen = true"
           >
             <Menu class="h-5 w-5" />
           </button>
-          <p class="truncate font-heading text-lg font-normal leading-normal text-dashboard-text sm:text-xl xl:text-[26px]">
+          <p class="truncate font-heading text-lg font-normal leading-normal text-dashboard-text sm:text-xl lg:text-[22px] 2xl:text-[26px]">
             {{ activePageTitle }}
           </p>
           </div>
@@ -434,14 +434,14 @@ onBeforeUnmount(() => {
                 {{ isHydrated ? adminInitial : 'A' }}
               </div>
               <p
-                class="hidden max-w-[104px] truncate text-left font-heading text-sm font-medium leading-normal text-dashboard-text xl:block"
-                :class="isAdminMenuOpen ? 'block' : 'hidden xl:block'"
+                class="hidden max-w-[104px] truncate text-left font-heading text-sm font-medium leading-normal text-dashboard-text lg:block"
+                :class="isAdminMenuOpen ? 'block' : 'hidden lg:block'"
               >
                 {{ visibleAdminDisplayName }}
               </p>
               <ChevronDown
                 class="size-4 shrink-0 text-dashboard-text transition-transform duration-200"
-                :class="[isAdminMenuOpen ? 'rotate-180' : '', isAdminMenuOpen ? 'block' : 'hidden xl:block']"
+                :class="[isAdminMenuOpen ? 'rotate-180' : '', isAdminMenuOpen ? 'block' : 'hidden lg:block']"
               />
             </button>
 
@@ -474,7 +474,7 @@ onBeforeUnmount(() => {
       </header>
 
       <div
-        class="min-h-0 grow px-4 pb-4 xl:py-3 xl:pl-0 xl:pr-2"
+        class="admin-content min-h-0 grow px-4 pb-4 lg:py-3 lg:pl-0 lg:pr-2"
         :class="route.path.startsWith('/dashboard') ? 'overflow-hidden' : 'overflow-auto'"
       >
         <slot />
@@ -512,3 +512,49 @@ onBeforeUnmount(() => {
     </AppModal>
   </div>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-sidebar {
+    margin: 8px;
+    height: calc(100% - 16px);
+  }
+
+  .admin-sidebar-brand {
+    height: 56px;
+  }
+
+  .admin-sidebar-nav {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .admin-sidebar-item {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .admin-sidebar-subitem {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .admin-sidebar-footer {
+    padding: 10px;
+  }
+
+  .admin-header {
+    height: 64px;
+    margin-top: 8px;
+  }
+
+  .admin-header-surface {
+    height: 56px;
+  }
+
+  .admin-content {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+</style>

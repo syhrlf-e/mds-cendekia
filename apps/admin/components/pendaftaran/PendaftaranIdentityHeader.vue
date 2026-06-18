@@ -18,9 +18,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="sticky top-0 z-20 shrink-0 bg-bg-surface">
-    <div class="flex items-start justify-between gap-5 border-b border-border px-8 py-5">
-      <div class="flex min-w-0 items-start gap-5">
+  <div class="admin-registration-identity sticky top-0 z-20 shrink-0 bg-bg-surface">
+    <div class="admin-registration-identity-main flex items-start justify-between gap-5 border-b border-border px-8 py-5">
+      <div class="admin-registration-identity-profile flex min-w-0 items-start gap-5">
         <button
           type="button"
           class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-base hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
@@ -30,7 +30,7 @@ const emit = defineEmits<{
           <X class="h-5 w-5" />
         </button>
 
-        <div class="h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
+        <div class="admin-registration-identity-photo h-[112px] w-[84px] shrink-0 overflow-hidden rounded-2xl border border-border bg-bg-parchment">
           <img
             v-if="item.fotoUrl"
             :src="item.fotoUrl"
@@ -47,7 +47,7 @@ const emit = defineEmits<{
         </div>
 
         <div class="min-w-0">
-          <h2 class="truncate font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
+          <h2 class="admin-registration-identity-name truncate font-heading text-[22px] font-bold leading-[1.18] tracking-[-0.3px] text-text-primary">
             {{ item.nama }}
           </h2>
           <p class="mt-1 truncate text-sm font-medium leading-[1.43] text-text-secondary">
@@ -61,7 +61,7 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <div class="flex shrink-0 flex-col items-end gap-2 pt-1">
+      <div class="admin-registration-identity-status flex shrink-0 flex-col items-end gap-2 pt-1">
         <div class="flex items-center gap-2 whitespace-nowrap">
           <span class="text-xs font-medium leading-none text-text-secondary">Status Pendaftaran :</span>
           <AppBadge
@@ -85,12 +85,12 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div class="flex items-center bg-bg-base px-8">
+    <div class="admin-registration-detail-tabs flex items-center bg-bg-base px-8">
       <button
         v-for="tab in detailTabs"
         :key="tab.key"
         type="button"
-        class="relative h-11 px-5 text-sm font-normal leading-none transition-colors focus:outline-none"
+        class="admin-registration-detail-tab relative h-11 px-5 text-sm font-normal leading-none transition-colors focus:outline-none"
         :class="activeTab === tab.key
           ? 'text-brand after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:rounded-t-full after:bg-brand after:content-[\'\']'
           : 'text-text-secondary hover:text-text-primary'"
@@ -101,3 +101,65 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 1439px) {
+  .admin-registration-identity-main {
+    padding: 18px 24px;
+    gap: 18px;
+  }
+
+  .admin-registration-identity-profile {
+    gap: 16px;
+  }
+
+  .admin-registration-identity-photo {
+    width: 78px;
+    height: 104px;
+    border-radius: 14px;
+  }
+
+  .admin-registration-identity-name {
+    font-size: 20px;
+  }
+
+  .admin-registration-detail-tabs {
+    padding-inline: 24px;
+  }
+}
+
+@media (max-height: 820px) {
+  .admin-registration-identity-main {
+    padding: 14px 24px;
+    gap: 16px;
+  }
+
+  .admin-registration-identity-profile {
+    gap: 14px;
+  }
+
+  .admin-registration-identity-photo {
+    width: 68px;
+    height: 88px;
+    border-radius: 12px;
+  }
+
+  .admin-registration-identity-name {
+    font-size: 19px;
+  }
+
+  .admin-registration-identity-status {
+    gap: 6px;
+  }
+
+  .admin-registration-detail-tabs {
+    padding-inline: 24px;
+  }
+
+  .admin-registration-detail-tab {
+    height: 38px;
+    padding-inline: 16px;
+    font-size: 13px;
+  }
+}
+</style>

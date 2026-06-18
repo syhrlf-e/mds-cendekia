@@ -129,9 +129,9 @@ watch(() => [props.modelValue, props.item, props.mode], ([isOpen]) => {
         class="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
         @click.self="closeDrawer"
       >
-        <aside class="relative ml-auto flex h-full w-[680px] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl">
+        <aside class="admin-yayasan-drawer relative ml-auto flex h-full w-[min(680px,calc(100%-280px))] flex-col overflow-hidden border-l border-border-soft bg-bg-surface shadow-2xl 2xl:w-[680px]">
           <!-- Header -->
-          <header class="shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
+          <header class="admin-yayasan-drawer-header shrink-0 border-b border-border-soft bg-bg-surface px-8 py-6">
             <div class="flex items-center justify-between gap-6">
               <div class="flex items-center gap-4">
                 <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-brand">
@@ -157,16 +157,16 @@ watch(() => [props.modelValue, props.item, props.mode], ([isOpen]) => {
 
           <!-- Body -->
           <form class="flex min-h-0 grow flex-col" @submit.prevent="submitForm">
-            <main class="min-h-0 grow overflow-y-auto px-8 py-8">
-              <div class="space-y-6">
+            <main class="admin-yayasan-drawer-body min-h-0 grow overflow-y-auto px-8 py-8">
+              <div class="admin-yayasan-drawer-stack space-y-6">
 
                 <!-- Foto Pengurus -->
-                <section class="rounded-[24px] border border-border-soft bg-bg-base p-6">
-                  <h3 class="mb-5 font-heading text-base font-semibold text-text-primary">Foto Pengurus</h3>
+                <section class="admin-yayasan-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6">
+                  <h3 class="admin-yayasan-card-title mb-5 font-heading text-base font-semibold text-text-primary">Foto Pengurus</h3>
                   <div class="flex items-center gap-5">
                     <div class="relative shrink-0">
                       <div
-                        class="h-20 w-20 overflow-hidden rounded-full border-2 border-border-soft bg-primary-50"
+                        class="admin-yayasan-avatar h-20 w-20 overflow-hidden rounded-full border-2 border-border-soft bg-primary-50"
                         :class="photoPreview ? '' : 'flex items-center justify-center'"
                       >
                         <img
@@ -211,9 +211,9 @@ watch(() => [props.modelValue, props.item, props.mode], ([isOpen]) => {
                 </section>
 
                 <!-- Informasi Dasar -->
-                <section class="rounded-[24px] border border-border-soft bg-bg-base p-6">
-                  <h3 class="mb-5 font-heading text-base font-semibold text-text-primary">Informasi Dasar</h3>
-                  <div class="grid grid-cols-2 gap-5">
+                <section class="admin-yayasan-drawer-card rounded-[24px] border border-border-soft bg-bg-base p-6">
+                  <h3 class="admin-yayasan-card-title mb-5 font-heading text-base font-semibold text-text-primary">Informasi Dasar</h3>
+                  <div class="admin-yayasan-field-grid grid grid-cols-2 gap-5">
                     <div class="col-span-2">
                       <AppInput
                         v-model="form.nama"
@@ -265,7 +265,7 @@ watch(() => [props.modelValue, props.item, props.mode], ([isOpen]) => {
             </main>
 
             <!-- Footer -->
-            <footer class="shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
+            <footer class="admin-yayasan-drawer-footer shrink-0 border-t border-border-soft bg-bg-surface px-8 py-5">
               <div class="flex justify-end gap-3">
                 <AppButton variant="ghost" type="button" :disabled="saving" @click="closeDrawer">
                   Batal
@@ -281,3 +281,67 @@ watch(() => [props.modelValue, props.item, props.mode], ([isOpen]) => {
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+@media (max-height: 820px) {
+  .admin-yayasan-drawer {
+    width: min(640px, calc(100% - 280px));
+  }
+
+  .admin-yayasan-drawer-header,
+  .admin-yayasan-drawer-body,
+  .admin-yayasan-drawer-footer {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .admin-yayasan-drawer-header {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .admin-yayasan-drawer-body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .admin-yayasan-drawer-footer {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .admin-yayasan-drawer-stack > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(20px * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(20px * var(--tw-space-y-reverse));
+  }
+
+  .admin-yayasan-drawer-card {
+    padding: 20px;
+  }
+
+  .admin-yayasan-avatar {
+    height: 72px;
+    width: 72px;
+  }
+
+  .admin-yayasan-field-grid {
+    gap: 16px;
+  }
+
+  .admin-yayasan-card-title {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .admin-yayasan-drawer {
+    width: min(620px, calc(100% - 264px));
+  }
+
+  .admin-yayasan-avatar {
+    height: 76px;
+    width: 76px;
+  }
+}
+</style>
