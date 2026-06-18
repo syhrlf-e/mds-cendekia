@@ -139,12 +139,12 @@ onBeforeUnmount(() => {
         </thead>
         <tbody class="divide-y divide-border-soft">
           <tr
-            v-for="item in pagedItems"
+            v-for="(item, index) in pagedItems"
             :key="item.id"
             class="h-[76px] text-sm text-text-primary transition-colors hover:bg-bg-base"
           >
             <td class="px-4 font-medium text-text-secondary">
-              {{ item.order }}
+              {{ index + 1 }}
             </td>
             <td class="px-4">
               <div class="flex min-w-0 items-center gap-3">
@@ -171,12 +171,9 @@ onBeforeUnmount(() => {
               </div>
             </td>
             <td class="px-4">
-              <span
-                class="inline-flex rounded-full px-3 py-1 text-xs font-medium"
-                :class="item.isHead ? 'bg-primary-50 text-brand' : 'bg-bg-base text-text-secondary'"
-              >
+              <AppBadge :variant="item.isHead ? 'brand' : 'neutral'" size="md">
                 {{ item.isHead ? 'Gambar Utama' : 'Carousel' }}
-              </span>
+              </AppBadge>
             </td>
             <td class="px-4 text-text-secondary">
               {{ formatDate(item.createdAt) }}

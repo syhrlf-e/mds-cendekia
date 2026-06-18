@@ -282,10 +282,10 @@ watch(totalPages, value => {
                 <td class="px-4 text-text-primary">{{ item.program }}</td>
                 <td class="px-4 text-text-secondary">{{ formatDate(item.tanggalDiterima) }}</td>
                 <td class="px-4">
-                  <span class="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-3 py-0.5 text-xs font-normal text-status-approved-text">
+                  <AppBadge variant="success">
                     <BadgeCheck class="h-3.5 w-3.5" />
                     {{ item.status }}
-                  </span>
+                  </AppBadge>
                 </td>
                 <td class="px-4 text-center">
                   <button
@@ -375,13 +375,13 @@ watch(totalPages, value => {
                   {{ selectedItem.nama }}
                 </h2>
                 <div class="mt-3 flex flex-wrap items-center gap-2">
-                  <span class="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-3 py-0.5 text-xs font-medium text-status-approved-text">
+                  <AppBadge variant="success">
                     <BadgeCheck class="h-3.5 w-3.5" />
                     Siswa {{ selectedItem.status }}
-                  </span>
-                  <span v-if="selectedItem.gelombang" class="rounded-full bg-primary-50 px-3 py-0.5 text-xs font-medium text-brand">
+                  </AppBadge>
+                  <AppBadge v-if="selectedItem.gelombang" variant="brand">
                     Gelombang {{ selectedItem.gelombang }}
-                  </span>
+                  </AppBadge>
                 </div>
               </div>
             </div>

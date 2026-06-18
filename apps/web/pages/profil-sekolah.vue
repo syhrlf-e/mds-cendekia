@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { usePublicOrganizationService } from '~/services/usePublicOrganizationService'
+import type { PublicOrganizationMember } from '~/types/organization'
+
 useHead({
   title: 'Profil Sekolah | MDS Cendekia',
   meta: [
@@ -70,6 +73,97 @@ useJsonLd(() => {
 
   return schema
 })
+
+const fallbackOrganizationMembers: PublicOrganizationMember[] = [
+  {
+    id: 1,
+    nama: 'Bpk. Muhammad Djody Satriani',
+    jabatan: 'Ketua Pembina',
+    gambar: '',
+    sambutan: '',
+    joinAt: ''
+  },
+  {
+    id: 2,
+    nama: 'Bpk. Buya Hamka',
+    jabatan: 'Ketua Pengawas',
+    gambar: '',
+    sambutan: '',
+    joinAt: ''
+  },
+  {
+    id: 3,
+    nama: 'Bpk. Rio Nurfajri',
+    jabatan: 'Ketua Umum',
+    gambar: '',
+    sambutan: 'Selamat datang di Yayasan Mukti Daris Sasmita Cendekia. Kami percaya bahwa pendidikan adalah hak fundamental yang tidak boleh dibatasi oleh usia, waktu, maupun latar belakang ekonomi.\n\nYMDSC hadir sebagai jawaban atas tantangan zaman, menyediakan ekosistem belajar hybrid yang fleksibel namun tetap berkualitas tinggi. Melalui komitmen ini, kami siap mendampingi setiap langkah Anda untuk kembali meraih mimpi, mendapatkan legalitas pendidikan yang diakui, dan tumbuh menjadi pribadi yang berdampak di masyarakat. Mari berjalan bersama kami',
+    joinAt: ''
+  },
+  {
+    id: 4,
+    nama: 'Ibu Vena Adrianti Ningrum',
+    jabatan: 'Sekretaris',
+    gambar: '',
+    sambutan: '',
+    joinAt: ''
+  },
+  {
+    id: 5,
+    nama: 'Ibu Rizalina Nurazizah',
+    jabatan: 'Bendahara',
+    gambar: '',
+    sambutan: '',
+    joinAt: ''
+  }
+]
+
+const positionOrder = ['Ketua Pembina', 'Ketua Pengawas', 'Ketua Umum', 'Sekretaris', 'Bendahara']
+
+const getPositionRank = (jabatan: string) => {
+  const index = positionOrder.indexOf(jabatan)
+  return index === -1 ? positionOrder.length : index
+}
+
+const sortOrganizationMembers = (members: PublicOrganizationMember[]) => [...members].sort((first, second) => {
+  const rankDiff = getPositionRank(first.jabatan) - getPositionRank(second.jabatan)
+  if (rankDiff !== 0) return rankDiff
+  return first.id - second.id
+})
+
+const { listPublicOrganization } = usePublicOrganizationService()
+const { data: organizationMembersData } = await useAsyncData('public-organization-profile', async () => {
+  const { data } = await listPublicOrganization()
+  return data
+}, {
+  default: () => fallbackOrganizationMembers
+})
+
+const organizationMembers = computed(() => {
+  const rows = organizationMembersData.value?.length
+    ? organizationMembersData.value
+    : fallbackOrganizationMembers
+
+  return sortOrganizationMembers(rows)
+})
+
+const featuredSambutanMember = computed(() =>
+  organizationMembers.value.find(member => member.sambutan)
+  ?? organizationMembers.value.find(member => member.jabatan === 'Ketua Umum')
+  ?? organizationMembers.value[0]
+)
+
+const sambutanParagraphs = computed(() => {
+  const sambutan = featuredSambutanMember.value?.sambutan?.trim()
+  if (!sambutan) {
+    return fallbackOrganizationMembers[2]?.sambutan.split(/\n\s*\n/).filter(Boolean) ?? []
+  }
+
+  return sambutan.split(/\n\s*\n/).filter(Boolean)
+})
+
+const primaryOrganizationMember = computed(() => organizationMembers.value[0] ?? null)
+const secondaryOrganizationMember = computed(() => organizationMembers.value[1] ?? null)
+const remainingOrganizationMembers = computed(() => organizationMembers.value.slice(2))
 </script>
 
 <template>
@@ -95,7 +189,12 @@ useJsonLd(() => {
         <div class="flex w-full max-w-[920px] flex-col items-center gap-8 md:gap-10 lg:flex-row lg:items-start lg:gap-14 2xl:max-w-[1000px] 2xl:gap-20">
           <div class="w-full max-w-xs flex-shrink-0 md:max-w-none lg:w-5/12">
             <div class="aspect-[5/4] overflow-hidden rounded-2xl bg-gray-200 shadow-sm md:aspect-[4/5] md:rounded-3xl md:shadow-md 2xl:rounded-4xl">
-              <img src="/images/logo-mds-main.png" alt="Logo Yayasan Mukti Daris Sasmita Cendekia" class="h-full w-full object-contain p-6 md:p-8 2xl:p-10" />
+              <img
+                :src="featuredSambutanMember?.gambar || '/images/logo-mds-main.png'"
+                :alt="featuredSambutanMember?.nama || 'Logo Yayasan Mukti Daris Sasmita Cendekia'"
+                :class="featuredSambutanMember?.gambar ? 'object-cover p-0' : 'object-contain p-6 md:p-8 2xl:p-10'"
+                class="h-full w-full"
+              />
             </div>
           </div>
 
@@ -104,17 +203,14 @@ useJsonLd(() => {
               Sambutan Pimpinan Kami
             </h3>
             <div class="mb-6 space-y-4 text-justify font-sans text-sm leading-7 text-neutral-600 md:mb-8 md:space-y-5 md:text-left md:text-base md:leading-relaxed lg:text-lg 2xl:mb-12 2xl:space-y-6">
-              <p>
-                Selamat datang di Yayasan Mukti Daris Sasmita Cendekia. Kami percaya bahwa pendidikan adalah hak fundamental yang tidak boleh dibatasi oleh usia, waktu, maupun latar belakang ekonomi.
-              </p>
-              <p>
-                YMDSC hadir sebagai jawaban atas tantangan zaman, menyediakan ekosistem belajar hybrid yang fleksibel namun tetap berkualitas tinggi. Melalui komitmen ini, kami siap mendampingi setiap langkah Anda untuk kembali meraih mimpi, mendapatkan legalitas pendidikan yang diakui, dan tumbuh menjadi pribadi yang berdampak di masyarakat. Mari berjalan bersama kami
+              <p v-for="paragraph in sambutanParagraphs" :key="paragraph">
+                {{ paragraph }}
               </p>
             </div>
 
-            <div class="self-start rounded-full border border-brand px-5 py-2 font-sans text-sm font-medium text-brand md:px-6 md:py-2.5 md:text-base 2xl:px-8 2xl:py-3 2xl:text-xl">
-              Bpk. Yusuf Mansur S.pd, NPD
-            </div>
+            <AppBadge appearance="outline" variant="brand" class="self-start px-5 py-2 font-sans text-sm md:px-6 md:py-2.5 md:text-base 2xl:px-8 2xl:py-3 2xl:text-xl">
+              {{ featuredSambutanMember?.nama || 'Pimpinan MDS Cendekia' }}
+            </AppBadge>
           </div>
         </div>
       </div>
@@ -122,9 +218,9 @@ useJsonLd(() => {
     <section class="bg-white px-0 py-16 md:py-28 lg:py-30">
       <div class="public-container flex flex-col items-center">
         <div class="mb-10 flex max-w-4xl flex-col items-center text-center md:mb-12 2xl:mb-13 2xl:max-w-[1100px]">
-          <div class="mb-3 flex h-8 w-16 items-center justify-center rounded-full bg-brand font-heading text-sm font-normal text-white md:h-10 md:w-20 md:text-lg 2xl:h-11 2xl:w-21 2xl:text-xl">
+          <AppBadge variant="brand" appearance="solid" class="mb-3 flex h-8 w-16 justify-center font-heading text-sm font-normal md:h-10 md:w-20 md:text-lg 2xl:h-11 2xl:w-21 2xl:text-xl">
             Visi
-          </div>
+          </AppBadge>
           <h2 class="mb-4 max-w-sm font-heading text-2xl font-normal leading-tight text-text-public-heading md:mb-3 md:max-w-none md:text-4xl lg:text-4xl 2xl:text-5xl">
             Pembangunan Manusia Seutuhnya<br class="hidden md:block" />Berlandaskan Nilai Pancasila.
           </h2>
@@ -133,9 +229,9 @@ useJsonLd(() => {
           </p>
         </div>
         <div class="flex w-full flex-col items-center">
-          <div class="mb-6 flex h-8 w-16 items-center justify-center rounded-full bg-brand font-heading text-sm font-normal text-white md:mb-8 md:h-10 md:w-20 md:text-lg 2xl:h-11 2xl:w-21 2xl:text-xl">
+          <AppBadge variant="brand" appearance="solid" class="mb-6 flex h-8 w-16 justify-center font-heading text-sm font-normal md:mb-8 md:h-10 md:w-20 md:text-lg 2xl:h-11 2xl:w-21 2xl:text-xl">
             Misi
-          </div>
+          </AppBadge>
 
           <div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 2xl:grid-cols-4 2xl:gap-6">
             <div class="flex min-h-0 flex-col rounded-2xl border border-neutral-200 bg-white p-4 md:min-h-[236px] md:rounded-3xl md:p-5 2xl:min-h-[249px] 2xl:rounded-4xl 2xl:p-6">
@@ -198,43 +294,52 @@ useJsonLd(() => {
         </h2>
 
         <div class="flex w-full flex-col items-center gap-10 md:gap-14 2xl:gap-20">
-          <div class="flex flex-col items-center">
+          <div v-if="primaryOrganizationMember" class="flex flex-col items-center">
             <div class="mb-4 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-36 md:w-36 2xl:mb-6 2xl:h-[180px] 2xl:w-[180px]">
-              <svg class="h-11 w-11 text-neutral-300 md:h-14 md:w-14 2xl:h-16 2xl:w-16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <img
+                v-if="primaryOrganizationMember.gambar"
+                :src="primaryOrganizationMember.gambar"
+                :alt="primaryOrganizationMember.nama"
+                class="h-full w-full object-cover"
+              />
+              <svg v-else class="h-11 w-11 text-neutral-300 md:h-14 md:w-14 2xl:h-16 2xl:w-16" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="max-w-xs text-center font-heading text-lg font-medium text-text-public-heading md:text-xl 2xl:text-2xl">Bpk. Muhammad Djody Satriani</h3>
-            <p class="mt-1.5 font-sans text-sm font-medium text-brand md:mt-2 md:text-base 2xl:text-lg">Ketua Pembina</p>
+            <h3 class="max-w-xs text-center font-heading text-lg font-medium text-text-public-heading md:text-xl 2xl:text-2xl">{{ primaryOrganizationMember.nama }}</h3>
+            <p class="mt-1.5 font-sans text-sm font-medium text-brand md:mt-2 md:text-base 2xl:text-lg">{{ primaryOrganizationMember.jabatan }}</p>
           </div>
-          <div class="flex flex-col items-center">
+          <div v-if="secondaryOrganizationMember" class="flex flex-col items-center">
             <div class="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
-              <svg class="h-9 w-9 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <img
+                v-if="secondaryOrganizationMember.gambar"
+                :src="secondaryOrganizationMember.gambar"
+                :alt="secondaryOrganizationMember.nama"
+                class="h-full w-full object-cover"
+              />
+              <svg v-else class="h-9 w-9 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             </div>
-            <h3 class="text-center font-heading text-base font-medium text-text-public-heading md:text-lg 2xl:text-xl">Bpk. Buya Hamka</h3>
-            <p class="mt-1.5 font-sans text-sm font-medium text-neutral-600 md:mt-2 md:text-base">Ketua Pengawas</p>
+            <h3 class="text-center font-heading text-base font-medium text-text-public-heading md:text-lg 2xl:text-xl">{{ secondaryOrganizationMember.nama }}</h3>
+            <p class="mt-1.5 font-sans text-sm font-medium text-neutral-600 md:mt-2 md:text-base">{{ secondaryOrganizationMember.jabatan }}</p>
           </div>
-          <div class="grid w-full max-w-[900px] grid-cols-3 gap-4 border-t border-neutral-200 pt-8 md:gap-10 md:pt-10 2xl:max-w-[1000px] 2xl:gap-15">
-            <div class="flex flex-col items-center">
+          <div
+            v-if="remainingOrganizationMembers.length"
+            class="grid w-full max-w-[900px] grid-cols-2 gap-4 border-t border-neutral-200 pt-8 md:grid-cols-3 md:gap-10 md:pt-10 2xl:max-w-[1000px] 2xl:gap-15"
+          >
+            <div
+              v-for="member in remainingOrganizationMembers"
+              :key="member.id"
+              class="flex flex-col items-center"
+            >
               <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <img
+                  v-if="member.gambar"
+                  :src="member.gambar"
+                  :alt="member.nama"
+                  class="h-full w-full object-cover"
+                />
+                <svg v-else class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </div>
-              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Bpk. Rio Nurfajri</h3>
-              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Ketua Umum</p>
-            </div>
-
-            <div class="flex flex-col items-center">
-              <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              </div>
-              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Ibu Vena Adrianti Ningrum</h3>
-              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Sekretaris</p>
-            </div>
-
-            <div class="flex flex-col items-center">
-              <div class="mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-32 md:w-32 2xl:mb-6 2xl:h-40 2xl:w-40">
-                <svg class="h-7 w-7 text-neutral-300 md:h-11 md:w-11 2xl:h-12 2xl:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              </div>
-              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">Ibu Rizalina Nurazizah</h3>
-              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">Bendahara</p>
+              <h3 class="text-center font-heading text-sm font-medium leading-snug text-text-public-heading md:text-lg 2xl:text-xl">{{ member.nama }}</h3>
+              <p class="mt-1 font-sans text-xs text-gray-500 md:mt-2 md:text-base">{{ member.jabatan }}</p>
             </div>
           </div>
 

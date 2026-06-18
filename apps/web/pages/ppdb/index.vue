@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Calendar, FileText, Wallet, Download } from 'lucide-vue-next'
 
 useHead({
   title: 'PPDB | MDS Cendekia',
@@ -160,16 +159,6 @@ const documents = ref([
   { id: 2, title: 'Panduan Pendaftaran Online' }
 ])
 
-const formatCurrency = (amount: number) => {
-  if (!amount) return 'Rp 0'
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount)
-}
-
 const formatDateRange = (startDate: string, endDate: string) => {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return ''
@@ -189,9 +178,9 @@ const formatDateRange = (startDate: string, endDate: string) => {
     <section class="relative bg-white px-0 pb-16 pt-28 md:py-36 lg:pb-24 lg:pt-40 2xl:pb-30 2xl:pt-50">
       <div class="public-navbar-container relative z-10 flex flex-col items-start">
 
-        <div class="z-20 mb-4 flex h-8 w-fit items-center justify-center rounded-full border border-neutral-200 bg-transparent px-4 font-heading text-xs font-medium text-neutral-600 md:mb-5 md:h-9 md:px-5 md:text-sm 2xl:mb-6 2xl:px-6">
+        <AppBadge appearance="outline" size="md" class="z-20 mb-4 h-8 w-fit px-4 font-heading md:mb-5 md:h-9 md:px-5 md:text-sm 2xl:mb-6 2xl:px-6">
           {{ landingInfo.active_wave.name }}
-        </div>
+        </AppBadge>
         <h1 class="z-20 max-w-md font-heading text-3xl font-medium leading-tight tracking-tight text-text-public-heading md:max-w-none md:text-5xl md:leading-[1.1] lg:text-5xl lg:whitespace-nowrap xl:text-6xl">
           <span class="text-text-public-heading">Penerimaan Peserta Didik Baru</span><br class="hidden md:block"/>
           <span class="text-brand">Tahun {{ academicYear }}</span>
@@ -263,27 +252,6 @@ const formatDateRange = (startDate: string, endDate: string) => {
                 </li>
               </ul>
             </div>
-            <div>
-              <div class="mb-5 flex items-center gap-3 md:mb-7 md:gap-4 2xl:mb-8">
-                <div class="h-px flex-grow bg-border"></div>
-                <h3 class="font-sans text-xs font-medium capitalize text-gray-500 md:text-sm 2xl:text-base">Rincian Biaya</h3>
-              </div>
-              <div class="flex flex-col gap-4 md:gap-5 2xl:gap-6">
-                <div class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
-                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">Biaya Formulir</span>
-                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.biaya_formulir) }}</span>
-                </div>
-                <div v-if="landingInfo.active_wave" class="flex flex-col justify-between border-b border-neutral-200 pb-4 sm:flex-row sm:items-baseline md:pb-5 2xl:pb-6">
-                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">Uang Pangkal ({{ landingInfo.active_wave.name }})</span>
-                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.active_wave.fee) }}</span>
-                </div>
-                <div class="flex flex-col justify-between pb-2 sm:flex-row sm:items-baseline">
-                  <span class="font-sans text-sm text-neutral-600 md:text-lg 2xl:text-xl">SPP Bulanan</span>
-                  <span class="mt-1 font-heading text-xl font-medium text-text-public-heading sm:mt-0 md:text-2xl 2xl:text-3xl">{{ formatCurrency(landingInfo.spp_bulanan) }}</span>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>

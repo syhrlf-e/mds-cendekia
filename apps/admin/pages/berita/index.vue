@@ -51,6 +51,9 @@ const isPreviewExpanded = ref(false)
 const imagePreview = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const activeDropdown = ref<number | string | null>(null)
+const isDeleteModalOpen = ref(false)
+const newsToDelete = ref<AdminNewsItem | null>(null)
+const isDeletingNews = ref(false)
 
 let previousBodyOverflow = ''
 let previousHtmlOverflow = ''
@@ -134,16 +137,16 @@ const normalizeUploadFileName = (name: string) => {
   return `${baseName}-${Date.now()}${extension ? `.${extension}` : ''}`
 }
 
-const getCategoryClass = (category: string) => {
+const getCategoryVariant = (category: string): 'brand' | 'success' | 'danger' | 'warning' | 'info' | 'neutral' => {
   const normalized = category.toLowerCase()
 
-  if (normalized === 'akademik') return 'bg-primary-50 text-brand'
-  if (normalized === 'olahraga') return 'bg-status-approved-bg text-status-approved-text'
-  if (normalized === 'politik') return 'bg-status-rejected-bg text-status-rejected-text'
-  if (normalized === 'pengumuman') return 'bg-status-pending-bg text-status-pending-text'
-  if (normalized === 'teknologi') return 'bg-blue-50 text-blue-600'
+  if (normalized === 'akademik') return 'brand'
+  if (normalized === 'olahraga') return 'success'
+  if (normalized === 'politik') return 'danger'
+  if (normalized === 'pengumuman') return 'warning'
+  if (normalized === 'teknologi') return 'info'
 
-  return 'bg-bg-base text-text-secondary'
+  return 'neutral'
 }
 
 const getCategoryLabel = (category: string) => {
@@ -277,16 +280,19 @@ const buildNewsFormData = (authorId?: number) => {
   return formData
 }
 
-const deleteNews = async (item: AdminNewsItem) => {
-  if (!import.meta.client) return
+const deleteNews = (item: AdminNewsItem) => {
+  newsToDelete.value = item
+  isDeleteModalOpen.value = true
+}
 
-  const confirmed = window.confirm(`Hapus berita "${item.title}"?`)
+const confirmDeleteNews = async () => {
+  if (!newsToDelete.value) return
 
-  if (!confirmed) return
-
-  const { error: deleteError } = await deleteRequest(adminApiEndpoints.berita.delete(item.id), {
+  isDeletingNews.value = true
+  const { error: deleteError } = await deleteRequest(adminApiEndpoints.berita.delete(newsToDelete.value.id), {
     showErrorToast: false,
   })
+  isDeletingNews.value = false
 
   if (deleteError) {
     addToast('Berita belum berhasil dihapus.', 'error')
@@ -294,6 +300,8 @@ const deleteNews = async (item: AdminNewsItem) => {
   }
 
   addToast('Berita berhasil dihapus.', 'success')
+  isDeleteModalOpen.value = false
+  newsToDelete.value = null
   await fetchNews(true)
 }
 
@@ -413,22 +421,22 @@ onBeforeUnmount(() => {
 
       <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-bg-surface">
         <div class="min-h-0 flex-1 overflow-auto">
-          <table class="w-full border-collapse text-left">
-            <thead class="sticky top-0 z-10 bg-bg-base">
-              <tr class="h-12 text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                <th class="w-14 px-4">No</th>
-                <th class="min-w-80 px-4">Judul</th>
-                <th class="w-44 px-4">Kategori</th>
-                <th class="min-w-56 px-4">Tags</th>
-                <th class="w-40 px-4">Tanggal</th>
-                <th class="w-36 px-4">Status</th>
-                <th class="w-28 px-4 text-center">Views</th>
-                <th class="w-24 px-4 text-left"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-border-soft">
-              <tr v-if="loading">
-                <td colspan="8">
+          <UiTable>
+            <UiTableHeader>
+              <UiTableRow class="hover:bg-transparent">
+                <UiTableHead class="w-14">No</UiTableHead>
+                <UiTableHead class="min-w-80">Judul</UiTableHead>
+                <UiTableHead class="w-44">Kategori</UiTableHead>
+                <UiTableHead class="min-w-56">Tags</UiTableHead>
+                <UiTableHead class="w-40">Tanggal</UiTableHead>
+                <UiTableHead class="w-36">Status</UiTableHead>
+                <UiTableHead class="w-28 text-center">Views</UiTableHead>
+                <UiTableHead class="w-24 text-left"></UiTableHead>
+              </UiTableRow>
+            </UiTableHeader>
+            <UiTableBody>
+              <UiTableRow v-if="loading" class="hover:bg-transparent">
+                <UiTableCell colspan="8" class="p-0">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Memuat data berita"
@@ -439,11 +447,11 @@ onBeforeUnmount(() => {
                       </template>
                     </AppEmptyState>
                   </div>
-                </td>
-              </tr>
+                </UiTableCell>
+              </UiTableRow>
 
-              <tr v-else-if="error">
-                <td colspan="8">
+              <UiTableRow v-else-if="error" class="hover:bg-transparent">
+                <UiTableCell colspan="8" class="p-0">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Data berita belum bisa dimuat"
@@ -462,18 +470,18 @@ onBeforeUnmount(() => {
                       </template>
                     </AppEmptyState>
                   </div>
-                </td>
-              </tr>
+                </UiTableCell>
+              </UiTableRow>
 
-              <tr
+              <UiTableRow
                 v-for="(berita, index) in loading || error ? [] : pagedItems"
                 :key="berita.id"
-                class="h-[60px] text-sm text-text-primary transition-colors hover:bg-bg-base"
+                class="h-[60px] text-text-primary"
               >
-                <td class="px-4 text-text-secondary">
+                <UiTableCell class="text-text-secondary">
                   {{ from + index }}
-                </td>
-                <td class="px-4">
+                </UiTableCell>
+                <UiTableCell>
                   <div class="flex items-center gap-3">
                     <img
                       :src="berita.image || '/images/placeholder-news.jpg'"
@@ -490,30 +498,28 @@ onBeforeUnmount(() => {
                       </p>
                     </div>
                   </div>
-                </td>
-                <td class="px-4">
-                  <span
-                    class="inline-flex items-center rounded-full px-3 py-0.5 text-xs font-normal"
-                    :class="getCategoryClass(berita.category)"
-                  >
+                </UiTableCell>
+                <UiTableCell>
+                  <AppBadge :variant="getCategoryVariant(berita.category)">
                     {{ getCategoryLabel(berita.category) }}
-                  </span>
-                </td>
-                <td class="px-4">
+                  </AppBadge>
+                </UiTableCell>
+                <UiTableCell>
                   <div class="flex max-w-56 flex-wrap gap-1.5">
-                    <span
+                    <AppBadge
                       v-for="tag in parseTags(berita.tags).slice(0, 3)"
                       :key="`${berita.id}-${tag}`"
-                      class="inline-flex max-w-full items-center truncate rounded-full bg-bg-base px-2.5 py-0.5 text-xs font-medium text-text-secondary"
+                      variant="neutral"
+                      class="max-w-full truncate"
                     >
                       {{ tag }}
-                    </span>
-                    <span
+                    </AppBadge>
+                    <AppBadge
                       v-if="parseTags(berita.tags).length > 3"
-                      class="inline-flex items-center rounded-full bg-bg-base px-2.5 py-0.5 text-xs font-medium text-text-muted"
+                      variant="neutral"
                     >
                       +{{ parseTags(berita.tags).length - 3 }}
-                    </span>
+                    </AppBadge>
                     <span
                       v-if="!parseTags(berita.tags).length"
                       class="text-xs text-text-muted"
@@ -521,28 +527,19 @@ onBeforeUnmount(() => {
                       -
                     </span>
                   </div>
-                </td>
-                <td class="px-4 text-text-secondary">
+                </UiTableCell>
+                <UiTableCell class="text-text-secondary">
                   {{ formatDate(berita.created_at) }}
-                </td>
-                <td class="px-4">
-                  <span
-                    v-if="berita.published"
-                    class="inline-flex items-center gap-1.5 rounded-full bg-status-approved-bg px-3 py-0.5 text-xs font-normal text-status-approved-text"
-                  >
-                    Published
-                  </span>
-                  <span
-                    v-else
-                    class="inline-flex items-center gap-1.5 rounded-full bg-status-pending-bg px-3 py-0.5 text-xs font-normal text-status-pending-text"
-                  >
-                    Draft
-                  </span>
-                </td>
-                <td class="px-4 text-center text-text-secondary">
+                </UiTableCell>
+                <UiTableCell>
+                  <AppBadge :variant="berita.published ? 'success' : 'warning'">
+                    {{ berita.published ? 'Published' : 'Draft' }}
+                  </AppBadge>
+                </UiTableCell>
+                <UiTableCell class="text-center text-text-secondary">
                   {{ berita.views }}
-                </td>
-                <td class="px-4 text-left">
+                </UiTableCell>
+                <UiTableCell class="text-left">
                   <div class="relative inline-block text-left dropdown-container">
                     <button
                       type="button"
@@ -589,11 +586,11 @@ onBeforeUnmount(() => {
                       </div>
                     </Transition>
                   </div>
-                </td>
-              </tr>
+                </UiTableCell>
+              </UiTableRow>
 
-              <tr v-if="!loading && !error && filteredItems.length === 0">
-                <td colspan="8">
+              <UiTableRow v-if="!loading && !error && filteredItems.length === 0" class="hover:bg-transparent">
+                <UiTableCell colspan="8" class="p-0">
                   <div class="flex min-h-[420px] items-center justify-center">
                     <AppEmptyState
                       title="Belum ada berita"
@@ -604,10 +601,10 @@ onBeforeUnmount(() => {
                       </template>
                     </AppEmptyState>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </UiTableCell>
+              </UiTableRow>
+            </UiTableBody>
+          </UiTable>
         </div>
       </section>
 
@@ -906,6 +903,38 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
+
+    <AppModal
+      v-model="isDeleteModalOpen"
+      title="Hapus Berita?"
+      width="max-w-[420px]"
+      :close-on-backdrop="!isDeletingNews"
+      :close-on-escape="!isDeletingNews"
+    >
+      <p class="text-sm leading-relaxed text-text-secondary">
+        Apakah Anda yakin ingin menghapus berita
+        <span class="font-semibold text-text-primary">{{ newsToDelete?.title }}</span>?
+        Data yang sudah dihapus tidak bisa dikembalikan.
+      </p>
+
+      <template #footer>
+        <AppButton
+          variant="ghost"
+          :disabled="isDeletingNews"
+          @click="isDeleteModalOpen = false"
+        >
+          Batal
+        </AppButton>
+        <AppButton
+          variant="danger"
+          :loading="isDeletingNews"
+          :disabled="isDeletingNews"
+          @click="confirmDeleteNews"
+        >
+          Hapus Berita
+        </AppButton>
+      </template>
+    </AppModal>
   </div>
 </template>
 

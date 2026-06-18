@@ -9,8 +9,8 @@ import {
 } from '~/services/useAdminGalleryService'
 import type { GalleryFormState, GalleryItem } from '~/types/adminGallery'
 
-const AdminGalleryFormModal = defineAsyncComponent(
-  () => import('~/components/galeri/AdminGalleryFormModal.vue')
+const AdminGalleryFormDrawer = defineAsyncComponent(
+  () => import('~/components/galeri/AdminGalleryFormDrawer.vue')
 )
 
 definePageMeta({
@@ -32,10 +32,13 @@ const {
 
 const saving = ref(false)
 const isFormOpen = ref(false)
-const hasLoadedFormModal = ref(false)
+const hasLoadedFormDrawer = ref(false)
 const isEdit = ref(false)
 const editingId = ref('')
 const imagePreview = ref('')
+const isDeleteModalOpen = ref(false)
+const galleryToDelete = ref<GalleryItem | null>(null)
+const isDeletingGallery = ref(false)
 
 const form = ref<GalleryFormState>({
   nama: '',
@@ -76,7 +79,7 @@ const refreshGalleryList = async () => {
 
 const openCreate = () => {
   resetForm()
-  hasLoadedFormModal.value = true
+  hasLoadedFormDrawer.value = true
   isFormOpen.value = true
 }
 
@@ -90,7 +93,7 @@ const openEdit = (item: GalleryItem) => {
     deskripsi: item.deskripsi,
     gambar: null
   }
-  hasLoadedFormModal.value = true
+  hasLoadedFormDrawer.value = true
   isFormOpen.value = true
 }
 
@@ -141,13 +144,17 @@ const submitForm = async () => {
   saving.value = false
 }
 
-const confirmDelete = async (item: GalleryItem) => {
-  if (!import.meta.client) return
+const confirmDelete = (item: GalleryItem) => {
+  galleryToDelete.value = item
+  isDeleteModalOpen.value = true
+}
 
-  const confirmed = window.confirm(`Hapus galeri "${item.nama}"?`)
-  if (!confirmed) return
+const deleteSelectedGallery = async () => {
+  if (!galleryToDelete.value) return
 
-  const { error: deleteError } = await deleteGallery(item.id)
+  isDeletingGallery.value = true
+  const { error: deleteError } = await deleteGallery(galleryToDelete.value.id)
+  isDeletingGallery.value = false
 
   if (deleteError) {
     addToast(getAdminGalleryErrorMessage(deleteError, 'Galeri belum berhasil dihapus.'), 'error')
@@ -155,6 +162,8 @@ const confirmDelete = async (item: GalleryItem) => {
   }
 
   addToast('Galeri berhasil dihapus.', 'success')
+  isDeleteModalOpen.value = false
+  galleryToDelete.value = null
   await refreshGalleryList()
 }
 
@@ -169,8 +178,6 @@ onBeforeUnmount(() => {
   <div class="flex h-full min-h-0 flex-col gap-4">
     <AdminGalleryToolbar
       v-model:search-query="searchQuery"
-      :loading="loading"
-      @refresh="refreshGalleryList"
       @create="openCreate"
     />
 
@@ -193,8 +200,8 @@ onBeforeUnmount(() => {
       @page-change="currentPage = $event"
     />
 
-    <AdminGalleryFormModal
-      v-if="hasLoadedFormModal"
+    <AdminGalleryFormDrawer
+      v-if="hasLoadedFormDrawer"
       v-model="isFormOpen"
       v-model:form="form"
       :is-edit="isEdit"
@@ -205,5 +212,37 @@ onBeforeUnmount(() => {
       @file-select="handleFileSelect"
       @remove-image="removeImage"
     />
+
+    <AppModal
+      v-model="isDeleteModalOpen"
+      title="Hapus Galeri?"
+      width="max-w-[420px]"
+      :close-on-backdrop="!isDeletingGallery"
+      :close-on-escape="!isDeletingGallery"
+    >
+      <p class="text-sm leading-relaxed text-text-secondary">
+        Apakah Anda yakin ingin menghapus galeri
+        <span class="font-semibold text-text-primary">{{ galleryToDelete?.nama }}</span>?
+        Data yang sudah dihapus tidak bisa dikembalikan.
+      </p>
+
+      <template #footer>
+        <AppButton
+          variant="ghost"
+          :disabled="isDeletingGallery"
+          @click="isDeleteModalOpen = false"
+        >
+          Batal
+        </AppButton>
+        <AppButton
+          variant="danger"
+          :loading="isDeletingGallery"
+          :disabled="isDeletingGallery"
+          @click="deleteSelectedGallery"
+        >
+          Hapus Galeri
+        </AppButton>
+      </template>
+    </AppModal>
   </div>
 </template>

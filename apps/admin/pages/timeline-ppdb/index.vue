@@ -46,6 +46,12 @@ const saving = ref(false)
 
 const isDrawerOpen = ref(false)
 const editingId = ref<number | null>(null) // Placeholder if edit is added
+const isDeleteTimelineModalOpen = ref(false)
+const timelineToDelete = ref<{
+  step: GelombangTimelineDto['timeline'][number]
+  gelombang: GelombangTimelineDto
+} | null>(null)
+const isDeletingTimeline = ref(false)
 
 let previousBodyOverflow = ''
 let previousHtmlOverflow = ''
@@ -143,17 +149,22 @@ const removeTimelineStep = (index: number) => {
   form.value.timeline.splice(index, 1)
 }
 
-const deleteTimelineStep = async (step: GelombangTimelineDto['timeline'][number], gelombang: GelombangTimelineDto) => {
-  if (!import.meta.client) return
+const deleteTimelineStep = (step: GelombangTimelineDto['timeline'][number], gelombang: GelombangTimelineDto) => {
   if (!step.id) {
     addToast('Tahap timeline belum memiliki ID dari server.', 'error')
     return
   }
 
-  const confirmed = window.confirm(`Hapus tahap "${step.deskripsi}" dari Gelombang ${gelombang.order}?`)
-  if (!confirmed) return
+  timelineToDelete.value = { step, gelombang }
+  isDeleteTimelineModalOpen.value = true
+}
 
-  const { data, error: deleteError } = await deleteTimeline(step.id)
+const confirmDeleteTimelineStep = async () => {
+  if (!timelineToDelete.value?.step.id) return
+
+  isDeletingTimeline.value = true
+  const { data, error: deleteError } = await deleteTimeline(timelineToDelete.value.step.id)
+  isDeletingTimeline.value = false
 
   if (deleteError || data?.success === false) {
     addToast(data?.message || getApiErrorMessage(deleteError, 'Tahap timeline belum berhasil dihapus.'), 'error')
@@ -161,6 +172,8 @@ const deleteTimelineStep = async (step: GelombangTimelineDto['timeline'][number]
   }
 
   addToast(data?.message || 'Tahap timeline berhasil dihapus.', 'success')
+  isDeleteTimelineModalOpen.value = false
+  timelineToDelete.value = null
   await refreshTimelineList()
 }
 
@@ -281,12 +294,9 @@ onBeforeUnmount(() => {
                 <p class="text-sm font-medium text-text-secondary">TA {{ gelombang.tahun_ajaran }}</p>
               </div>
               <div class="flex items-center gap-3">
-                <span
-                  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-                  :class="gelombang.status ? 'bg-status-approved-bg text-status-approved-text' : 'bg-status-rejected-bg text-status-rejected-text'"
-                >
+                <AppBadge :variant="gelombang.status ? 'success' : 'danger'" size="md">
                   {{ gelombang.status ? 'Aktif' : 'Nonaktif' }}
-                </span>
+                </AppBadge>
               </div>
             </div>
 
@@ -512,5 +522,37 @@ onBeforeUnmount(() => {
         </div>
       </Transition>
     </Teleport>
+
+    <AppModal
+      v-model="isDeleteTimelineModalOpen"
+      title="Hapus Tahap Timeline?"
+      width="max-w-[420px]"
+      :close-on-backdrop="!isDeletingTimeline"
+      :close-on-escape="!isDeletingTimeline"
+    >
+      <p class="text-sm leading-relaxed text-text-secondary">
+        Apakah Anda yakin ingin menghapus tahap
+        <span class="font-semibold text-text-primary">{{ timelineToDelete?.step.deskripsi }}</span>
+        dari Gelombang {{ timelineToDelete?.gelombang.order }}?
+      </p>
+
+      <template #footer>
+        <AppButton
+          variant="ghost"
+          :disabled="isDeletingTimeline"
+          @click="isDeleteTimelineModalOpen = false"
+        >
+          Batal
+        </AppButton>
+        <AppButton
+          variant="danger"
+          :loading="isDeletingTimeline"
+          :disabled="isDeletingTimeline"
+          @click="confirmDeleteTimelineStep"
+        >
+          Hapus Tahap
+        </AppButton>
+      </template>
+    </AppModal>
   </div>
 </template>

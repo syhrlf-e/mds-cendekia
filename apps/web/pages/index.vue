@@ -424,10 +424,10 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
     <section id="galeri" class="relative flex flex-col items-center justify-center bg-white px-0 pt-24 md:pt-44 lg:pt-48 xl:pt-56 2xl:pt-[303px]">
       <div class="public-container flex flex-col">
         <!-- Baris Pertama -->
-        <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-center lg:gap-6">
+        <div class="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-4 lg:gap-6">
           <!-- Kolom Kiri: Gambar -->
           <ClientOnly>
-            <div class="order-2 aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:w-[56%] 2xl:w-[707px]">
+            <div class="order-2 aspect-[707/342] w-full overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:col-span-2">
               <div
                 v-if="isGalleryLoading"
                 class="h-full w-full animate-pulse bg-gray-200"
@@ -442,14 +442,14 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               />
             </div>
             <template #fallback>
-              <div class="order-2 aspect-[707/342] w-full flex-shrink-0 overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:w-[56%] 2xl:w-[707px]">
+              <div class="order-2 aspect-[707/342] w-full overflow-hidden rounded-3xl bg-gray-200 lg:order-none lg:col-span-2">
                 <div class="h-full w-full animate-pulse bg-gray-200"></div>
               </div>
             </template>
           </ClientOnly>
 
           <!-- Kolom Kanan: Teks -->
-          <div class="order-1 flex-1 lg:order-none">
+          <div class="order-1 lg:order-none lg:col-span-2">
             <h2 class="max-w-sm font-heading text-3xl font-normal leading-tight text-text-public-heading sm:max-w-2xl md:text-4xl lg:max-w-none lg:text-4xl 2xl:text-5xl">
               Lingkungan belajar yang dirancang untuk tumbuh
             </h2>
@@ -460,12 +460,12 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
         <ClientOnly>
           <div class="mt-4 w-full md:mt-6">
             <div class="overflow-hidden">
-              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 md:gap-5 xl:grid xl:grid-cols-4 xl:overflow-visible xl:pb-0 2xl:gap-6" @scroll.passive="handleGalleryScroll">
+              <div ref="galleryTrackRef" class="gallery-swipe-track flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 md:gap-5 2xl:gap-6" @scroll.passive="handleGalleryScroll">
                 <template v-if="isGalleryLoading">
                   <div
-                    v-for="index in 3"
+                    v-for="index in 4"
                     :key="`gallery-skeleton-${index}`"
-                    class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 xl:w-full"
+                    class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200"
                   ></div>
                 </template>
 
@@ -474,7 +474,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                   v-else
                   :key="item.id"
                   :data-gallery-index="index"
-                  class="gallery-thumb-card group relative aspect-square flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left xl:w-full"
+                  class="gallery-thumb-card group relative aspect-square flex-none snap-start overflow-hidden rounded-3xl bg-gray-200 text-left"
                 >
                   <img
                     :src="item.gambar || '/images/logo-mds-main.png'"
@@ -514,7 +514,7 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                 <div
                   v-for="index in 3"
                   :key="`gallery-fallback-${index}`"
-                  class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200 xl:w-full"
+                  class="gallery-thumb-card aspect-square flex-none animate-pulse overflow-hidden rounded-3xl bg-gray-200"
                 ></div>
               </div>
             </div>
@@ -699,9 +699,15 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   .gallery-thumb-card {
-    width: 100%;
+    width: calc((100% - 3.75rem) / 4);
+  }
+}
+
+@media (min-width: 1536px) {
+  .gallery-thumb-card {
+    width: calc((100% - 4.5rem) / 4);
   }
 }
 </style>

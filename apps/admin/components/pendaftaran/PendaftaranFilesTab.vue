@@ -28,12 +28,12 @@ const emit = defineEmits<{
         <h3 class="text-[11px] font-bold uppercase tracking-widest text-text-muted">
           Status saat ini
         </h3>
-        <span
-          class="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium"
+        <AppBadge
+          class="shrink-0"
           :class="getBerkasStatusClass(statusBerkas)"
         >
           {{ statusBerkas }}
-        </span>
+        </AppBadge>
       </div>
 
       <div class="flex items-center justify-between gap-6 border-b border-border-soft px-6 py-4">

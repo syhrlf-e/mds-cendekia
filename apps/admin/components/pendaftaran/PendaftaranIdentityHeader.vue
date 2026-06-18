@@ -55,30 +55,32 @@ const emit = defineEmits<{
             <span class="mx-1.5 opacity-40">·</span>
             {{ item.sekolah }}
           </p>
-          <span v-if="item.gelombang" class="mt-3 inline-flex rounded-full border border-border-soft px-3 py-1 text-xs font-medium text-text-secondary">
+          <AppBadge v-if="item.gelombang" appearance="outline" size="md" class="mt-3">
             Gelombang {{ item.gelombang }}
-          </span>
+          </AppBadge>
         </div>
       </div>
 
       <div class="flex shrink-0 flex-col items-end gap-2 pt-1">
         <div class="flex items-center gap-2 whitespace-nowrap">
           <span class="text-xs font-medium leading-none text-text-secondary">Status Pendaftaran :</span>
-          <span
-            class="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium leading-none"
+          <AppBadge
+            appearance="outline"
+            size="md"
             :class="getOutlineStatusClass(item.statusText)"
           >
             {{ item.statusText }}
-          </span>
+          </AppBadge>
         </div>
         <div class="flex items-center gap-2 whitespace-nowrap">
           <span class="text-xs font-medium leading-none text-text-secondary">Status Berkas :</span>
-          <span
-            class="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium leading-none"
+          <AppBadge
+            appearance="outline"
+            size="md"
             :class="getOutlineStatusClass(item.statusBerkas)"
           >
             {{ item.statusBerkas }}
-          </span>
+          </AppBadge>
         </div>
       </div>
     </div>

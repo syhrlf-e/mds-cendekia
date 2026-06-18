@@ -28,6 +28,8 @@ const academicYear = ref('')
 const waveOrder = ref<number | ''>('')
 const quota = ref<number | ''>('')
 const isSaving = ref(false)
+const isDeleteTimelineModalOpen = ref(false)
+const timelineToDelete = ref<ProgramPackageTimelineItem | null>(null)
 const timelineItems = ref<ProgramPackageTimelineItem[]>([
   {
     id: 'timeline-default',
@@ -201,12 +203,15 @@ const deleteTimelineItem = async (item: ProgramPackageTimelineItem) => {
     return
   }
 
-  if (!import.meta.client) return
-  const confirmed = window.confirm(`Hapus timeline "${item.deskripsi}"?`)
-  if (!confirmed) return
+  timelineToDelete.value = item
+  isDeleteTimelineModalOpen.value = true
+}
+
+const confirmDeleteTimelineItem = async () => {
+  if (!timelineToDelete.value?.serverId) return
 
   isSaving.value = true
-  const { data, error } = await deleteTimeline(item.serverId)
+  const { data, error } = await deleteTimeline(timelineToDelete.value.serverId)
   isSaving.value = false
 
   if (error || data?.success === false) {
@@ -214,7 +219,9 @@ const deleteTimelineItem = async (item: ProgramPackageTimelineItem) => {
     return
   }
 
-  timelineItems.value = timelineItems.value.filter(row => row.id !== item.id)
+  timelineItems.value = timelineItems.value.filter(row => row.id !== timelineToDelete.value?.id)
+  isDeleteTimelineModalOpen.value = false
+  timelineToDelete.value = null
   addToast(data?.message || 'Timeline pendaftaran berhasil dihapus.', 'success')
   emit('saved')
 }
@@ -277,12 +284,9 @@ watch(() => props.item, (item) => {
                   <h2 class="truncate font-heading text-xl font-bold leading-tight text-text-primary">
                     {{ packageName }}
                   </h2>
-                  <span
-                    class="rounded-full px-2.5 py-1 font-heading text-xs font-semibold"
-                    :class="isRegistrationActive ? 'bg-status-approved-bg text-status-approved-text' : 'bg-bg-base text-text-secondary'"
-                  >
+                  <AppBadge :variant="isRegistrationActive ? 'success' : 'neutral'" size="md">
                     {{ isRegistrationActive ? 'Pendaftaran Aktif' : 'Pendaftaran Nonaktif' }}
-                  </span>
+                  </AppBadge>
                 </div>
               </div>
 
@@ -313,12 +317,14 @@ watch(() => props.item, (item) => {
                     </p>
                   </div>
 
-                  <p
+                  <AppBadge
                     v-if="isRegistrationActive"
-                    class="shrink-0 rounded-full bg-primary-50 px-3 py-1.5 font-heading text-xs font-semibold text-brand"
+                    variant="brand"
+                    size="md"
+                    class="shrink-0"
                   >
                     {{ nextWaveLabel }}
-                  </p>
+                  </AppBadge>
                 </div>
               </section>
 
@@ -443,4 +449,37 @@ watch(() => props.item, (item) => {
       </div>
     </Transition>
   </Teleport>
+
+  <AppModal
+    v-model="isDeleteTimelineModalOpen"
+    title="Hapus Timeline?"
+    width="max-w-[420px]"
+    :z-index="70"
+    :close-on-backdrop="!isSaving"
+    :close-on-escape="!isSaving"
+  >
+    <p class="text-sm leading-relaxed text-text-secondary">
+      Apakah Anda yakin ingin menghapus timeline
+      <span class="font-semibold text-text-primary">{{ timelineToDelete?.deskripsi }}</span>?
+      Data yang sudah dihapus tidak bisa dikembalikan.
+    </p>
+
+    <template #footer>
+      <AppButton
+        variant="ghost"
+        :disabled="isSaving"
+        @click="isDeleteTimelineModalOpen = false"
+      >
+        Batal
+      </AppButton>
+      <AppButton
+        variant="danger"
+        :loading="isSaving"
+        :disabled="isSaving"
+        @click="confirmDeleteTimelineItem"
+      >
+        Hapus Timeline
+      </AppButton>
+    </template>
+  </AppModal>
 </template>

@@ -103,9 +103,9 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
               >
               <div class="flex flex-col p-6 2xl:p-8">
                 <div class="mb-5 flex items-center justify-between gap-4 2xl:mb-6">
-                  <span class="rounded-full border border-blue-500 px-4 py-1 font-sans text-sm font-medium text-blue-500">
+                  <AppBadge variant="info" appearance="outline" size="md" class="px-4 font-sans text-sm">
                     {{ item.category || 'Berita' }}
-                  </span>
+                  </AppBadge>
                   <span class="text-right font-sans text-sm text-gray-400">
                     {{ formatNewsDate(item.publishDate) }}
                   </span>
@@ -120,13 +120,15 @@ const buildNewsPath = (item: { id: string, slug?: string }) => `/berita/${encode
                   v-if="item.tags.length"
                   class="mt-5 flex flex-wrap gap-2"
                 >
-                  <span
+                  <AppBadge
                     v-for="tag in item.tags.slice(0, 3)"
                     :key="`${item.id}-${tag}`"
-                    class="rounded-full bg-gray-100 px-3 py-1 font-sans text-xs font-medium text-neutral-600"
+                    variant="neutral"
+                    size="md"
+                    class="font-sans"
                   >
                     #{{ tag }}
-                  </span>
+                  </AppBadge>
                 </div>
               </div>
             </NuxtLink>

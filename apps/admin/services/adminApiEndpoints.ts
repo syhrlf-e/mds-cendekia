@@ -53,5 +53,12 @@ export const adminApiEndpoints = {
     update: (id: string | number) => `/api/berita/update/${encodeURIComponent(String(id))}`,
     delete: (id: string | number) => `/api/berita/${encodeURIComponent(String(id))}`
   },
+  organization: {
+    list: '/api/organization/all',
+    detail: (id: number) => `/api/organization/${id}`,
+    create: '/api/organization/create',
+    update: (id: number) => `/api/organization/${id}`,
+    delete: (id: number) => `/api/organization/${id}`
+  },
   summary: '/api/summary'
 } as const
