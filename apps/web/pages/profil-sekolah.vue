@@ -74,49 +74,6 @@ useJsonLd(() => {
   return schema
 })
 
-const fallbackOrganizationMembers: PublicOrganizationMember[] = [
-  {
-    id: 1,
-    nama: 'Bpk. Muhammad Djody Satriani',
-    jabatan: 'Ketua Pembina',
-    gambar: '',
-    sambutan: '',
-    joinAt: ''
-  },
-  {
-    id: 2,
-    nama: 'Bpk. Buya Hamka',
-    jabatan: 'Ketua Pengawas',
-    gambar: '',
-    sambutan: '',
-    joinAt: ''
-  },
-  {
-    id: 3,
-    nama: 'Bpk. Rio Nurfajri',
-    jabatan: 'Ketua Umum',
-    gambar: '',
-    sambutan: 'Selamat datang di Yayasan Mukti Daris Sasmita Cendekia. Kami percaya bahwa pendidikan adalah hak fundamental yang tidak boleh dibatasi oleh usia, waktu, maupun latar belakang ekonomi.\n\nYMDSC hadir sebagai jawaban atas tantangan zaman, menyediakan ekosistem belajar hybrid yang fleksibel namun tetap berkualitas tinggi. Melalui komitmen ini, kami siap mendampingi setiap langkah Anda untuk kembali meraih mimpi, mendapatkan legalitas pendidikan yang diakui, dan tumbuh menjadi pribadi yang berdampak di masyarakat. Mari berjalan bersama kami',
-    joinAt: ''
-  },
-  {
-    id: 4,
-    nama: 'Ibu Vena Adrianti Ningrum',
-    jabatan: 'Sekretaris',
-    gambar: '',
-    sambutan: '',
-    joinAt: ''
-  },
-  {
-    id: 5,
-    nama: 'Ibu Rizalina Nurazizah',
-    jabatan: 'Bendahara',
-    gambar: '',
-    sambutan: '',
-    joinAt: ''
-  }
-]
-
 const positionOrder = ['Ketua Pembina', 'Ketua Pengawas', 'Ketua Umum', 'Sekretaris', 'Bendahara']
 
 const getPositionRank = (jabatan: string) => {
@@ -135,15 +92,11 @@ const { data: organizationMembersData } = await useAsyncData('public-organizatio
   const { data } = await listPublicOrganization()
   return data
 }, {
-  default: () => fallbackOrganizationMembers
+  default: () => []
 })
 
 const organizationMembers = computed(() => {
-  const rows = organizationMembersData.value?.length
-    ? organizationMembersData.value
-    : fallbackOrganizationMembers
-
-  return sortOrganizationMembers(rows)
+  return sortOrganizationMembers(organizationMembersData.value ?? [])
 })
 
 const featuredSambutanMember = computed(() =>
@@ -154,13 +107,12 @@ const featuredSambutanMember = computed(() =>
 
 const sambutanParagraphs = computed(() => {
   const sambutan = featuredSambutanMember.value?.sambutan?.trim()
-  if (!sambutan) {
-    return fallbackOrganizationMembers[2]?.sambutan.split(/\n\s*\n/).filter(Boolean) ?? []
-  }
+  if (!sambutan) return []
 
   return sambutan.split(/\n\s*\n/).filter(Boolean)
 })
 
+const hasSambutanContent = computed(() => Boolean(featuredSambutanMember.value && sambutanParagraphs.value.length))
 const primaryOrganizationMember = computed(() => organizationMembers.value[0] ?? null)
 const secondaryOrganizationMember = computed(() => organizationMembers.value[1] ?? null)
 const remainingOrganizationMembers = computed(() => organizationMembers.value.slice(2))
@@ -180,7 +132,7 @@ const remainingOrganizationMembers = computed(() => organizationMembers.value.sl
         </div>
       </div>
     </section>
-    <section class="bg-white px-0 py-16 md:py-28 lg:py-30 2xl:py-30">
+    <section v-if="hasSambutanContent" class="bg-white px-0 py-16 md:py-28 lg:py-30 2xl:py-30">
       <div class="public-container flex flex-col items-center">
         <h2 class="mb-9 max-w-sm text-center font-heading text-2xl font-normal leading-tight text-text-public-heading md:mb-14 md:max-w-3xl md:text-4xl lg:mb-16 lg:text-4xl 2xl:mb-25 2xl:max-w-4xl 2xl:text-5xl">
           Membuka pintu masa depan yang lebih inklusif untuk semua.
@@ -293,7 +245,19 @@ const remainingOrganizationMembers = computed(() => organizationMembers.value.sl
           Penggerak Yayasan Kami
         </h2>
 
-        <div class="flex w-full flex-col items-center gap-10 md:gap-14 2xl:gap-20">
+        <div v-if="!organizationMembers.length" class="flex w-full max-w-[520px] flex-col items-center rounded-3xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-10 text-center md:px-10 md:py-12">
+          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-neutral-300 shadow-sm">
+            <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          </div>
+          <h3 class="font-heading text-lg font-medium text-text-public-heading md:text-xl">
+            Belum ada pengurus aktif
+          </h3>
+          <p class="mt-2 max-w-sm font-sans text-sm leading-relaxed text-neutral-500 md:text-base">
+            Data penggerak yayasan akan ditampilkan setelah pengurus aktif ditambahkan melalui panel admin.
+          </p>
+        </div>
+
+        <div v-else class="flex w-full flex-col items-center gap-10 md:gap-14 2xl:gap-20">
           <div v-if="primaryOrganizationMember" class="flex flex-col items-center">
             <div class="mb-4 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 md:mb-5 md:h-36 md:w-36 2xl:mb-6 2xl:h-[180px] 2xl:w-[180px]">
               <img
