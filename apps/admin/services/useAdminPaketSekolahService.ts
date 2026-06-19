@@ -208,7 +208,7 @@ export const useAdminPaketSekolahService = () => {
   }
 
   const deleteProgramPaketGelombang = (id: string | number) => {
-    return deleteRequest<ApiMutationResponse>(adminApiEndpoints.timelinePpdb.deleteGelombang(id), { showErrorToast: false })
+    return deleteRequest<ApiMutationResponse>(adminApiEndpoints.gelombang.delete(id), { showErrorToast: false })
   }
 
   return {
